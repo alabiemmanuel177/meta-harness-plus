@@ -54,7 +54,10 @@ class LLMPredictor(Component):
     name: str = "llm_predictor"
     n_samples: int = 1
     temperature: float = 0.0
-    max_tokens: int = 32
+    # Default large enough for reasoning models (gpt-oss, r1, etc.) to finish
+    # their chain-of-thought before emitting the class label. For non-reasoning
+    # models this is safe overhead, not wasted tokens — they stop early.
+    max_tokens: int = 512
     system_prompt_suffix: str = (
         "Respond with exactly one class name on the final line, "
         "lowercase, no punctuation. No prose."

@@ -164,7 +164,14 @@ class HTTPClient:
             usage = resp_json.get("usage", {})
             return text, usage.get("input_tokens", 0), usage.get("output_tokens", 0)
         if self._is_ollama_native:
-            text = resp_json.get("message", {}).get("content", "")
+            msg = resp_json.get("message", {})
+            text = msg.get("content", "") or ""
+            # Reasoning models (gpt-oss, deepseek-r1, qwen-reasoning) put chain-
+            # of-thought in "thinking" and only emit "content" after. If the
+            # model was cut off mid-thinking, content is empty — fall back to
+            # thinking so downstream parsers have something to work with.
+            if not text.strip():
+                text = msg.get("thinking", "") or ""
             return text, resp_json.get("prompt_eval_count", 0), resp_json.get("eval_count", 0)
         # OpenAI
         choices = resp_json.get("choices", [])
