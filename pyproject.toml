@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "meta-harness-plus"
+version = "0.1.0"
+description = "Multi-objective, budget-aware, attribution-guided harness search (extension of Stanford IRIS Meta-Harness)"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+dependencies = []
+
+[project.optional-dependencies]
+dev = []
+
+[tool.setuptools.packages.find]
+include = ["meta_harness_plus*"]
