@@ -33,6 +33,17 @@ class SearchConfig:
     screen_seed: int = 0
     run_dir: str | None = None
 
+    # Reproducibility knobs (branch: reproducibility):
+    # - eval_repeats > 1 runs full/screen evals multiple times and aggregates
+    #   with median accuracy / mean cost. Combats nondeterministic LLM backends.
+    # - attribution_screen_size: separate (typically larger) subset for
+    #   drop-one ablation. Small screens make attribution noise-dominated;
+    #   decoupling lets you spend more budget where it matters.
+    eval_repeats: int = 1
+    screen_repeats: int = 1            # repeats during successive-halving screen
+    attribution_repeats: int = 1
+    attribution_screen_size: int | None = None  # None = use screen_size
+
 
 @dataclass
 class SearchState:
@@ -72,6 +83,19 @@ class SearchRunner:
     def _screen_set(self) -> list[TaskExample]:
         return self.task.screen_subset(self.config.screen_size, seed=self.config.screen_seed)
 
+    def _attribution_set(self) -> list[TaskExample]:
+        """Possibly-larger subset for drop-one ablation.
+
+        Defaults to the screen set if ``attribution_screen_size`` is unset.
+        """
+        size = self.config.attribution_screen_size
+        if size is None:
+            return self._screen_set()
+        # Use a distinct seed so the attribution set and screen set don't
+        # overlap completely — deliberately different slices reduce leakage
+        # between what halving already saw and what attribution ablates on.
+        return self.task.screen_subset(size, seed=self.config.screen_seed + 1)
+
     def _admit(self, frontier: ParetoFrontier, cand_id: str, harness: Harness, score: ScoreVector) -> bool:
         entry = FrontierEntry(
             candidate_id=cand_id,
@@ -87,12 +111,16 @@ class SearchRunner:
 
         # Seed the frontier with any initial harnesses.
         screen = self._screen_set()
+        attribution_screen = self._attribution_set()
         full = self._full_eval_set()
         for h in self.seed_harnesses:
             cid = self._next_id()
-            score = self.scorer.score(h, full)
+            score = self.scorer.score(h, full, n_repeats=self.config.eval_repeats)
             admitted = self._admit(frontier, cid, h, score)
-            self.attribution.analyze(cid, h, screen, full_score=None)
+            self.attribution.analyze(
+                cid, h, attribution_screen, full_score=None,
+                n_repeats=self.config.attribution_repeats,
+            )
             state.history.append({
                 "phase": "seed",
                 "candidate_id": cid,
@@ -127,7 +155,9 @@ class SearchRunner:
 
             # Screening evaluator closure — uses deterministic subset of screen set.
             def screen_eval(h: Harness, k: int) -> ScoreVector:
-                return self.scorer.score(h, screen[:k])
+                return self.scorer.score(
+                    h, screen[:k], n_repeats=self.config.screen_repeats,
+                )
 
             result = halving.run(list(proposal.harnesses), screen_eval)
 
@@ -135,10 +165,15 @@ class SearchRunner:
             id_by_h = {id(h): i for h, i in zip(proposal.harnesses, ids)}
             for surv in result.survivors:
                 cid = id_by_h[id(surv)]
-                # Full eval on the survivor.
-                full_score = self.scorer.score(surv, full)
+                # Full eval on the survivor (median-over-repeats for robustness).
+                full_score = self.scorer.score(
+                    surv, full, n_repeats=self.config.eval_repeats,
+                )
                 admitted = self._admit(frontier, cid, surv, full_score)
-                snapshots = self.attribution.analyze(cid, surv, screen, full_score=full_score)
+                snapshots = self.attribution.analyze(
+                    cid, surv, attribution_screen, full_score=full_score,
+                    n_repeats=self.config.attribution_repeats,
+                )
                 state.history.append({
                     "phase": "survivor_full_eval",
                     "iter": it,

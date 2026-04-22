@@ -69,18 +69,28 @@ class AttributionTracker:
         harness: Harness,
         examples: Sequence[TaskExample],
         full_score: ScoreVector | None = None,
+        *,
+        n_repeats: int = 1,
     ) -> list[AttributionSnapshot]:
         """Drop-one ablation on ``harness`` against ``examples``.
 
         IMPORTANT: ``full_score`` is only used as a cached value when it was
-        measured on the same ``examples``. We guard by checking ``n_evaluated``
-        — if it doesn't match, we re-score on ``examples`` so deltas are
-        apples-to-apples. Callers who pass a mismatched full_score (e.g. from
-        the full eval_set while requesting ablation on a screen subset) will
-        silently get a fresh re-score, which is the right behavior.
+        measured on the same ``examples`` AND the same ``n_repeats`` budget.
+        Otherwise we re-score so deltas are apples-to-apples.
+
+        ``n_repeats`` (branch: reproducibility): when > 1, both the full and
+        the ablated harness are evaluated ``n_repeats`` times with median-
+        accuracy aggregation. Cuts the noise floor on drop-one deltas — the
+        chief complaint from the RESULTS.md bakeoff where 6-item screens
+        produced near-zero attribution signal.
         """
-        if full_score is None or full_score.n_evaluated != len(examples):
-            full_score = self.scorer.score(harness, examples)
+        cache_valid = (
+            full_score is not None
+            and full_score.n_evaluated == len(examples)
+            and full_score.n_repeats == n_repeats
+        )
+        if not cache_valid:
+            full_score = self.scorer.score(harness, examples, n_repeats=n_repeats)
         out: list[AttributionSnapshot] = []
         seen_kinds: set[str] = set()
         for comp in harness.components:
@@ -94,7 +104,7 @@ class AttributionTracker:
                 # meaningless and the attribution misleading.
                 continue
             ablated_harness = harness.swap(comp.kind, baseline)
-            ablated_score = self.scorer.score(ablated_harness, examples)
+            ablated_score = self.scorer.score(ablated_harness, examples, n_repeats=n_repeats)
             delta = full_score.accuracy - ablated_score.accuracy
             snap = AttributionSnapshot(
                 candidate_id=candidate_id,
