@@ -67,6 +67,10 @@ def run_one_model(model: str, ollama_url: str, run_dir: Path, args) -> dict:
             screen_size=args.screen_size,
             full_eval_size=args.eval_size,
             halving_k0=args.halving_k0, halving_eta=2, halving_final_keep=args.halving_final_keep,
+            eval_repeats=args.eval_repeats,
+            screen_repeats=args.screen_repeats,
+            attribution_repeats=args.attribution_repeats,
+            attribution_screen_size=args.attribution_screen_size,
             run_dir=str(run_dir),
         ),
         seed_harnesses=[seed_harness],
@@ -139,6 +143,15 @@ def main():
     ap.add_argument("--proposer-temperature", type=float, default=0.5)
     ap.add_argument("--proposer-max-tokens", type=int, default=4096)
     ap.add_argument("--predictor-max-tokens", type=int, default=512)
+    # Reproducibility (reproducibility branch):
+    ap.add_argument("--eval-repeats", type=int, default=1,
+                    help="repeat each full eval N times; aggregate = median acc, mean cost")
+    ap.add_argument("--screen-repeats", type=int, default=1,
+                    help="repeat halving screen evals N times (lower, since cheaper)")
+    ap.add_argument("--attribution-repeats", type=int, default=1,
+                    help="repeat drop-one ablations N times")
+    ap.add_argument("--attribution-screen-size", type=int, default=None,
+                    help="separate larger subset for attribution; None = same as screen-size")
     args = ap.parse_args()
 
     out_root = Path("runs/full_bakeoff")

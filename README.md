@@ -95,8 +95,9 @@ meta_harness_plus/
 
 ## Branches
 
-- **`main`** — the zero-dep prototype documented above.
-- **`llm-proposer`** — real LLM integration. Adds `meta_harness_plus/llm/`:
+- **`main`** — the zero-dep prototype + merged LLM integration. Everything documented here is on main.
+- **`reproducibility`** — adds `n_repeats` to `Scorer`, `SearchConfig`, and `AttributionTracker` for median-over-repeats aggregation (defeats Ollama's `temperature=0` GPU non-determinism) and a separate larger attribution screen. See [REPRODUCIBILITY.md](REPRODUCIBILITY.md). 63/63 tests pass.
+- **`llm-proposer`** — historical branch, now merged into main. Adds `meta_harness_plus/llm/`:
   - `LLMClient` protocol, `ScriptedClient` fake, `HTTPClient` for Anthropic / Ollama / any OpenAI-compatible endpoint (vLLM, LM Studio, etc.) — all via stdlib `urllib`.
   - `ComponentRegistry` — structured JSON specs → validated Harness instances (no arbitrary Python exec).
   - `LLMPredictor` — real-LLM classifier Component with per-call token/latency accounting.
