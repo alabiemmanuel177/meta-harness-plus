@@ -93,12 +93,46 @@ meta_harness_plus/
 - Not a claim of SOTA — the claim is methodological: Pareto + budget-awareness + attribution is a better default than scalar + full-eval + opaque, and we show each piece carries its weight on a reproducible benchmark.
 - Not a replacement for the filesystem-as-memory interface — we keep it, so the original paper's LLM proposer drops in.
 
+## Branches
+
+- **`main`** — the zero-dep prototype documented above.
+- **`llm-proposer`** — real LLM integration. Adds `meta_harness_plus/llm/`:
+  - `LLMClient` protocol, `ScriptedClient` fake, `HTTPClient` for Anthropic / Ollama / any OpenAI-compatible endpoint (vLLM, LM Studio, etc.) — all via stdlib `urllib`.
+  - `ComponentRegistry` — structured JSON specs → validated Harness instances (no arbitrary Python exec).
+  - `LLMPredictor` — real-LLM classifier Component with per-call token/latency accounting.
+  - `LLMProposer` — reads the filesystem run log, assembles a curated diagnostic prompt (frontier + attribution stats + **exploration-gap surfacing**: components never seen on the frontier), asks the LLM for JSON proposals, validates them through the registry.
+  - `examples/bakeoff.py` — compare mock vs LLM proposer on the same config.
+
+### Running the bakeoff locally with Ollama
+
+```bash
+# Assumes Ollama is running on localhost:11434 and the model is pulled.
+python3 examples/bakeoff.py --proposer llm \
+    --ollama-url http://localhost:11434/api/chat \
+    --model gpt-oss:20b
+```
+
+### With Anthropic
+
+```bash
+ANTHROPIC_API_KEY=sk-ant-... python3 examples/bakeoff.py --proposer llm \
+    --anthropic --model claude-opus-4-7
+```
+
+### With any OpenAI-compatible endpoint
+
+```bash
+OPENAI_API_KEY=sk-... python3 examples/bakeoff.py --proposer llm \
+    --openai-url https://api.openai.com/v1/chat/completions \
+    --model gpt-4o-mini
+```
+
 ## Future work (not implemented)
 
 - Multi-proposer ensemble with explicit diversity pressure (counter single-proposer mode collapse).
 - Cross-domain warm start: transfer a Component library across tasks.
 - Robustness-aware scoring (adversarial eval as a 4th Pareto axis).
-- Real-LLM bakeoff against the original on a label-intensive classification subset.
+- Real bakeoff at scale on a public label-intensive classification dataset (LawBench, USPTO-50k).
 
 ## Credit
 
