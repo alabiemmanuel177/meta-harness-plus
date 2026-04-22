@@ -1,0 +1,20 @@
+{"input": "Sudden chest tightness and shortness of breath while climbing stairs", "label": "cardiology"}
+{"input": "Palpitations at rest with occasional dizziness throughout the day", "label": "cardiology"}
+{"input": "Swollen ankles and fatigue that worsens with physical activity", "label": "cardiology"}
+{"input": "Sharp pain radiating from left chest to arm during exertion", "label": "cardiology"}
+{"input": "Itchy red rash on forearms that spread to the torso overnight", "label": "dermatology"}
+{"input": "Persistent acne on jawline and cheeks unresponsive to cream", "label": "dermatology"}
+{"input": "Dry flaky patches on elbows and behind knees", "label": "dermatology"}
+{"input": "Dark mole on back that recently changed shape and color", "label": "dermatology"}
+{"input": "Knee pain that worsens when climbing stairs or kneeling", "label": "orthopedics"}
+{"input": "Morning stiffness in hands and wrists lasting over an hour", "label": "orthopedics"}
+{"input": "Shoulder pain that prevents raising the arm overhead", "label": "orthopedics"}
+{"input": "Ankle swelling after minor twist on uneven ground", "label": "orthopedics"}
+{"input": "Severe throbbing headache with sensitivity to light and sound", "label": "neurology"}
+{"input": "Numbness and tingling running down the right arm to fingers", "label": "neurology"}
+{"input": "Brief episodes of speech difficulty and vision blur", "label": "neurology"}
+{"input": "Involuntary muscle twitching in the eyelid that lasts hours", "label": "neurology"}
+{"input": "Burning stomach pain that worsens two hours after meals", "label": "gastroenterology"}
+{"input": "Chronic bloating and changes in bowel habits over months", "label": "gastroenterology"}
+{"input": "Nausea and vomiting with severe abdominal cramping", "label": "gastroenterology"}
+{"input": "Black tarry stools noticed over the past several days", "label": "gastroenterology"}
