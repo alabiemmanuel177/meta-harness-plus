@@ -31,6 +31,8 @@ from ..components import (
 )
 from ..harness import Component, Harness
 from ..task import Task
+from .client import LLMClient
+from .predictor import LLMPredictor
 
 
 Factory = Callable[[dict[str, Any]], Component]
@@ -57,6 +59,27 @@ class ComponentRegistry:
 
     def available_for_kind(self, kind: str) -> list[str]:
         return sorted(name for (k, name) in self._entries if k == kind)
+
+    def entry(self, kind: str, name: str) -> Entry | None:
+        return self._entries.get((kind, name))
+
+    def describe_available(self) -> list[dict]:
+        """Structured listing including allowed config fields per component.
+
+        Used by ``LLMProposer`` to help the LLM emit config dicts with the
+        right field names — the registry is strict about unknown fields, and
+        reasoning models otherwise guess common-sense names like ``top_k``
+        that don't match the actual factory signature.
+        """
+        out = []
+        for (kind, name), e in sorted(self._entries.items()):
+            out.append({
+                "kind": kind,
+                "name": name,
+                "required_config_fields": list(e.required_fields),
+                "allowed_config_fields": list(e.allowed_fields),
+            })
+        return out
 
     def instantiate(self, spec: dict[str, Any]) -> Component:
         kind = spec.get("kind")
@@ -133,6 +156,87 @@ def default_registry(task: Task, llm_fn) -> ComponentRegistry:
         ),
         allowed_fields=("n_samples",),
     ))
+
+    # Voter
+    reg.register(Entry(
+        kind="voter", name="null_voter",
+        factory=lambda cfg: NullVoter(),
+    ))
+    reg.register(Entry(
+        kind="voter", name="majority_voter",
+        factory=lambda cfg: MajorityVoter(),
+    ))
+
+    return reg
+
+
+def llm_search_registry(
+    task: Task,
+    client: LLMClient,
+    *,
+    include_mock_predictor: bool = False,
+    mock_llm_fn=None,
+    predictor_max_tokens: int = 512,
+) -> ComponentRegistry:
+    """Registry for real-LLM-backed searches.
+
+    Registers the same non-predictor components as ``default_registry`` plus
+    an ``llm_predictor`` entry that uses ``client`` and ``task.classes``.
+    Mock predictor is deliberately omitted unless ``include_mock_predictor``
+    is set — we want all harnesses on the frontier to use real costs.
+    """
+    reg = ComponentRegistry()
+
+    # Retrievers
+    reg.register(Entry(
+        kind="retriever", name="null_retriever",
+        factory=lambda cfg: NullRetriever(),
+    ))
+    reg.register(Entry(
+        kind="retriever", name="bow_retriever",
+        factory=lambda cfg: BagOfWordsRetriever(corpus=task.train, k=int(cfg.get("k", 3))),
+        allowed_fields=("k",),
+    ))
+
+    # Few-shot
+    reg.register(Entry(
+        kind="fewshot", name="null_fewshot",
+        factory=lambda cfg: NullFewShot(),
+    ))
+    reg.register(Entry(
+        kind="fewshot", name="topk_fewshot",
+        factory=lambda cfg: TopKFewShot(k=int(cfg.get("k", 2))),
+        allowed_fields=("k",),
+    ))
+
+    # Formatter
+    reg.register(Entry(
+        kind="formatter", name="simple_formatter",
+        factory=lambda cfg: SimpleFormatter(system_hint=cfg.get("system_hint", "Classify the input.")),
+        allowed_fields=("system_hint",),
+    ))
+
+    # Predictor — real LLM
+    reg.register(Entry(
+        kind="predictor", name="llm_predictor",
+        factory=lambda cfg: LLMPredictor(
+            client=client,
+            classes=task.classes,
+            n_samples=int(cfg.get("n_samples", 1)),
+            temperature=float(cfg.get("temperature", 0.0)),
+            max_tokens=predictor_max_tokens,
+        ),
+        allowed_fields=("n_samples", "temperature"),
+    ))
+
+    if include_mock_predictor and mock_llm_fn is not None:
+        reg.register(Entry(
+            kind="predictor", name="mock_llm_predictor",
+            factory=lambda cfg: MockLLMPredictor(
+                llm_fn=mock_llm_fn, n_samples=int(cfg.get("n_samples", 1)),
+            ),
+            allowed_fields=("n_samples",),
+        ))
 
     # Voter
     reg.register(Entry(

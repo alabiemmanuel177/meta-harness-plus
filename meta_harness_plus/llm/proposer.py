@@ -72,7 +72,7 @@ class DiagnosticContext:
     """Parsed snapshot of the run log, used to build the prompt."""
     frontier: list[dict]
     attribution: dict[str, dict]   # kind -> {mean_delta, n, variance}
-    available: list[tuple[str, str]]  # (kind, name)
+    available: list[dict]          # full component specs incl. allowed config fields
     exploration_gap: list[tuple[str, str]]  # (kind, name) never seen on frontier
     iteration: int
     n_requested: int
@@ -81,9 +81,17 @@ class DiagnosticContext:
         lines: list[str] = []
         lines.append(f"Iteration: {self.iteration}. Propose {self.n_requested} harnesses.")
         lines.append("")
-        lines.append("# Available components")
-        for k, n in self.available:
-            lines.append(f"  - {k}/{n}")
+        lines.append("# Available components (kind/name — allowed config fields)")
+        for spec in self.available:
+            req = ", ".join(spec.get("required_config_fields", [])) or "–"
+            allowed = ", ".join(spec.get("allowed_config_fields", [])) or "–"
+            lines.append(
+                f"  - {spec['kind']}/{spec['name']}  "
+                f"required: {req}  |  allowed: {allowed}"
+            )
+        lines.append("")
+        lines.append("IMPORTANT: Use ONLY config field names listed above. Unknown fields "
+                     "are rejected. Use 'k' for retriever/fewshot k-values, NOT 'top_k'.")
         lines.append("")
         lines.append("# Current Pareto frontier")
         if not self.frontier:
@@ -176,18 +184,14 @@ class LLMProposer:
         for e in frontier:
             for c in e.get("describe", []):
                 on_frontier.add((c.get("kind", ""), c.get("name", "")))
-        gap: list[tuple[str, str]] = []
-        for kn in self.registry.available():
-            if kn not in on_frontier:
-                gap.append(kn)
-        return gap
+        return [kn for kn in self.registry.available() if kn not in on_frontier]
 
     # --- prompt / response ---
 
     def _build_context(self, n: int) -> DiagnosticContext:
         frontier = self._read_frontier()
         attribution = self._read_attribution()
-        available = self.registry.available()
+        available = self.registry.describe_available()
         gap = self._exploration_gap(frontier)
         return DiagnosticContext(
             frontier=frontier,
