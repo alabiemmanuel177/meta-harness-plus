@@ -1,0 +1,116 @@
+{
+  "model": "gpt-oss:20b",
+  "elapsed_s": 1456.7,
+  "frontier": [
+    {
+      "candidate_id": "cand_0015",
+      "accuracy": 0.8,
+      "tokens": 380.7,
+      "latency_ms": 2306.1,
+      "components": [
+        {
+          "kind": "retriever",
+          "name": "bow_retriever",
+          "k": 3
+        },
+        {
+          "kind": "fewshot",
+          "name": "null_fewshot"
+        },
+        {
+          "kind": "formatter",
+          "name": "simple_formatter"
+        },
+        {
+          "kind": "predictor",
+          "name": "llm_predictor",
+          "n_samples": 1
+        },
+        {
+          "kind": "voter",
+          "name": "majority_voter"
+        }
+      ]
+    },
+    {
+      "candidate_id": "cand_0006",
+      "accuracy": 0.75,
+      "tokens": 313.4,
+      "latency_ms": 1939.6,
+      "components": [
+        {
+          "kind": "retriever",
+          "name": "null_retriever"
+        },
+        {
+          "kind": "fewshot",
+          "name": "topk_fewshot",
+          "k": 5
+        },
+        {
+          "kind": "formatter",
+          "name": "simple_formatter"
+        },
+        {
+          "kind": "predictor",
+          "name": "llm_predictor",
+          "n_samples": 1
+        },
+        {
+          "kind": "voter",
+          "name": "null_voter"
+        }
+      ]
+    },
+    {
+      "candidate_id": "cand_0002",
+      "accuracy": 0.65,
+      "tokens": 306.9,
+      "latency_ms": 1886.5,
+      "components": [
+        {
+          "kind": "retriever",
+          "name": "null_retriever"
+        },
+        {
+          "kind": "fewshot",
+          "name": "null_fewshot"
+        },
+        {
+          "kind": "formatter",
+          "name": "simple_formatter"
+        },
+        {
+          "kind": "predictor",
+          "name": "llm_predictor",
+          "n_samples": 1
+        },
+        {
+          "kind": "voter",
+          "name": "null_voter"
+        }
+      ]
+    }
+  ],
+  "attribution": [
+    {
+      "kind": "fewshot",
+      "mean_delta": -0.019,
+      "variance": 0.003,
+      "n": 9
+    },
+    {
+      "kind": "voter",
+      "mean_delta": -0.019,
+      "variance": 0.003,
+      "n": 9
+    },
+    {
+      "kind": "retriever",
+      "mean_delta": -0.056,
+      "variance": 0.006,
+      "n": 9
+    }
+  ],
+  "total_proposals_attempted": null
+}

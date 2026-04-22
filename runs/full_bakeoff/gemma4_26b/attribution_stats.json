@@ -1,0 +1,20 @@
+{
+  "fewshot": {
+    "kind": "fewshot",
+    "m2": 0.05555555555555561,
+    "mean_delta": 0.0,
+    "n": 7
+  },
+  "retriever": {
+    "kind": "retriever",
+    "m2": 0.05555555555555561,
+    "mean_delta": 0.0,
+    "n": 7
+  },
+  "voter": {
+    "kind": "voter",
+    "m2": 0.05555555555555561,
+    "mean_delta": 0.0,
+    "n": 7
+  }
+}

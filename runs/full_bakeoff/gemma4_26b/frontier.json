@@ -1,0 +1,107 @@
+[
+  {
+    "candidate_id": "cand_0001",
+    "describe": [
+      {
+        "kind": "retriever",
+        "name": "null_retriever"
+      },
+      {
+        "kind": "fewshot",
+        "name": "null_fewshot"
+      },
+      {
+        "kind": "formatter",
+        "name": "simple_formatter",
+        "system_hint": "Classify the input."
+      },
+      {
+        "kind": "predictor",
+        "n_samples": 1,
+        "name": "llm_predictor",
+        "temperature": 0.0
+      },
+      {
+        "kind": "voter",
+        "name": "null_voter"
+      }
+    ],
+    "score": {
+      "accuracy": 0.6,
+      "latency_ms": 5541.915016049599,
+      "n_evaluated": 20,
+      "tokens": 516.0
+    }
+  },
+  {
+    "candidate_id": "cand_0007",
+    "describe": [
+      {
+        "k": 1,
+        "kind": "retriever",
+        "name": "bow_retriever"
+      },
+      {
+        "kind": "fewshot",
+        "name": "null_fewshot"
+      },
+      {
+        "kind": "formatter",
+        "name": "simple_formatter",
+        "system_hint": "true"
+      },
+      {
+        "kind": "predictor",
+        "n_samples": 1,
+        "name": "llm_predictor",
+        "temperature": 0.0
+      },
+      {
+        "kind": "voter",
+        "name": "null_voter"
+      }
+    ],
+    "score": {
+      "accuracy": 0.55,
+      "latency_ms": 5343.8269746998485,
+      "n_evaluated": 20,
+      "tokens": 512.65
+    }
+  },
+  {
+    "candidate_id": "cand_0013",
+    "describe": [
+      {
+        "k": 2,
+        "kind": "retriever",
+        "name": "bow_retriever"
+      },
+      {
+        "k": 1,
+        "kind": "fewshot",
+        "name": "topk_fewshot"
+      },
+      {
+        "kind": "formatter",
+        "name": "simple_formatter",
+        "system_hint": "none"
+      },
+      {
+        "kind": "predictor",
+        "n_samples": 1,
+        "name": "llm_predictor",
+        "temperature": 0.0
+      },
+      {
+        "kind": "voter",
+        "name": "null_voter"
+      }
+    ],
+    "score": {
+      "accuracy": 0.8,
+      "latency_ms": 5095.538443850448,
+      "n_evaluated": 20,
+      "tokens": 540.75
+    }
+  }
+]

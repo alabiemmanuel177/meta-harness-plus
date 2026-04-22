@@ -1,0 +1,53 @@
+[
+  {
+    "ablated_score": {
+      "accuracy": 0.6666666666666666,
+      "latency_ms": 1878.774048500718,
+      "n_evaluated": 6,
+      "tokens": 306.0
+    },
+    "accuracy_delta": 0.0,
+    "candidate_id": "cand_0015",
+    "full_score": {
+      "accuracy": 0.6666666666666666,
+      "latency_ms": 1868.443342833105,
+      "n_evaluated": 6,
+      "tokens": 336.0
+    },
+    "kind": "retriever"
+  },
+  {
+    "ablated_score": {
+      "accuracy": 0.6666666666666666,
+      "latency_ms": 1869.2002251661124,
+      "n_evaluated": 6,
+      "tokens": 336.0
+    },
+    "accuracy_delta": 0.0,
+    "candidate_id": "cand_0015",
+    "full_score": {
+      "accuracy": 0.6666666666666666,
+      "latency_ms": 1868.443342833105,
+      "n_evaluated": 6,
+      "tokens": 336.0
+    },
+    "kind": "fewshot"
+  },
+  {
+    "ablated_score": {
+      "accuracy": 0.6666666666666666,
+      "latency_ms": 1864.1983178321243,
+      "n_evaluated": 6,
+      "tokens": 336.0
+    },
+    "accuracy_delta": 0.0,
+    "candidate_id": "cand_0015",
+    "full_score": {
+      "accuracy": 0.6666666666666666,
+      "latency_ms": 1868.443342833105,
+      "n_evaluated": 6,
+      "tokens": 336.0
+    },
+    "kind": "voter"
+  }
+]

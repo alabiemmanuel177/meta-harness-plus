@@ -4,7 +4,9 @@ __pycache__/
 *.egg-info/
 .venv/
 .env
-runs/
+runs/*
+# Keep the canonical bakeoff artifacts — research evidence referenced in RESULTS.md.
+!runs/full_bakeoff/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
