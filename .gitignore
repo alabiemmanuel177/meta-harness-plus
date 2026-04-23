@@ -5,8 +5,10 @@ __pycache__/
 .venv/
 .env
 runs/*
-# Keep the canonical bakeoff artifacts — research evidence referenced in RESULTS.md.
+# Keep the canonical bakeoff artifacts — research evidence referenced in the
+# RESULTS*.md files.
 !runs/full_bakeoff/
+!runs/symptom_bakeoff/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/

@@ -1,0 +1,100 @@
+{
+  "model": "gemma4:26b",
+  "task": "symptom_classification",
+  "elapsed_s": 2642.0,
+  "config": {
+    "iterations": 3,
+    "proposals_per_iter": 4,
+    "eval_repeats": 2,
+    "screen_repeats": 1,
+    "attribution_repeats": 2,
+    "attribution_screen_size": 12,
+    "eval_size": 20
+  },
+  "frontier": [
+    {
+      "candidate_id": "cand_0002",
+      "accuracy": 1.0,
+      "accuracy_spread": 0.0,
+      "n_repeats": 2,
+      "tokens": 341.6,
+      "latency_ms": 3301.2,
+      "components": [
+        {
+          "kind": "retriever",
+          "name": "null_retriever"
+        },
+        {
+          "kind": "fewshot",
+          "name": "null_fewshot"
+        },
+        {
+          "kind": "formatter",
+          "name": "simple_formatter"
+        },
+        {
+          "kind": "predictor",
+          "name": "llm_predictor",
+          "n_samples": 1
+        },
+        {
+          "kind": "voter",
+          "name": "null_voter"
+        }
+      ]
+    },
+    {
+      "candidate_id": "cand_0009",
+      "accuracy": 1.0,
+      "accuracy_spread": 0.0,
+      "n_repeats": 2,
+      "tokens": 395.6,
+      "latency_ms": 3099.5,
+      "components": [
+        {
+          "kind": "retriever",
+          "name": "bow_retriever",
+          "k": 2
+        },
+        {
+          "kind": "fewshot",
+          "name": "topk_fewshot",
+          "k": 1
+        },
+        {
+          "kind": "formatter",
+          "name": "simple_formatter"
+        },
+        {
+          "kind": "predictor",
+          "name": "llm_predictor",
+          "n_samples": 1
+        },
+        {
+          "kind": "voter",
+          "name": "null_voter"
+        }
+      ]
+    }
+  ],
+  "attribution": [
+    {
+      "kind": "retriever",
+      "mean_delta": 0.0,
+      "variance": 0.0,
+      "n": 5
+    },
+    {
+      "kind": "fewshot",
+      "mean_delta": 0.0,
+      "variance": 0.0,
+      "n": 5
+    },
+    {
+      "kind": "voter",
+      "mean_delta": 0.0,
+      "variance": 0.0,
+      "n": 5
+    }
+  ]
+}
