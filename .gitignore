@@ -9,6 +9,7 @@ runs/*
 # RESULTS*.md files.
 !runs/full_bakeoff/
 !runs/symptom_bakeoff/
+!runs/rag_vs_mh/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/

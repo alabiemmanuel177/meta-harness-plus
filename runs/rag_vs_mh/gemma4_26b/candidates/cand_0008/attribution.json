@@ -1,0 +1,86 @@
+[
+  {
+    "ablated_score": {
+      "accuracy": 0.8,
+      "accuracy_spread": 0.0,
+      "latency_ms": 5584.425290650031,
+      "n_evaluated": 10,
+      "n_repeats": 2,
+      "tokens": 544.0
+    },
+    "accuracy_delta": 0.09999999999999998,
+    "candidate_id": "cand_0008",
+    "full_score": {
+      "accuracy": 0.9,
+      "accuracy_spread": 0.0,
+      "latency_ms": 4287.152073749955,
+      "n_evaluated": 10,
+      "n_repeats": 2,
+      "tokens": 493.04999999999995
+    },
+    "kind": "retriever"
+  },
+  {
+    "ablated_score": {
+      "accuracy": 0.8,
+      "accuracy_spread": 0.0,
+      "latency_ms": 5581.606720650033,
+      "n_evaluated": 10,
+      "n_repeats": 2,
+      "tokens": 564.0
+    },
+    "accuracy_delta": 0.09999999999999998,
+    "candidate_id": "cand_0008",
+    "full_score": {
+      "accuracy": 0.9,
+      "accuracy_spread": 0.0,
+      "latency_ms": 4287.152073749955,
+      "n_evaluated": 10,
+      "n_repeats": 2,
+      "tokens": 493.04999999999995
+    },
+    "kind": "fewshot"
+  },
+  {
+    "ablated_score": {
+      "accuracy": 1.0,
+      "accuracy_spread": 0.0,
+      "latency_ms": 4869.0138245,
+      "n_evaluated": 10,
+      "n_repeats": 2,
+      "tokens": 551.6
+    },
+    "accuracy_delta": -0.09999999999999998,
+    "candidate_id": "cand_0008",
+    "full_score": {
+      "accuracy": 0.9,
+      "accuracy_spread": 0.0,
+      "latency_ms": 4287.152073749955,
+      "n_evaluated": 10,
+      "n_repeats": 2,
+      "tokens": 493.04999999999995
+    },
+    "kind": "formatter"
+  },
+  {
+    "ablated_score": {
+      "accuracy": 0.9,
+      "accuracy_spread": 0.0,
+      "latency_ms": 4767.450538450059,
+      "n_evaluated": 10,
+      "n_repeats": 2,
+      "tokens": 534.0
+    },
+    "accuracy_delta": 0.0,
+    "candidate_id": "cand_0008",
+    "full_score": {
+      "accuracy": 0.9,
+      "accuracy_spread": 0.0,
+      "latency_ms": 4287.152073749955,
+      "n_evaluated": 10,
+      "n_repeats": 2,
+      "tokens": 493.04999999999995
+    },
+    "kind": "voter"
+  }
+]

@@ -1,0 +1,86 @@
+[
+  {
+    "ablated_score": {
+      "accuracy": 0.8,
+      "accuracy_spread": 0.20000000000000007,
+      "latency_ms": 2933.4663668499425,
+      "n_evaluated": 10,
+      "n_repeats": 2,
+      "tokens": 422.75
+    },
+    "accuracy_delta": 0.09999999999999998,
+    "candidate_id": "cand_0011",
+    "full_score": {
+      "accuracy": 0.9,
+      "accuracy_spread": 0.0,
+      "latency_ms": 1958.2579520495285,
+      "n_evaluated": 10,
+      "n_repeats": 2,
+      "tokens": 497.45000000000005
+    },
+    "kind": "retriever"
+  },
+  {
+    "ablated_score": {
+      "accuracy": 0.75,
+      "accuracy_spread": 0.10000000000000009,
+      "latency_ms": 2900.3636151999754,
+      "n_evaluated": 10,
+      "n_repeats": 2,
+      "tokens": 465.85
+    },
+    "accuracy_delta": 0.15000000000000002,
+    "candidate_id": "cand_0011",
+    "full_score": {
+      "accuracy": 0.9,
+      "accuracy_spread": 0.0,
+      "latency_ms": 1958.2579520495285,
+      "n_evaluated": 10,
+      "n_repeats": 2,
+      "tokens": 497.45000000000005
+    },
+    "kind": "fewshot"
+  },
+  {
+    "ablated_score": {
+      "accuracy": 0.9,
+      "accuracy_spread": 0.0,
+      "latency_ms": 1554.6811788001592,
+      "n_evaluated": 10,
+      "n_repeats": 2,
+      "tokens": 456.6
+    },
+    "accuracy_delta": 0.0,
+    "candidate_id": "cand_0011",
+    "full_score": {
+      "accuracy": 0.9,
+      "accuracy_spread": 0.0,
+      "latency_ms": 1958.2579520495285,
+      "n_evaluated": 10,
+      "n_repeats": 2,
+      "tokens": 497.45000000000005
+    },
+    "kind": "formatter"
+  },
+  {
+    "ablated_score": {
+      "accuracy": 0.9,
+      "accuracy_spread": 0.0,
+      "latency_ms": 1996.4592839000907,
+      "n_evaluated": 10,
+      "n_repeats": 2,
+      "tokens": 502.95
+    },
+    "accuracy_delta": 0.0,
+    "candidate_id": "cand_0011",
+    "full_score": {
+      "accuracy": 0.9,
+      "accuracy_spread": 0.0,
+      "latency_ms": 1958.2579520495285,
+      "n_evaluated": 10,
+      "n_repeats": 2,
+      "tokens": 497.45000000000005
+    },
+    "kind": "voter"
+  }
+]
