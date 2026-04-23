@@ -21,6 +21,7 @@ from typing import Any, Callable
 
 from ..components import (
     BagOfWordsRetriever,
+    CoTFormatter,
     MajorityVoter,
     MockLLMPredictor,
     NullFewShot,
@@ -141,10 +142,15 @@ def default_registry(task: Task, llm_fn) -> ComponentRegistry:
         allowed_fields=("k",),
     ))
 
-    # Formatter
+    # Formatters
     reg.register(Entry(
         kind="formatter", name="simple_formatter",
         factory=lambda cfg: SimpleFormatter(system_hint=cfg.get("system_hint", "Classify the input.")),
+        allowed_fields=("system_hint",),
+    ))
+    reg.register(Entry(
+        kind="formatter", name="cot_formatter",
+        factory=lambda cfg: CoTFormatter(system_hint=cfg["system_hint"]) if "system_hint" in cfg else CoTFormatter(),
         allowed_fields=("system_hint",),
     ))
 
@@ -209,10 +215,15 @@ def llm_search_registry(
         allowed_fields=("k",),
     ))
 
-    # Formatter
+    # Formatters
     reg.register(Entry(
         kind="formatter", name="simple_formatter",
         factory=lambda cfg: SimpleFormatter(system_hint=cfg.get("system_hint", "Classify the input.")),
+        allowed_fields=("system_hint",),
+    ))
+    reg.register(Entry(
+        kind="formatter", name="cot_formatter",
+        factory=lambda cfg: CoTFormatter(system_hint=cfg["system_hint"]) if "system_hint" in cfg else CoTFormatter(),
         allowed_fields=("system_hint",),
     ))
 

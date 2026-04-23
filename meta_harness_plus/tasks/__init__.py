@@ -9,12 +9,18 @@
 
 from .toy_classification import build_toy_task, mock_llm
 from .jsonl_loader import build_task_from_jsonl, load_jsonl
-from .symptom import SYMPTOM_CLASSES, build_symptom_task, symptom_mock_llm
+from .symptom import (
+    SYMPTOM_CLASSES,
+    build_symptom_task,
+    build_symptom_hard_task,
+    symptom_mock_llm,
+)
 
 __all__ = [
     "build_toy_task",
     "mock_llm",
     "build_symptom_task",
+    "build_symptom_hard_task",
     "build_task_from_jsonl",
     "load_jsonl",
     "SYMPTOM_CLASSES",

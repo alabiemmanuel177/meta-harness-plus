@@ -1,0 +1,50 @@
+{"input": "Irregular heartbeat detected on home monitoring device", "label": "cardiology"}
+{"input": "Persistent high blood pressure readings above 160 systolic", "label": "cardiology"}
+{"input": "Pressure sensation in chest that improves with rest", "label": "cardiology"}
+{"input": "Racing heart when lying down in the evening", "label": "cardiology"}
+{"input": "Fatigue and shortness of breath climbing a single flight", "label": "cardiology"}
+{"input": "Cold sweats and nausea with crushing central chest pain", "label": "cardiology"}
+{"input": "Leg pain when walking relieved by rest, known as intermittent claudication", "label": "cardiology"}
+{"input": "Unilateral calf swelling and warmth, concern for DVT", "label": "cardiology"}
+{"input": "Exertional shortness of breath with tachycardia episodes", "label": "cardiology"}
+{"input": "Fingers turning blue in cold temperatures due to circulation", "label": "cardiology"}
+{"input": "Hives appearing after eating certain foods, lasting an hour", "label": "dermatology"}
+{"input": "Small red bumps on neck that itch after shaving", "label": "dermatology"}
+{"input": "Scaly greasy patches on scalp and eyebrows", "label": "dermatology"}
+{"input": "Painful cystic lumps under the skin on the chin", "label": "dermatology"}
+{"input": "White patches on skin growing in size on the torso", "label": "dermatology"}
+{"input": "Red circular scaly rash spreading on the thigh", "label": "dermatology"}
+{"input": "Scalp patches with complete hair loss, consistent with alopecia areata", "label": "dermatology"}
+{"input": "Generalized itching without visible rash, workup for dermatological cause", "label": "dermatology"}
+{"input": "Nail pitting and discoloration with psoriasis elsewhere on body", "label": "dermatology"}
+{"input": "Blistering sunburn-like skin reaction after new medication", "label": "dermatology"}
+{"input": "Tenderness in elbow after playing racket sports", "label": "orthopedics"}
+{"input": "Hip pain when walking that limits daily activity", "label": "orthopedics"}
+{"input": "Swollen index finger joint that feels warm to touch", "label": "orthopedics"}
+{"input": "Sharp pain between shoulder blades after lifting boxes", "label": "orthopedics"}
+{"input": "Clicking in jaw with pain when chewing hard foods", "label": "orthopedics"}
+{"input": "Achilles tendon soreness when pushing off during running", "label": "orthopedics"}
+{"input": "Toe joint redness and swelling with elevated uric acid, consistent with gout", "label": "orthopedics"}
+{"input": "Chest pain reproducible by pressing on the sternum, musculoskeletal", "label": "orthopedics"}
+{"input": "Morning stiffness in lower back lasting over 30 minutes", "label": "orthopedics"}
+{"input": "Knee joint swelling after fall on flexed knee", "label": "orthopedics"}
+{"input": "Memory lapses and confusion episodes over several weeks", "label": "neurology"}
+{"input": "Persistent ringing in ears with occasional spinning dizziness", "label": "neurology"}
+{"input": "Tremor in hand that worsens with fine motor tasks", "label": "neurology"}
+{"input": "Sudden weakness in face drooping for a few minutes", "label": "neurology"}
+{"input": "Pins and needles in both feet at night", "label": "neurology"}
+{"input": "Difficulty finding words mid-sentence in recent months", "label": "neurology"}
+{"input": "Shooting pain from lower back to buttock with sensory changes, sciatica", "label": "neurology"}
+{"input": "Brief painless vision loss in one eye, known as amaurosis fugax", "label": "neurology"}
+{"input": "Episodic vertigo lasting seconds on head movement", "label": "neurology"}
+{"input": "Progressive weakness in hand grip over months without pain", "label": "neurology"}
+{"input": "Difficulty swallowing and sensation of food stuck in throat", "label": "gastroenterology"}
+{"input": "Heartburn and acid reflux several times daily", "label": "gastroenterology"}
+{"input": "Diarrhea alternating with constipation for weeks", "label": "gastroenterology"}
+{"input": "Dull upper right abdominal pain after eating fatty foods", "label": "gastroenterology"}
+{"input": "Gas and abdominal distention after most meals", "label": "gastroenterology"}
+{"input": "Weight loss with decreased appetite and early satiety", "label": "gastroenterology"}
+{"input": "Heartburn relieved by antacids, worse when lying flat", "label": "gastroenterology"}
+{"input": "Night epigastric pain relieved by food, classic peptic ulcer pattern", "label": "gastroenterology"}
+{"input": "Burning upper abdominal pain worsened by bending over, reflux", "label": "gastroenterology"}
+{"input": "Blood in vomit with history of chronic NSAID use", "label": "gastroenterology"}

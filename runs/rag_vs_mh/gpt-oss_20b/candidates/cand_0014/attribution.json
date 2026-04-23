@@ -1,0 +1,86 @@
+[
+  {
+    "ablated_score": {
+      "accuracy": 0.75,
+      "accuracy_spread": 0.10000000000000009,
+      "latency_ms": 2345.6525535495093,
+      "n_evaluated": 10,
+      "n_repeats": 2,
+      "tokens": 358.8
+    },
+    "accuracy_delta": 0.0,
+    "candidate_id": "cand_0014",
+    "full_score": {
+      "accuracy": 0.75,
+      "accuracy_spread": 0.10000000000000009,
+      "latency_ms": 2530.7044653499834,
+      "n_evaluated": 10,
+      "n_repeats": 2,
+      "tokens": 377.95
+    },
+    "kind": "retriever"
+  },
+  {
+    "ablated_score": {
+      "accuracy": 0.7,
+      "accuracy_spread": 0.0,
+      "latency_ms": 2800.105751550247,
+      "n_evaluated": 10,
+      "n_repeats": 2,
+      "tokens": 395.9
+    },
+    "accuracy_delta": 0.050000000000000044,
+    "candidate_id": "cand_0014",
+    "full_score": {
+      "accuracy": 0.75,
+      "accuracy_spread": 0.10000000000000009,
+      "latency_ms": 2530.7044653499834,
+      "n_evaluated": 10,
+      "n_repeats": 2,
+      "tokens": 377.95
+    },
+    "kind": "fewshot"
+  },
+  {
+    "ablated_score": {
+      "accuracy": 0.7,
+      "accuracy_spread": 0.20000000000000007,
+      "latency_ms": 1506.1555159499694,
+      "n_evaluated": 10,
+      "n_repeats": 2,
+      "tokens": 274.9
+    },
+    "accuracy_delta": 0.050000000000000044,
+    "candidate_id": "cand_0014",
+    "full_score": {
+      "accuracy": 0.75,
+      "accuracy_spread": 0.10000000000000009,
+      "latency_ms": 2530.7044653499834,
+      "n_evaluated": 10,
+      "n_repeats": 2,
+      "tokens": 377.95
+    },
+    "kind": "formatter"
+  },
+  {
+    "ablated_score": {
+      "accuracy": 0.8,
+      "accuracy_spread": 0.20000000000000007,
+      "latency_ms": 2411.8089608998635,
+      "n_evaluated": 10,
+      "n_repeats": 2,
+      "tokens": 374.2
+    },
+    "accuracy_delta": -0.050000000000000044,
+    "candidate_id": "cand_0014",
+    "full_score": {
+      "accuracy": 0.75,
+      "accuracy_spread": 0.10000000000000009,
+      "latency_ms": 2530.7044653499834,
+      "n_evaluated": 10,
+      "n_repeats": 2,
+      "tokens": 377.95
+    },
+    "kind": "voter"
+  }
+]
