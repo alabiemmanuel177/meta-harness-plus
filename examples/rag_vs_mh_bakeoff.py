@@ -42,14 +42,21 @@ from meta_harness_plus.llm.registry import llm_search_registry
 from meta_harness_plus.pareto import dominates
 from meta_harness_plus.runner import SearchConfig, SearchRunner
 from meta_harness_plus.scorer import Scorer
-from meta_harness_plus.tasks import build_symptom_hard_task
+from meta_harness_plus.tasks import build_news_task, build_symptom_hard_task
+
+
+TASK_FACTORIES = {
+    "symptom_hard": build_symptom_hard_task,
+    "news": build_news_task,
+}
 
 
 def run_one_model(model: str, ollama_url: str, run_dir: Path, args) -> dict:
-    print(f"\n{'=' * 72}\n  RAG vs MH++ bakeoff: {model}\n{'=' * 72}", flush=True)
+    task_name = args.task
+    print(f"\n{'=' * 72}\n  RAG vs MH++ bakeoff: {model} on {task_name}\n{'=' * 72}", flush=True)
     t0 = time.time()
 
-    task = build_symptom_hard_task()
+    task = TASK_FACTORIES[task_name]()
     client = HTTPClient(api_url=ollama_url, model=model, timeout_s=300.0)
 
     registry = llm_search_registry(task, client, predictor_max_tokens=args.predictor_max_tokens)
@@ -196,6 +203,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--ollama-url", default="http://localhost:11434/api/chat")
     ap.add_argument("--models", nargs="+", required=True)
+    ap.add_argument("--task", choices=sorted(TASK_FACTORIES.keys()), default="symptom_hard")
     ap.add_argument("--iterations", type=int, default=3)
     ap.add_argument("--proposals", type=int, default=4)
     ap.add_argument("--screen-size", type=int, default=6)
@@ -211,7 +219,7 @@ def main():
     ap.add_argument("--attribution-screen-size", type=int, default=10)
     args = ap.parse_args()
 
-    out_root = Path("runs/rag_vs_mh")
+    out_root = Path(f"runs/rag_vs_mh_{args.task}")
     out_root.mkdir(parents=True, exist_ok=True)
 
     summaries = []

@@ -1,0 +1,40 @@
+{"input": "European Union announces new trade sanctions on Russia", "label": "world"}
+{"input": "UN Security Council convenes emergency session on Middle East conflict", "label": "world"}
+{"input": "Diplomatic talks resume between North and South Korea", "label": "world"}
+{"input": "President signs bilateral agreement with Japan during state visit", "label": "world"}
+{"input": "Ceasefire declared in Sudan after months of civil war", "label": "world"}
+{"input": "NATO expands military exercises in the Baltic region", "label": "world"}
+{"input": "G20 leaders pledge action on climate financing at summit", "label": "world"}
+{"input": "Iran releases detained foreign journalists after international pressure", "label": "world"}
+{"input": "Election results in Brazil show shift in political landscape", "label": "world"}
+{"input": "Humanitarian aid convoy enters Gaza through Rafah crossing", "label": "world"}
+{"input": "Manchester United defeats Arsenal in Premier League showdown", "label": "sports"}
+{"input": "Olympic swimmer sets new world record in the 200m freestyle", "label": "sports"}
+{"input": "NBA Finals Game 7 goes into overtime thriller", "label": "sports"}
+{"input": "Tennis star wins fifth Grand Slam title at Wimbledon", "label": "sports"}
+{"input": "NFL quarterback signs record contract extension with team", "label": "sports"}
+{"input": "Football World Cup qualifier ends in dramatic penalty shootout", "label": "sports"}
+{"input": "Cyclist crashes during final stage of Tour de France", "label": "sports"}
+{"input": "MLB pitcher throws no-hitter against Yankees lineup", "label": "sports"}
+{"input": "Boxing champion announces retirement after title defense", "label": "sports"}
+{"input": "Track athlete breaks decade-old long jump record at meet", "label": "sports"}
+{"input": "Tech giant reports record quarterly profits exceeding forecasts", "label": "business"}
+{"input": "Federal Reserve raises interest rates amid inflation concerns", "label": "business"}
+{"input": "Major bank merger creates new industry leader in finance", "label": "business"}
+{"input": "Stock market tumbles after disappointing jobs report release", "label": "business"}
+{"input": "Oil prices surge following OPEC production cuts announcement", "label": "business"}
+{"input": "Startup raises 100 million in Series B funding round", "label": "business"}
+{"input": "Retail chain announces closure of 200 underperforming stores", "label": "business"}
+{"input": "Cryptocurrency exchange files for bankruptcy protection", "label": "business"}
+{"input": "CEO resigns amid accounting fraud investigation at firm", "label": "business"}
+{"input": "Supply chain disruptions impact holiday sales projections", "label": "business"}
+{"input": "New AI model outperforms humans on mathematical reasoning benchmark", "label": "tech"}
+{"input": "Apple unveils next-generation chip with 30 percent performance gain", "label": "tech"}
+{"input": "Quantum computer solves optimization problem in minutes versus years", "label": "tech"}
+{"input": "Security researchers disclose major vulnerability in popular software library", "label": "tech"}
+{"input": "Startup develops battery technology doubling electric vehicle range", "label": "tech"}
+{"input": "Social media platform rolls out new content moderation tools", "label": "tech"}
+{"input": "Open source project releases version 5 with breaking changes", "label": "tech"}
+{"input": "Cloud computing provider experiences hours-long global outage", "label": "tech"}
+{"input": "Surgical robot performs complex heart procedure successfully", "label": "tech"}
+{"input": "Research team publishes paper on room-temperature superconductor material", "label": "tech"}
