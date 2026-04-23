@@ -1,0 +1,27 @@
+[
+  {
+    "k": 5,
+    "kind": "retriever",
+    "name": "bow_retriever"
+  },
+  {
+    "k": 3,
+    "kind": "fewshot",
+    "name": "topk_fewshot"
+  },
+  {
+    "kind": "formatter",
+    "name": "simple_formatter",
+    "system_hint": ""
+  },
+  {
+    "kind": "predictor",
+    "n_samples": 1,
+    "name": "llm_predictor",
+    "temperature": 0.0
+  },
+  {
+    "kind": "voter",
+    "name": "majority_voter"
+  }
+]
