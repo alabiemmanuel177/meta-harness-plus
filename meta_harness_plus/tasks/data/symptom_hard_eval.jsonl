@@ -1,0 +1,15 @@
+{"input": "Pain that wakes the patient at night and improves after eating", "label": "gastroenterology"}
+{"input": "Fatigue with episodes of heart racing after climbing stairs", "label": "cardiology"}
+{"input": "Burning sensation in upper chest worse when bending over", "label": "gastroenterology"}
+{"input": "Stiffness and limited range of motion in neck after waking", "label": "orthopedics"}
+{"input": "Tingling in fingertips of both hands for several weeks", "label": "neurology"}
+{"input": "Swelling and warmth in one calf with mild pain", "label": "cardiology"}
+{"input": "Patches of hair loss on the scalp over months", "label": "dermatology"}
+{"input": "Ringing in one ear with brief episodes of spinning", "label": "neurology"}
+{"input": "Cramping in calves when walking that resolves with rest", "label": "cardiology"}
+{"input": "Painful swelling in one big toe joint worsening over days", "label": "orthopedics"}
+{"input": "Stomach cramping with watery diarrhea for three days", "label": "gastroenterology"}
+{"input": "Dull persistent pain in lower back shooting into the buttock", "label": "neurology"}
+{"input": "Brief episodes of vision loss in one eye", "label": "neurology"}
+{"input": "Persistent itching over the whole body without a rash", "label": "dermatology"}
+{"input": "Sharp chest pain reproducible by pressing on the chest wall", "label": "orthopedics"}

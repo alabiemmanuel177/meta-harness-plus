@@ -111,6 +111,24 @@ class SimpleFormatter(Formatter):
         return {"kind": self.kind, "name": self.name, "system_hint": self.system_hint}
 
 
+@dataclass
+class CoTFormatter(SimpleFormatter):
+    """Chain-of-thought formatter: same prompt skeleton as SimpleFormatter but
+    with a system hint that elicits brief analysis before the class label.
+
+    Real cost (reasoning tokens) is counted by the Predictor, not here —
+    the formatter only sets up the prompt. Pair with ``LLMPredictor`` whose
+    ``max_tokens`` is large enough to accommodate the extra reasoning.
+    """
+    name: str = "cot_formatter"
+    system_hint: str = (
+        "Classify the input into one of the given classes. "
+        "Briefly analyze which key terms suggest each possibility, then output "
+        "ONLY the class name, lowercase, on the final line. No other prose."
+    )
+    kind: str = field(default="formatter", init=False)
+
+
 # ---------- Predictor ----------
 
 class Predictor(Component):
@@ -183,6 +201,10 @@ def baseline_for(kind: str) -> Component | None:
         "retriever": NullRetriever(),
         "fewshot": NullFewShot(),
         "voter": NullVoter(),
-        # No baseline for 'formatter' or 'predictor' — dropping either breaks
-        # the harness in ways the attribution shouldn't try to interpret.
+        # Formatter baseline is SimpleFormatter — ablates CoT (and any other
+        # non-default formatter variants) back to the plain prompt. Dropping
+        # formatter entirely breaks the pipeline; swapping to plain is the
+        # meaningful counterfactual for "did this formatter help?".
+        "formatter": SimpleFormatter(),
+        # No baseline for 'predictor' — it's the LLM call, can't be dropped.
     }.get(kind)

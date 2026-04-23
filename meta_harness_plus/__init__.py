@@ -7,6 +7,7 @@ from .pareto import ParetoFrontier
 from .halving import SuccessiveHalving
 from .attribution import AttributionTracker
 from .runner import SearchRunner, SearchConfig
+from .baselines import rag_baseline, bare_baseline
 
 __all__ = [
     "Harness",
@@ -20,4 +21,6 @@ __all__ = [
     "AttributionTracker",
     "SearchRunner",
     "SearchConfig",
+    "rag_baseline",
+    "bare_baseline",
 ]

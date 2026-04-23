@@ -49,6 +49,33 @@ def build_symptom_task(seed: int = 0) -> Task:
     )
 
 
+def build_symptom_hard_task(seed: int = 0) -> Task:
+    """Harder adversarial variant of the symptom task.
+
+    Eval queries are deliberately ambiguous — the class is rarely
+    determinable from keywords alone. Two characteristic examples:
+
+    - "Pain that wakes the patient at night and improves after eating"
+      — sounds cardiac at first glance; the post-meal relief signals a
+      peptic ulcer (GI). Only discoverable if the LLM retrieves the
+      disambiguating training pattern.
+    - "Sharp chest pain reproducible by pressing on the chest wall"
+      — the knee-jerk class is cardiology; palpation-reproducibility is
+      the musculoskeletal signature (ortho).
+
+    Training set includes the original 30 items PLUS 20 new items that
+    teach disambiguation patterns. RAG should meaningfully beat the bare
+    LLM here — that's the point: a task where harness shape matters.
+    """
+    _ = seed
+    return build_task_from_jsonl(
+        name="symptom_hard",
+        train_path=_DATA_DIR / "symptom_hard_train.jsonl",
+        eval_path=_DATA_DIR / "symptom_hard_eval.jsonl",
+        classes=SYMPTOM_CLASSES,
+    )
+
+
 # ---------------- mock LLM tuned to medical vocabulary ----------------
 
 SYMPTOM_KEYWORDS: dict[str, tuple[str, ...]] = {
