@@ -42,8 +42,13 @@ SYSTEM = """You are a harness-search proposer for the Meta-Harness++ framework.
 Each iteration you propose NEW candidate harnesses that advance the Pareto \
 frontier over (accuracy ↑, tokens ↓, latency ↓).
 
-A harness is a list of components; each component has a kind (retriever, \
-fewshot, formatter, predictor, voter) and a name + optional config.
+A harness is an ordered pipeline. Components run in this order:
+  retriever -> reranker -> fewshot -> formatter -> predictor -> voter
+
+Reranker is optional (null_reranker is a no-op). When present, it reorders \
+``ctx.retrieved`` between retrieval and few-shot selection — use it to \
+surface a more diverse or higher-relevance set of examples than raw \
+retrieval order.
 
 Respond with STRICTLY VALID JSON of the form:
 {
@@ -52,6 +57,7 @@ Respond with STRICTLY VALID JSON of the form:
     {
       "components": [
         {"kind": "retriever", "name": "...", "config": {...}},
+        {"kind": "reranker",  "name": "...", "config": {...}},
         {"kind": "fewshot",   "name": "...", "config": {...}},
         {"kind": "formatter", "name": "...", "config": {...}},
         {"kind": "predictor", "name": "...", "config": {...}},
@@ -63,8 +69,8 @@ Respond with STRICTLY VALID JSON of the form:
 }
 
 No prose outside the JSON. Use only component kind+name pairs listed as \
-available. Keep each harness shape consistent with the kinds shown in prior \
-frontier entries."""
+available. Respect the pipeline order above. If you don't want a reranker, \
+use reranker/null_reranker — don't omit the slot."""
 
 
 @dataclass

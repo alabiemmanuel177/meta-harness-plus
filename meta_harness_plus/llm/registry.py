@@ -22,9 +22,11 @@ from typing import Any, Callable
 from ..components import (
     BagOfWordsRetriever,
     CoTFormatter,
+    DiversityReranker,
     MajorityVoter,
     MockLLMPredictor,
     NullFewShot,
+    NullReranker,
     NullRetriever,
     NullVoter,
     SimpleFormatter,
@@ -34,6 +36,7 @@ from ..harness import Component, Harness
 from ..task import Task
 from .client import LLMClient
 from .predictor import LLMPredictor
+from .reranker import LLMReranker
 
 
 Factory = Callable[[dict[str, Any]], Component]
@@ -202,6 +205,25 @@ def llm_search_registry(
         kind="retriever", name="bow_retriever",
         factory=lambda cfg: BagOfWordsRetriever(corpus=task.train, k=int(cfg.get("k", 3))),
         allowed_fields=("k",),
+    ))
+
+    # Reranker (richer action space beyond RAG)
+    reg.register(Entry(
+        kind="reranker", name="null_reranker",
+        factory=lambda cfg: NullReranker(),
+    ))
+    reg.register(Entry(
+        kind="reranker", name="diversity_reranker",
+        factory=lambda cfg: DiversityReranker(),
+    ))
+    reg.register(Entry(
+        kind="reranker", name="llm_reranker",
+        factory=lambda cfg: LLMReranker(
+            client=client,
+            m=int(cfg.get("m", 3)),
+            temperature=float(cfg.get("temperature", 0.0)),
+        ),
+        allowed_fields=("m", "temperature"),
     ))
 
     # Few-shot
