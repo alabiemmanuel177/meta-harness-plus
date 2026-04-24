@@ -209,6 +209,8 @@ def main():
     ap.add_argument("--ollama-url", default="http://localhost:11434/api/chat")
     ap.add_argument("--models", nargs="+", required=True)
     ap.add_argument("--task", choices=sorted(TASK_FACTORIES.keys()), default="symptom_hard")
+    ap.add_argument("--run-name", default=None,
+                    help="override the runs/ subdir name (default: rag_vs_mh_<task>)")
     ap.add_argument("--iterations", type=int, default=3)
     ap.add_argument("--proposals", type=int, default=4)
     ap.add_argument("--screen-size", type=int, default=6)
@@ -224,7 +226,7 @@ def main():
     ap.add_argument("--attribution-screen-size", type=int, default=10)
     args = ap.parse_args()
 
-    out_root = Path(f"runs/rag_vs_mh_{args.task}")
+    out_root = Path(f"runs/{args.run_name}" if args.run_name else f"runs/rag_vs_mh_{args.task}")
     out_root.mkdir(parents=True, exist_ok=True)
 
     summaries = []
