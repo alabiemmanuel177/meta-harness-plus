@@ -1,0 +1,86 @@
+[
+  {
+    "ablated_score": {
+      "accuracy": 0.6,
+      "accuracy_spread": 0.0,
+      "latency_ms": 8240.370559350187,
+      "n_evaluated": 10,
+      "n_repeats": 2,
+      "tokens": 723.6
+    },
+    "accuracy_delta": 0.30000000000000004,
+    "candidate_id": "cand_0009",
+    "full_score": {
+      "accuracy": 0.9,
+      "accuracy_spread": 0.0,
+      "latency_ms": 6865.230434700134,
+      "n_evaluated": 10,
+      "n_repeats": 2,
+      "tokens": 723.9000000000001
+    },
+    "kind": "retriever"
+  },
+  {
+    "ablated_score": {
+      "accuracy": 0.6,
+      "accuracy_spread": 0.0,
+      "latency_ms": 8035.086666449664,
+      "n_evaluated": 10,
+      "n_repeats": 2,
+      "tokens": 743.6
+    },
+    "accuracy_delta": 0.30000000000000004,
+    "candidate_id": "cand_0009",
+    "full_score": {
+      "accuracy": 0.9,
+      "accuracy_spread": 0.0,
+      "latency_ms": 6865.230434700134,
+      "n_evaluated": 10,
+      "n_repeats": 2,
+      "tokens": 723.9000000000001
+    },
+    "kind": "fewshot"
+  },
+  {
+    "ablated_score": {
+      "accuracy": 0.9,
+      "accuracy_spread": 0.0,
+      "latency_ms": 6704.0795141495255,
+      "n_evaluated": 10,
+      "n_repeats": 2,
+      "tokens": 710.0
+    },
+    "accuracy_delta": 0.0,
+    "candidate_id": "cand_0009",
+    "full_score": {
+      "accuracy": 0.9,
+      "accuracy_spread": 0.0,
+      "latency_ms": 6865.230434700134,
+      "n_evaluated": 10,
+      "n_repeats": 2,
+      "tokens": 723.9000000000001
+    },
+    "kind": "formatter"
+  },
+  {
+    "ablated_score": {
+      "accuracy": 0.9,
+      "accuracy_spread": 0.0,
+      "latency_ms": 7163.023814049557,
+      "n_evaluated": 10,
+      "n_repeats": 2,
+      "tokens": 745.4
+    },
+    "accuracy_delta": 0.0,
+    "candidate_id": "cand_0009",
+    "full_score": {
+      "accuracy": 0.9,
+      "accuracy_spread": 0.0,
+      "latency_ms": 6865.230434700134,
+      "n_evaluated": 10,
+      "n_repeats": 2,
+      "tokens": 723.9000000000001
+    },
+    "kind": "voter"
+  }
+]
