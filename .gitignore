@@ -10,6 +10,8 @@ runs/*
 !runs/full_bakeoff/
 !runs/symptom_bakeoff/
 !runs/rag_vs_mh/
+!runs/rag_vs_mh_news/
+!runs/rag_vs_mh_news_hard/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/

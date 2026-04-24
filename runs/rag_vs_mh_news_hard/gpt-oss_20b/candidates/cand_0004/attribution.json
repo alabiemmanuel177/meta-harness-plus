@@ -1,0 +1,86 @@
+[
+  {
+    "ablated_score": {
+      "accuracy": 0.8500000000000001,
+      "accuracy_spread": 0.09999999999999998,
+      "latency_ms": 1698.7515657500371,
+      "n_evaluated": 10,
+      "n_repeats": 2,
+      "tokens": 286.5
+    },
+    "accuracy_delta": -0.050000000000000044,
+    "candidate_id": "cand_0004",
+    "full_score": {
+      "accuracy": 0.8,
+      "accuracy_spread": 0.0,
+      "latency_ms": 1422.3171983001084,
+      "n_evaluated": 10,
+      "n_repeats": 2,
+      "tokens": 259.1
+    },
+    "kind": "retriever"
+  },
+  {
+    "ablated_score": {
+      "accuracy": 0.75,
+      "accuracy_spread": 0.10000000000000009,
+      "latency_ms": 1569.4277274000815,
+      "n_evaluated": 10,
+      "n_repeats": 2,
+      "tokens": 273.70000000000005
+    },
+    "accuracy_delta": 0.050000000000000044,
+    "candidate_id": "cand_0004",
+    "full_score": {
+      "accuracy": 0.8,
+      "accuracy_spread": 0.0,
+      "latency_ms": 1422.3171983001084,
+      "n_evaluated": 10,
+      "n_repeats": 2,
+      "tokens": 259.1
+    },
+    "kind": "fewshot"
+  },
+  {
+    "ablated_score": {
+      "accuracy": 0.8500000000000001,
+      "accuracy_spread": 0.09999999999999998,
+      "latency_ms": 1735.6829112504347,
+      "n_evaluated": 10,
+      "n_repeats": 2,
+      "tokens": 290.35
+    },
+    "accuracy_delta": -0.050000000000000044,
+    "candidate_id": "cand_0004",
+    "full_score": {
+      "accuracy": 0.8,
+      "accuracy_spread": 0.0,
+      "latency_ms": 1422.3171983001084,
+      "n_evaluated": 10,
+      "n_repeats": 2,
+      "tokens": 259.1
+    },
+    "kind": "formatter"
+  },
+  {
+    "ablated_score": {
+      "accuracy": 0.8,
+      "accuracy_spread": 0.0,
+      "latency_ms": 1916.1720089500268,
+      "n_evaluated": 10,
+      "n_repeats": 2,
+      "tokens": 307.25
+    },
+    "accuracy_delta": 0.0,
+    "candidate_id": "cand_0004",
+    "full_score": {
+      "accuracy": 0.8,
+      "accuracy_spread": 0.0,
+      "latency_ms": 1422.3171983001084,
+      "n_evaluated": 10,
+      "n_repeats": 2,
+      "tokens": 259.1
+    },
+    "kind": "voter"
+  }
+]

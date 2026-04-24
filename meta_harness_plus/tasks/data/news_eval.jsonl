@@ -1,0 +1,20 @@
+{"input": "Foreign minister visits Beijing to discuss regional security issues", "label": "world"}
+{"input": "Parliament passes emergency defense spending bill in overnight session", "label": "world"}
+{"input": "Refugees flee border region amid rising armed conflict", "label": "world"}
+{"input": "Treaty negotiations stall over territorial disputes in the Pacific", "label": "world"}
+{"input": "International tribunal issues ruling on alleged war crimes", "label": "world"}
+{"input": "Star quarterback announces comeback from season-ending injury", "label": "sports"}
+{"input": "Championship match ends in controversial referee call", "label": "sports"}
+{"input": "Team qualifies for playoffs after stunning comeback victory", "label": "sports"}
+{"input": "Veteran coach fired after losing season streak continues", "label": "sports"}
+{"input": "Rookie scores hat-trick in international debut match", "label": "sports"}
+{"input": "Company stock drops 15 percent on earnings miss", "label": "business"}
+{"input": "Central bank warns of recession risks in outlook report", "label": "business"}
+{"input": "Consumer spending declines for third consecutive month", "label": "business"}
+{"input": "Airline announces layoffs as fuel costs rise", "label": "business"}
+{"input": "Venture capital firm closes 500 million growth fund", "label": "business"}
+{"input": "Developers release new framework for distributed computing workloads", "label": "tech"}
+{"input": "Privacy bill targets tracking by advertising networks online", "label": "tech"}
+{"input": "Self-driving car completes transcontinental journey autonomously", "label": "tech"}
+{"input": "Database performance improves with novel indexing algorithm", "label": "tech"}
+{"input": "Hackers exploit vulnerability in widely-used cryptographic library", "label": "tech"}

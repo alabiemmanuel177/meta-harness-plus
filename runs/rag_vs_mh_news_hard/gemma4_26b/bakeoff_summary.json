@@ -1,0 +1,111 @@
+{
+  "model": "gemma4:26b",
+  "task": "news_hard",
+  "elapsed_s": 8570.9,
+  "bare_baseline": {
+    "accuracy": 0.6,
+    "tokens": 707.6,
+    "latency_ms": 7457.9
+  },
+  "rag_baseline": {
+    "accuracy": 0.833,
+    "tokens": 716.4,
+    "latency_ms": 6397.0
+  },
+  "n_discovered_dominates_rag": 0,
+  "n_discovered_ties_rag_acc_cheaper": 0,
+  "frontier": [
+    {
+      "candidate_id": "cand_0005",
+      "label": "discovered",
+      "accuracy": 0.867,
+      "accuracy_spread": 0.0,
+      "tokens": 794.2,
+      "latency_ms": 7216.7,
+      "components": [
+        {
+          "kind": "retriever",
+          "name": "bow_retriever",
+          "k": 3
+        },
+        {
+          "kind": "fewshot",
+          "name": "topk_fewshot",
+          "k": 3
+        },
+        {
+          "kind": "formatter",
+          "name": "simple_formatter"
+        },
+        {
+          "kind": "predictor",
+          "name": "llm_predictor",
+          "n_samples": 1
+        },
+        {
+          "kind": "voter",
+          "name": "null_voter"
+        }
+      ]
+    },
+    {
+      "candidate_id": "cand_0013",
+      "label": "discovered",
+      "accuracy": 0.8,
+      "accuracy_spread": 0.0,
+      "tokens": 632.8,
+      "latency_ms": 6288.0,
+      "components": [
+        {
+          "kind": "retriever",
+          "name": "bow_retriever",
+          "k": 1
+        },
+        {
+          "kind": "fewshot",
+          "name": "topk_fewshot",
+          "k": 1
+        },
+        {
+          "kind": "formatter",
+          "name": "simple_formatter"
+        },
+        {
+          "kind": "predictor",
+          "name": "llm_predictor",
+          "n_samples": 1
+        },
+        {
+          "kind": "voter",
+          "name": "null_voter"
+        }
+      ]
+    }
+  ],
+  "attribution": [
+    {
+      "kind": "retriever",
+      "mean_delta": 0.238,
+      "variance": 0.022,
+      "n": 8
+    },
+    {
+      "kind": "fewshot",
+      "mean_delta": 0.238,
+      "variance": 0.022,
+      "n": 8
+    },
+    {
+      "kind": "voter",
+      "mean_delta": -0.012,
+      "variance": 0.001,
+      "n": 8
+    },
+    {
+      "kind": "formatter",
+      "mean_delta": -0.05,
+      "variance": 0.01,
+      "n": 8
+    }
+  ]
+}

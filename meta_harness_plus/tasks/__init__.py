@@ -15,6 +15,7 @@ from .symptom import (
     build_symptom_hard_task,
     symptom_mock_llm,
 )
+from .news import NEWS_CLASSES, build_news_task, build_news_hard_task
 
 __all__ = [
     "build_toy_task",
@@ -25,4 +26,7 @@ __all__ = [
     "load_jsonl",
     "SYMPTOM_CLASSES",
     "symptom_mock_llm",
+    "NEWS_CLASSES",
+    "build_news_task",
+    "build_news_hard_task",
 ]
