@@ -50,6 +50,7 @@ from meta_harness_plus.tasks import (
     build_news_task,
     build_symptom_hard_task,
 )
+from meta_harness_plus.tasks.lawbench import build_lawbench_task
 
 
 TASK_FACTORIES = {
@@ -57,6 +58,7 @@ TASK_FACTORIES = {
     "news": build_news_task,
     "news_hard": build_news_hard_task,
     "news_hard_50": build_news_hard_50_task,
+    "lawbench_2_2": lambda: build_lawbench_task("2-2"),
 }
 
 
