@@ -32,9 +32,11 @@ from pathlib import Path
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
+from meta_harness_plus.ablations import ScalarAccuracyFrontier
 from meta_harness_plus.attribution import AttributionTracker
 from meta_harness_plus.baselines import bare_baseline, rag_baseline
 from meta_harness_plus.components import baseline_for
+from meta_harness_plus.search.random_proposer import RandomProposer
 from meta_harness_plus.llm.cache import CachedLLMClient, PromptCache
 from meta_harness_plus.llm.client import HTTPClient
 from meta_harness_plus.llm.predictor import LLMPredictor
@@ -111,7 +113,24 @@ def run_one_model(model: str, ollama_url: str, run_dir: Path, args) -> dict:
         print(f"  parallel scoring: {args.max_workers} threads", flush=True)
 
     registry = llm_search_registry(task, client, predictor_max_tokens=args.predictor_max_tokens)
-    if args.proposer_mode == "ensemble":
+
+    if args.ablation == "no-c3":
+        # C3 ablation: random proposer instead of attribution-guided LLMProposer.
+        # Build mutators dict from the registry by enumerating each kind's
+        # available components and binding zero-arg factories.
+        mutators: dict[str, list] = {}
+        for kind, name in registry.available():
+            entry = registry.entry(kind, name)
+            if entry is None:
+                continue
+            # Use empty cfg dict — uses each factory's defaults.
+            mutators.setdefault(kind, []).append(
+                (lambda e=entry: e.factory({}))
+            )
+        proposer = RandomProposer(mutators=mutators, seed=args.screen_seed)
+        print(f"  proposer: RandomProposer (no-c3 ablation, seed={args.screen_seed})",
+              flush=True)
+    elif args.proposer_mode == "ensemble":
         # Ensemble of K LLMProposers at different temperatures. Each reads
         # the same filesystem run log but explores from different
         # sampling-temperature regimes — diversity at no extra search-
@@ -146,6 +165,24 @@ def run_one_model(model: str, ollama_url: str, run_dir: Path, args) -> dict:
     bare = bare_baseline(task, predictor)
     rag  = rag_baseline(task, predictor, retriever_k=3, fewshot_k=2)
 
+    # Apply ablation knobs.
+    if args.ablation == "no-c2":
+        # No halving: full-eval every candidate, keep them all through to
+        # the next iteration. Same total compute as full MH++ but no early
+        # elimination.
+        halving_k0 = args.eval_size
+        halving_final_keep = args.proposals
+        print(f"  ablation: no-c2 (full-eval every candidate, no halving)", flush=True)
+    else:
+        halving_k0 = args.halving_k0
+        halving_final_keep = args.halving_final_keep
+
+    if args.ablation == "no-c1":
+        frontier_factory = lambda: ScalarAccuracyFrontier()
+        print(f"  ablation: no-c1 (ScalarAccuracyFrontier — accuracy only)", flush=True)
+    else:
+        frontier_factory = None
+
     runner = SearchRunner(
         task=task, scorer=scorer, proposer=proposer, attribution=attribution,
         config=SearchConfig(
@@ -153,8 +190,8 @@ def run_one_model(model: str, ollama_url: str, run_dir: Path, args) -> dict:
             proposals_per_iter=args.proposals,
             screen_size=args.screen_size,
             full_eval_size=args.eval_size,
-            halving_k0=args.halving_k0, halving_eta=2,
-            halving_final_keep=args.halving_final_keep,
+            halving_k0=halving_k0, halving_eta=2,
+            halving_final_keep=halving_final_keep,
             eval_repeats=args.eval_repeats,
             screen_repeats=args.screen_repeats,
             attribution_repeats=args.attribution_repeats,
@@ -167,6 +204,7 @@ def run_one_model(model: str, ollama_url: str, run_dir: Path, args) -> dict:
         # Seed order: bare first, then RAG. Both get full-evaluated and
         # added to the Pareto frontier before the search starts.
         seed_harnesses=[bare, rag],
+        frontier_factory=frontier_factory,
     )
 
     state = runner.run()
@@ -227,6 +265,7 @@ def run_one_model(model: str, ollama_url: str, run_dir: Path, args) -> dict:
     summary = {
         "model": model,
         "task": task.name,
+        "ablation": args.ablation,
         "elapsed_s": round(elapsed, 1),
         "cache_stats": cache.stats() if cache else None,
         "bare_baseline": {
@@ -328,6 +367,12 @@ def main():
     ap.add_argument("--screen-repeats", type=int, default=1)
     ap.add_argument("--attribution-repeats", type=int, default=2)
     ap.add_argument("--attribution-screen-size", type=int, default=10)
+    ap.add_argument("--ablation",
+                    choices=("none", "no-c1", "no-c2", "no-c3"),
+                    default="none",
+                    help="Ablation condition: no-c1 = ScalarAccuracyFrontier (no Pareto), "
+                         "no-c2 = full-eval per candidate (no halving), "
+                         "no-c3 = random proposer (no attribution-guided LLM proposer).")
     args = ap.parse_args()
 
     out_root = Path(f"runs/{args.run_name}" if args.run_name else f"runs/rag_vs_mh_{args.task}")
