@@ -82,7 +82,12 @@ class SearchRunner:
         attribution: AttributionTracker,
         config: SearchConfig,
         seed_harnesses: Sequence[Harness] = (),
+        frontier_factory: Callable[[], ParetoFrontier] | None = None,
     ):
+        """``frontier_factory``: optional. Returns a fresh ParetoFrontier
+        each call. Defaults to ``ParetoFrontier(max_accuracy_spread=...)``.
+        Override to inject ``ScalarAccuracyFrontier`` for the C1 ablation
+        (or any other frontier subclass)."""
         self.task = task
         self.scorer = scorer
         self.proposer = proposer
@@ -91,6 +96,11 @@ class SearchRunner:
         self.seed_harnesses = list(seed_harnesses)
         self._id_counter = itertools.count(1)
         self.logger = RunLogger(config.run_dir) if config.run_dir else None
+        self.frontier_factory = frontier_factory or (
+            lambda: ParetoFrontier(
+                max_accuracy_spread=self.config.frontier_max_spread,
+            )
+        )
 
     # --- helpers ---
     def _next_id(self) -> str:
@@ -127,7 +137,7 @@ class SearchRunner:
 
     # --- main loop ---
     def run(self) -> SearchState:
-        frontier = ParetoFrontier(max_accuracy_spread=self.config.frontier_max_spread)
+        frontier = self.frontier_factory()
         state = SearchState(frontier=frontier, attribution=self.attribution)
 
         # Seed the frontier with any initial harnesses.

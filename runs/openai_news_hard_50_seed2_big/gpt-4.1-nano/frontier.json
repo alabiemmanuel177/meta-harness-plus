@@ -110,128 +110,6 @@
     }
   },
   {
-    "candidate_id": "cand_0010",
-    "describe": [
-      {
-        "k": 10,
-        "kind": "retriever",
-        "name": "tfidf_retriever"
-      },
-      {
-        "kind": "reranker",
-        "name": "diversity_reranker"
-      },
-      {
-        "kind": "fewshot",
-        "name": "null_fewshot"
-      },
-      {
-        "kind": "formatter",
-        "name": "cot_formatter",
-        "system_hint": "Classify the input into one of the given classes. Briefly analyze which key terms suggest each possibility, then output ONLY the class name, lowercase, on the final line. No other prose."
-      },
-      {
-        "kind": "predictor",
-        "n_samples": 1,
-        "name": "llm_predictor",
-        "temperature": 0.3
-      },
-      {
-        "kind": "voter",
-        "name": "majority_voter"
-      }
-    ],
-    "score": {
-      "accuracy": 0.9,
-      "accuracy_spread": 0.040000000000000036,
-      "latency_ms": 1056.0569953598972,
-      "n_evaluated": 50,
-      "n_repeats": 2,
-      "per_class_accuracy": [
-        [
-          "business",
-          0.6666666666666666
-        ],
-        [
-          "sports",
-          0.9615384615384616
-        ],
-        [
-          "tech",
-          1.0
-        ],
-        [
-          "world",
-          0.9615384615384616
-        ]
-      ],
-      "tokens": 274.98
-    }
-  },
-  {
-    "candidate_id": "cand_0011",
-    "describe": [
-      {
-        "b": 0.75,
-        "k": 5,
-        "k1": 1.5,
-        "kind": "retriever",
-        "name": "bm25_retriever"
-      },
-      {
-        "kind": "reranker",
-        "name": "null_reranker"
-      },
-      {
-        "k": 2,
-        "kind": "fewshot",
-        "name": "topk_fewshot"
-      },
-      {
-        "kind": "formatter",
-        "max_reasoning_words": 50,
-        "name": "compressed_cot_formatter",
-        "system_hint": "Classify the input into one of the given classes. Reason in at most 50 words about which key terms point to which class. Then on the final line output ONLY the class name, lowercase. Be terse \u2014 every extra word costs."
-      },
-      {
-        "kind": "predictor",
-        "n_samples": 1,
-        "name": "llm_predictor",
-        "temperature": 0.0
-      },
-      {
-        "kind": "voter",
-        "name": "majority_voter"
-      }
-    ],
-    "score": {
-      "accuracy": 0.9,
-      "accuracy_spread": 0.0,
-      "latency_ms": 1040.7929794199217,
-      "n_evaluated": 50,
-      "n_repeats": 2,
-      "per_class_accuracy": [
-        [
-          "business",
-          0.8333333333333334
-        ],
-        [
-          "sports",
-          0.7692307692307693
-        ],
-        [
-          "tech",
-          1.0
-        ],
-        [
-          "world",
-          1.0
-        ]
-      ],
-      "tokens": 320.42
-    }
-  },
-  {
     "candidate_id": "cand_0013",
     "describe": [
       {
@@ -288,6 +166,128 @@
         ]
       ],
       "tokens": 121.36
+    }
+  },
+  {
+    "candidate_id": "cand_0030",
+    "describe": [
+      {
+        "k": 15,
+        "kind": "retriever",
+        "name": "tfidf_retriever"
+      },
+      {
+        "kind": "reranker",
+        "name": "null_reranker"
+      },
+      {
+        "k": 2,
+        "kind": "fewshot",
+        "name": "topk_fewshot"
+      },
+      {
+        "kind": "formatter",
+        "name": "simple_formatter",
+        "system_hint": "short answer"
+      },
+      {
+        "kind": "predictor",
+        "n_samples": 1,
+        "name": "llm_predictor",
+        "temperature": 0.5
+      },
+      {
+        "kind": "voter",
+        "name": "majority_voter"
+      }
+    ],
+    "score": {
+      "accuracy": 0.92,
+      "accuracy_spread": 0.0,
+      "latency_ms": 669.3390710200343,
+      "n_evaluated": 50,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "business",
+          0.9166666666666666
+        ],
+        [
+          "sports",
+          0.9230769230769231
+        ],
+        [
+          "tech",
+          0.9166666666666666
+        ],
+        [
+          "world",
+          0.9230769230769231
+        ]
+      ],
+      "tokens": 234.54
+    }
+  },
+  {
+    "candidate_id": "cand_0037",
+    "describe": [
+      {
+        "b": 0.75,
+        "k": 10,
+        "k1": 1.5,
+        "kind": "retriever",
+        "name": "bm25_retriever"
+      },
+      {
+        "kind": "reranker",
+        "name": "diversity_reranker"
+      },
+      {
+        "k": 3,
+        "kind": "fewshot",
+        "name": "topk_fewshot"
+      },
+      {
+        "kind": "formatter",
+        "name": "simple_formatter",
+        "system_hint": "Classify the input."
+      },
+      {
+        "kind": "predictor",
+        "n_samples": 1,
+        "name": "llm_predictor",
+        "temperature": 0.0
+      },
+      {
+        "kind": "voter",
+        "name": "majority_voter"
+      }
+    ],
+    "score": {
+      "accuracy": 0.88,
+      "accuracy_spread": 0.0,
+      "latency_ms": 619.0148367193319,
+      "n_evaluated": 50,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "business",
+          0.9166666666666666
+        ],
+        [
+          "sports",
+          0.8461538461538461
+        ],
+        [
+          "tech",
+          0.8333333333333334
+        ],
+        [
+          "world",
+          0.9230769230769231
+        ]
+      ],
+      "tokens": 261.92
     }
   }
 ]
