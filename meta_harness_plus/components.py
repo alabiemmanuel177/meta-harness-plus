@@ -55,6 +55,57 @@ class BagOfWordsRetriever(Retriever):
         return {"kind": self.kind, "name": self.name, "k": self.k}
 
 
+# ---------- Reranker ----------
+
+class Reranker(Component):
+    """Reorders or filters ``ctx.retrieved`` between retrieval and fewshot-selection.
+
+    Adds a slot MH++ has but RAG doesn't: retrieval *refinement*. Expands
+    the action space the search can propose over.
+    """
+    kind = "reranker"
+
+
+class NullReranker(Reranker):
+    """Baseline: pass retrieved items through unchanged. Zero cost."""
+    name = "null_reranker"
+
+    def run(self, ctx: Context, harness: Harness) -> None:
+        pass  # no-op
+
+
+@dataclass
+class DiversityReranker(Reranker):
+    """Reorder retrieved items for maximum label coverage.
+
+    Greedy: one example per unique label first (in retrieval order), then
+    fill with repeats. The fewshot selector downstream then takes top-k
+    from this diversified list. Zero extra cost — just a reordering.
+
+    Motivation: our BagOfWordsRetriever tends to return multiple neighbors
+    of the query's true class, so few-shot sees mostly that class and
+    the LLM's prior on the correct label locks in early. Diversifying
+    makes the classifier actually compare across classes.
+    """
+    name: str = "diversity_reranker"
+    kind: str = field(default="reranker", init=False)
+
+    def run(self, ctx: Context, harness: Harness) -> None:
+        if not ctx.retrieved:
+            return
+        seen: set[str] = set()
+        diverse = []
+        leftover = []
+        for item in ctx.retrieved:
+            if item.label not in seen:
+                diverse.append(item)
+                seen.add(item.label)
+            else:
+                leftover.append(item)
+        ctx.retrieved = diverse + leftover
+        ctx.latency_ms += 0.1
+
+
 # ---------- FewShot selector ----------
 
 class FewShotSelector(Component):
@@ -201,6 +252,7 @@ def baseline_for(kind: str) -> Component | None:
         "retriever": NullRetriever(),
         "fewshot": NullFewShot(),
         "voter": NullVoter(),
+        "reranker": NullReranker(),
         # Formatter baseline is SimpleFormatter — ablates CoT (and any other
         # non-default formatter variants) back to the plain prompt. Dropping
         # formatter entirely breaks the pipeline; swapping to plain is the
