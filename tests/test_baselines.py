@@ -139,5 +139,35 @@ class TestSymptomHardTask(unittest.TestCase):
         self.assertTrue(any("pressing on the chest wall" in i for i in inputs))
 
 
+class TestFormatterCoercion(unittest.TestCase):
+    """LLM proposer JSON sometimes emits non-str values for system_hint
+    (e.g. true/false/integers). Formatter must coerce defensively."""
+
+    def test_bool_system_hint_coerced(self):
+        from meta_harness_plus.components import SimpleFormatter
+        f = SimpleFormatter(system_hint=True)
+        self.assertIsInstance(f.system_hint, str)
+        # Run end-to-end without crashing.
+        ctx = Context(example=TaskExample(input="x", label="y"))
+        f.run(ctx, None)
+        self.assertIsInstance(ctx.prompt, str)
+
+    def test_int_system_hint_coerced(self):
+        from meta_harness_plus.components import SimpleFormatter
+        f = SimpleFormatter(system_hint=42)
+        self.assertEqual(f.system_hint, "42")
+        self.assertIsInstance(f.system_hint, str)
+
+    def test_none_system_hint_coerced(self):
+        from meta_harness_plus.components import SimpleFormatter
+        f = SimpleFormatter(system_hint=None)
+        self.assertIsInstance(f.system_hint, str)
+
+    def test_real_str_unchanged(self):
+        from meta_harness_plus.components import SimpleFormatter
+        f = SimpleFormatter(system_hint="Classify carefully.")
+        self.assertEqual(f.system_hint, "Classify carefully.")
+
+
 if __name__ == "__main__":
     unittest.main()

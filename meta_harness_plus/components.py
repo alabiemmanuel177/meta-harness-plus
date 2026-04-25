@@ -314,6 +314,15 @@ class SimpleFormatter(Formatter):
     system_hint: str = "Classify the input."
     kind: str = field(default="formatter", init=False)
 
+    def __post_init__(self) -> None:
+        # Defensive coercion: an LLMProposer might emit ``system_hint: true``
+        # in its JSON, which would arrive here as a Python bool and crash
+        # the str-join in run(). Coerce anything non-str to its repr so
+        # the harness keeps running and the bad proposal scores poorly
+        # (likely incoherent prompt) rather than crashing the whole search.
+        if not isinstance(self.system_hint, str):
+            self.system_hint = str(self.system_hint)
+
     def run(self, ctx: Context, harness: Harness) -> None:
         lines = [self.system_hint]
         for fs in ctx.few_shots:
