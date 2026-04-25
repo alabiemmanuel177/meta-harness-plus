@@ -75,6 +75,28 @@ class TestFrontier(unittest.TestCase):
         for d in dropped:
             self.assertTrue(any(dominates(k.score, d.score) for k in kept))
 
+    def test_variance_gated_admission_rejects_unstable(self):
+        """ParetoFrontier(max_accuracy_spread=...) rejects high-spread points."""
+        f = ParetoFrontier(max_accuracy_spread=0.05)
+        # Stable: spread=0.02 <= threshold → admitted.
+        stable_score = ScoreVector(0.9, 100, 50, 20,
+                                   n_repeats=3, accuracy_spread=0.02)
+        self.assertTrue(f.offer(FrontierEntry("stable", stable_score, {})))
+        # Unstable: spread=0.10 > threshold → rejected even though it would
+        # otherwise be non-dominated (different accuracy).
+        unstable_score = ScoreVector(0.95, 80, 40, 20,
+                                     n_repeats=3, accuracy_spread=0.10)
+        self.assertFalse(f.offer(FrontierEntry("unstable", unstable_score, {})))
+        self.assertEqual(len(f), 1)
+        self.assertEqual(f.entries[0].candidate_id, "stable")
+
+    def test_variance_gate_off_by_default(self):
+        """Without max_accuracy_spread set, high-spread candidates admitted."""
+        f = ParetoFrontier()  # no spread cap
+        unstable = ScoreVector(0.95, 80, 40, 20,
+                               n_repeats=3, accuracy_spread=0.50)
+        self.assertTrue(f.offer(FrontierEntry("unstable", unstable, {})))
+
     def test_dedup_exact_score_tuple(self):
         """Two entries with identical score tuples: only the first is kept."""
         f = ParetoFrontier()

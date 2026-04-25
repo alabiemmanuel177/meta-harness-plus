@@ -43,10 +43,28 @@ class ParetoFrontier:
     any previously-admitted entries it dominates.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, *, max_accuracy_spread: float | None = None) -> None:
+        """Construct an empty frontier.
+
+        ``max_accuracy_spread`` (Tier 4.2 — variance-gated admission):
+        when set, candidates whose ``ScoreVector.accuracy_spread`` exceeds
+        this threshold are rejected even if they're Pareto non-dominated.
+        Use case: a candidate that scored 0.95 on one repeat and 0.65 on
+        another (spread=0.30) is too unstable to put on a curated frontier
+        — it's an artifact of nondeterminism, not a stable harness. Set
+        to ``None`` (default) for the original admit-anything-non-dominated
+        behavior.
+        """
         self.entries: list[FrontierEntry] = []
+        self.max_accuracy_spread = max_accuracy_spread
 
     def offer(self, entry: FrontierEntry) -> bool:
+        # Variance gate: reject candidates whose accuracy is too unstable
+        # to trust on the frontier. Only meaningful when scores were
+        # measured with n_repeats > 1 (otherwise spread is always 0).
+        if (self.max_accuracy_spread is not None
+                and entry.score.accuracy_spread > self.max_accuracy_spread):
+            return False
         # If any existing entry dominates the candidate, reject.
         for existing in self.entries:
             if dominates(existing.score, entry.score):
