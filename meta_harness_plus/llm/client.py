@@ -96,6 +96,11 @@ class HTTPClient:
     Not used in tests — only when a real endpoint is configured.
     """
 
+    # HTTP status codes worth retrying — transient backend issues + rate
+    # limits. Anything else (400 bad request, 401 auth, 403 perm denied)
+    # is a permanent failure and retrying just wastes calls.
+    RETRYABLE_STATUSES = frozenset({429, 500, 502, 503, 504})
+
     def __init__(
         self,
         *,
@@ -104,12 +109,18 @@ class HTTPClient:
         model: str,
         extra_headers: dict[str, str] | None = None,
         timeout_s: float = 60.0,
+        max_retries: int = 5,
+        retry_base_delay: float = 1.0,
+        retry_max_delay: float = 30.0,
     ):
         self.api_url = api_url
         self.api_key = api_key
         self.model = model
         self.extra_headers = extra_headers or {}
         self.timeout_s = timeout_s
+        self.max_retries = max_retries
+        self.retry_base_delay = retry_base_delay
+        self.retry_max_delay = retry_max_delay
         self._is_anthropic = "anthropic.com" in api_url
         self._is_ollama_native = "/api/chat" in api_url
         self._is_gemini = "generativelanguage.googleapis.com" in api_url
@@ -210,26 +221,68 @@ class HTTPClient:
         usage = resp_json.get("usage", {})
         return text, usage.get("prompt_tokens", 0), usage.get("completion_tokens", 0)
 
+    def _do_request(self, data: bytes, headers: dict) -> tuple[str, float]:
+        """Single POST attempt. Returns (body_text, wall_time_seconds)."""
+        req = urllib.request.Request(
+            self._resolve_url(), data=data, headers=headers, method="POST",
+        )
+        t0 = time.perf_counter()
+        with urllib.request.urlopen(req, timeout=self.timeout_s) as r:
+            body = r.read().decode("utf-8")
+        t1 = time.perf_counter()
+        return body, t1 - t0
+
     def complete(self, *, system: str, user: str,
                  max_tokens: int = 1024, temperature: float = 0.0) -> LLMResponse:
         payload = self._build_payload(system, user, max_tokens, temperature)
         headers = self._build_headers()
         data = json.dumps(payload).encode("utf-8")
-        req = urllib.request.Request(self._resolve_url(), data=data, headers=headers, method="POST")
-        t0 = time.perf_counter()
-        try:
-            with urllib.request.urlopen(req, timeout=self.timeout_s) as r:
-                body = r.read().decode("utf-8")
-        except urllib.error.HTTPError as e:
-            detail = e.read().decode("utf-8", errors="replace")[:500]
-            raise RuntimeError(f"LLM HTTP {e.code}: {detail}") from e
-        t1 = time.perf_counter()
+
+        # Retry loop with exponential backoff + jitter on transient errors.
+        # Uses ``RETRYABLE_STATUSES`` (429, 500, 502, 503, 504) and timeouts.
+        # Permanent errors (400/401/403/404) raise immediately.
+        last_err: Exception | None = None
+        wall_seconds = 0.0
+        body: str | None = None
+        for attempt in range(self.max_retries + 1):
+            try:
+                body, wall_seconds = self._do_request(data, headers)
+                break
+            except urllib.error.HTTPError as e:
+                detail = e.read().decode("utf-8", errors="replace")[:500]
+                if e.code in self.RETRYABLE_STATUSES and attempt < self.max_retries:
+                    import random
+                    delay = min(
+                        self.retry_max_delay,
+                        self.retry_base_delay * (2 ** attempt),
+                    )
+                    delay *= 0.5 + random.random()  # full-jitter
+                    time.sleep(delay)
+                    last_err = RuntimeError(f"LLM HTTP {e.code}: {detail}")
+                    continue
+                raise RuntimeError(f"LLM HTTP {e.code}: {detail}") from e
+            except (urllib.error.URLError, TimeoutError, OSError) as e:
+                if attempt < self.max_retries:
+                    import random
+                    delay = min(
+                        self.retry_max_delay,
+                        self.retry_base_delay * (2 ** attempt),
+                    )
+                    delay *= 0.5 + random.random()
+                    time.sleep(delay)
+                    last_err = e
+                    continue
+                raise
+        if body is None:
+            assert last_err is not None
+            raise RuntimeError(f"all {self.max_retries + 1} attempts failed: {last_err}")
+
         parsed = json.loads(body)
         text, in_toks, out_toks = self._parse(parsed)
         return LLMResponse(
             text=text,
             input_tokens=in_toks,
             output_tokens=out_toks,
-            latency_ms=(t1 - t0) * 1000.0,
+            latency_ms=wall_seconds * 1000.0,
             raw=parsed,
         )

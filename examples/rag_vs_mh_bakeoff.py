@@ -81,9 +81,9 @@ def _build_client(model: str, args) -> HTTPClient:
             model=model, timeout_s=300.0,
         )
     if args.api == "gemini":
-        key = os.environ.get("GEMINI_API_KEY", "")
+        key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY", "")
         if not key:
-            raise SystemExit("--api gemini needs GEMINI_API_KEY env var")
+            raise SystemExit("--api gemini needs GEMINI_API_KEY or GOOGLE_API_KEY env var")
         url = (f"https://generativelanguage.googleapis.com/v1beta/"
                f"models/{model}:generateContent")
         return HTTPClient(api_url=url, api_key=key, model=model, timeout_s=300.0)
