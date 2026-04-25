@@ -101,3 +101,113 @@ def pearson_correlation(a: Sequence[float], b: Sequence[float]) -> float:
     if va == 0 or vb == 0:
         return 0.0
     return cov / (va * vb)
+
+
+@dataclass(frozen=True)
+class PairedTestResult:
+    """Paired t-test on (a[i] - b[i]) returning Cohen's d as effect size.
+
+    No SciPy dependency — t and p computed via stdlib math.
+    """
+    n: int
+    mean_diff: float
+    std_diff: float
+    t_statistic: float
+    p_value_two_sided: float
+    cohens_d: float
+
+
+def paired_t_test(
+    a: Sequence[float], b: Sequence[float],
+) -> PairedTestResult:
+    """Paired t-test for repeated measures.
+
+    Returns the t statistic, two-sided p-value (Student's t CDF
+    via the regularized incomplete beta function — accurate to ~1e-7),
+    and Cohen's d effect size (mean_diff / std_diff). Cohen's d
+    interpretation: 0.2 = small, 0.5 = medium, 0.8 = large.
+
+    Both arguments must have equal length. Returns zero-filled result
+    for degenerate inputs rather than raising.
+    """
+    if len(a) != len(b):
+        raise ValueError(f"paired vectors must match length: {len(a)} vs {len(b)}")
+    n = len(a)
+    if n < 2:
+        return PairedTestResult(n, 0.0, 0.0, 0.0, 1.0, 0.0)
+    diffs = [a[i] - b[i] for i in range(n)]
+    mean_diff = sum(diffs) / n
+    variance = sum((d - mean_diff) ** 2 for d in diffs) / (n - 1)
+    std_diff = variance ** 0.5
+    if std_diff == 0.0:
+        if mean_diff == 0.0:
+            return PairedTestResult(n, 0.0, 0.0, 0.0, 1.0, 0.0)
+        return PairedTestResult(n, mean_diff, 0.0, float("inf"), 0.0, float("inf"))
+    se = std_diff / (n ** 0.5)
+    t = mean_diff / se
+    df = n - 1
+    # Student's t two-sided p via regularized incomplete beta:
+    #   p = I_x(df/2, 1/2)  where x = df / (df + t^2).
+    x = df / (df + t * t)
+    p = _incomplete_beta_regularized(df / 2.0, 0.5, x)
+    cohens_d = mean_diff / std_diff
+    return PairedTestResult(
+        n=n, mean_diff=mean_diff, std_diff=std_diff,
+        t_statistic=t, p_value_two_sided=p, cohens_d=cohens_d,
+    )
+
+
+def _incomplete_beta_regularized(a: float, b: float, x: float) -> float:
+    """Regularized incomplete beta I_x(a, b), for the Student's t CDF.
+
+    Continued-fraction implementation from Numerical Recipes — accurate
+    to ~1e-7 for typical statistical use cases. No SciPy dependency.
+    """
+    if x <= 0.0:
+        return 0.0
+    if x >= 1.0:
+        return 1.0
+    bt = math.exp(
+        math.lgamma(a + b) - math.lgamma(a) - math.lgamma(b)
+        + a * math.log(x) + b * math.log(1.0 - x)
+    )
+    if x < (a + 1.0) / (a + b + 2.0):
+        return bt * _betacf(a, b, x) / a
+    return 1.0 - bt * _betacf(b, a, 1.0 - x) / b
+
+
+def _betacf(a: float, b: float, x: float, max_iter: int = 200, eps: float = 3e-7) -> float:
+    """Continued-fraction expansion for the incomplete beta function."""
+    qab = a + b
+    qap = a + 1.0
+    qam = a - 1.0
+    c = 1.0
+    d = 1.0 - qab * x / qap
+    if abs(d) < 1e-30:
+        d = 1e-30
+    d = 1.0 / d
+    h = d
+    for m in range(1, max_iter + 1):
+        m2 = 2 * m
+        aa = m * (b - m) * x / ((qam + m2) * (a + m2))
+        d = 1.0 + aa * d
+        if abs(d) < 1e-30:
+            d = 1e-30
+        c = 1.0 + aa / c
+        if abs(c) < 1e-30:
+            c = 1e-30
+        d = 1.0 / d
+        h *= d * c
+        aa = -(a + m) * (qab + m) * x / ((a + m2) * (qap + m2))
+        d = 1.0 + aa * d
+        if abs(d) < 1e-30:
+            d = 1e-30
+        c = 1.0 + aa / c
+        if abs(c) < 1e-30:
+            c = 1e-30
+        d = 1.0 / d
+        delta = d * c
+        h *= delta
+        if abs(delta - 1.0) < eps:
+            return h
+    return h
