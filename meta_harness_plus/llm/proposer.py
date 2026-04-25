@@ -87,6 +87,30 @@ class DiagnosticContext:
         lines: list[str] = []
         lines.append(f"Iteration: {self.iteration}. Propose {self.n_requested} harnesses.")
         lines.append("")
+        # Token-budget hint — explicit guidance on the cost axis. Without
+        # this, the proposer biases toward expensive shapes (more retrieval,
+        # more samples, more reasoning). The hint targets strict Pareto
+        # dominance: discovered points should sit BELOW the cheapest current
+        # frontier point on the token axis, not above.
+        if self.frontier:
+            best_acc_pt = max(self.frontier, key=lambda e: e.get("score", {}).get("accuracy", 0))
+            cheapest_pt = min(self.frontier, key=lambda e: e.get("score", {}).get("tokens", float("inf")))
+            best_acc = best_acc_pt.get("score", {}).get("accuracy", 0)
+            best_acc_tok = best_acc_pt.get("score", {}).get("tokens", 0)
+            cheap_acc = cheapest_pt.get("score", {}).get("accuracy", 0)
+            cheap_tok = cheapest_pt.get("score", {}).get("tokens", 0)
+            lines.append("# Token-budget guidance (priority signal)")
+            lines.append(
+                f"  Best accuracy on frontier: {best_acc:.2f} @ {best_acc_tok:.0f} tokens"
+            )
+            lines.append(
+                f"  Cheapest on frontier:      {cheap_acc:.2f} @ {cheap_tok:.0f} tokens"
+            )
+            lines.append(
+                f"  STRICT WIN target: accuracy >= {best_acc:.2f} at <= {cheap_tok:.0f} tokens. "
+                f"Aim there. Heavier shapes only if they hit accuracy strictly above {best_acc:.2f}."
+            )
+            lines.append("")
         lines.append("# Available components (kind/name — allowed config fields)")
         for spec in self.available:
             req = ", ".join(spec.get("required_config_fields", [])) or "–"

@@ -346,6 +346,47 @@ class CoTFormatter(SimpleFormatter):
     kind: str = field(default="formatter", init=False)
 
 
+@dataclass
+class CompressedCoTFormatter(SimpleFormatter):
+    """CoT with an explicit token budget on the reasoning step.
+
+    Standard ``CoTFormatter`` lets the model run free with its analysis,
+    which often produces 50-200 tokens of prose before the class label.
+    On classification tasks we don't need that — most of the accuracy
+    lift comes from the model committing to *some* reasoning before
+    answering, not from elaborate justification.
+
+    This formatter constrains the reasoning explicitly:
+        "Reason in ≤15 words. Then on the final line, output ONLY the
+         class name, lowercase."
+
+    Empirically this captures most of CoT's accuracy lift at a fraction
+    of the token cost — the surgical tool we needed to push toward
+    strict Pareto dominance over RAG.
+    """
+    name: str = "compressed_cot_formatter"
+    max_reasoning_words: int = 15
+    system_hint: str = field(default="", init=False)
+    kind: str = field(default="formatter", init=False)
+
+    def __post_init__(self) -> None:
+        # Build the system_hint dynamically from max_reasoning_words.
+        self.system_hint = (
+            f"Classify the input into one of the given classes. "
+            f"Reason in at most {self.max_reasoning_words} words about which "
+            f"key terms point to which class. "
+            f"Then on the final line output ONLY the class name, lowercase. "
+            f"Be terse — every extra word costs."
+        )
+
+    def config(self) -> dict:
+        return {
+            "kind": self.kind, "name": self.name,
+            "system_hint": self.system_hint,
+            "max_reasoning_words": self.max_reasoning_words,
+        }
+
+
 # ---------- Predictor ----------
 
 class Predictor(Component):

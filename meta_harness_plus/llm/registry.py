@@ -22,6 +22,7 @@ from typing import Any, Callable
 from ..components import (
     BagOfWordsRetriever,
     BM25Retriever,
+    CompressedCoTFormatter,
     CoTFormatter,
     DiversityReranker,
     MajorityVoter,
@@ -172,6 +173,13 @@ def default_registry(task: Task, llm_fn) -> ComponentRegistry:
         factory=lambda cfg: CoTFormatter(system_hint=cfg["system_hint"]) if "system_hint" in cfg else CoTFormatter(),
         allowed_fields=("system_hint",),
     ))
+    reg.register(Entry(
+        kind="formatter", name="compressed_cot_formatter",
+        factory=lambda cfg: CompressedCoTFormatter(
+            max_reasoning_words=int(cfg.get("max_reasoning_words", 15)),
+        ),
+        allowed_fields=("max_reasoning_words",),
+    ))
 
     # Predictor (mock)
     reg.register(Entry(
@@ -277,6 +285,13 @@ def llm_search_registry(
         kind="formatter", name="cot_formatter",
         factory=lambda cfg: CoTFormatter(system_hint=cfg["system_hint"]) if "system_hint" in cfg else CoTFormatter(),
         allowed_fields=("system_hint",),
+    ))
+    reg.register(Entry(
+        kind="formatter", name="compressed_cot_formatter",
+        factory=lambda cfg: CompressedCoTFormatter(
+            max_reasoning_words=int(cfg.get("max_reasoning_words", 15)),
+        ),
+        allowed_fields=("max_reasoning_words",),
     ))
 
     # Predictor — real LLM
