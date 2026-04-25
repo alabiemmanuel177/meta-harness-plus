@@ -116,3 +116,72 @@ def non_dominated_filter(entries: Iterable[FrontierEntry]) -> list[FrontierEntry
     for e in entries:
         front.offer(e)
     return list(front.entries)
+
+
+def hypervolume(
+    entries: Iterable[FrontierEntry],
+    *,
+    reference: tuple[float, float, float] = (0.0, 1000.0, 10_000.0),
+) -> float:
+    """3D hypervolume dominated by the frontier, relative to ``reference``.
+
+    Reference point convention matches the score axes:
+    ``(min_acc=0.0, max_tokens=1000, max_latency=10000ms)``. Any point that
+    is *not* better than the reference contributes zero. The hypervolume
+    is the volume of the union of axis-aligned boxes from each frontier
+    point to the reference.
+
+    Used as a single-number search-progress metric across iterations:
+    a search that expands the Pareto frontier in any direction increases
+    hypervolume monotonically. Useful for plotting "search progress over
+    time" without picking a specific (acc, cost) tradeoff.
+
+    Implementation uses the inclusion-exclusion formula for axis-aligned
+    boxes — exact, but O(2^n) in the number of points. Fine for the
+    frontier sizes we deal with (typically 3-7 points). For larger
+    frontiers, swap in HSO or WFG; same interface.
+    """
+    points: list[tuple[float, float, float]] = []
+    ref_acc, ref_tok, ref_lat = reference
+    for e in entries:
+        s = e.score
+        # Only include points strictly better than reference on all axes.
+        if s.accuracy <= ref_acc:
+            continue
+        if s.tokens >= ref_tok:
+            continue
+        if s.latency_ms >= ref_lat:
+            continue
+        # Box volume = (acc - ref_acc) * (ref_tok - tokens) * (ref_lat - latency)
+        points.append((s.accuracy, s.tokens, s.latency_ms))
+    if not points:
+        return 0.0
+
+    # Inclusion-exclusion over the dominated-region boxes.
+    # Each point p dominates the box {acc in [ref_acc, p.acc], tok in
+    # [p.tok, ref_tok], lat in [p.lat, ref_lat]}. The intersection of K
+    # such boxes is the box {acc in [ref_acc, min p.acc], tok in
+    # [max p.tok, ref_tok], lat in [max p.lat, ref_lat]} — bounded by
+    # the strictest constraint per axis.
+    n = len(points)
+    total = 0.0
+    for mask in range(1, 1 << n):
+        acc_upper = float("inf")
+        tok_lower = 0.0
+        lat_lower = 0.0
+        bits = 0
+        for i in range(n):
+            if mask & (1 << i):
+                bits += 1
+                acc_upper = min(acc_upper, points[i][0])
+                tok_lower = max(tok_lower, points[i][1])
+                lat_lower = max(lat_lower, points[i][2])
+        dx = max(0.0, acc_upper - ref_acc)
+        dy = max(0.0, ref_tok - tok_lower)
+        dz = max(0.0, ref_lat - lat_lower)
+        vol = dx * dy * dz
+        if bits % 2 == 1:
+            total += vol
+        else:
+            total -= vol
+    return total

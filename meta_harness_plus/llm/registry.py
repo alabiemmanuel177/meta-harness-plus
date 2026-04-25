@@ -21,6 +21,7 @@ from typing import Any, Callable
 
 from ..components import (
     BagOfWordsRetriever,
+    BM25Retriever,
     CoTFormatter,
     DiversityReranker,
     MajorityVoter,
@@ -30,6 +31,7 @@ from ..components import (
     NullRetriever,
     NullVoter,
     SimpleFormatter,
+    TFIDFRetriever,
     TopKFewShot,
 )
 from ..harness import Component, Harness
@@ -133,6 +135,20 @@ def default_registry(task: Task, llm_fn) -> ComponentRegistry:
         factory=lambda cfg: BagOfWordsRetriever(corpus=task.train, k=int(cfg.get("k", 3))),
         allowed_fields=("k",),
     ))
+    reg.register(Entry(
+        kind="retriever", name="tfidf_retriever",
+        factory=lambda cfg: TFIDFRetriever(corpus=task.train, k=int(cfg.get("k", 3))),
+        allowed_fields=("k",),
+    ))
+    reg.register(Entry(
+        kind="retriever", name="bm25_retriever",
+        factory=lambda cfg: BM25Retriever(
+            corpus=task.train, k=int(cfg.get("k", 3)),
+            k1=float(cfg.get("k1", 1.5)),
+            b=float(cfg.get("b", 0.75)),
+        ),
+        allowed_fields=("k", "k1", "b"),
+    ))
 
     # Few-shot
     reg.register(Entry(
@@ -205,6 +221,20 @@ def llm_search_registry(
         kind="retriever", name="bow_retriever",
         factory=lambda cfg: BagOfWordsRetriever(corpus=task.train, k=int(cfg.get("k", 3))),
         allowed_fields=("k",),
+    ))
+    reg.register(Entry(
+        kind="retriever", name="tfidf_retriever",
+        factory=lambda cfg: TFIDFRetriever(corpus=task.train, k=int(cfg.get("k", 3))),
+        allowed_fields=("k",),
+    ))
+    reg.register(Entry(
+        kind="retriever", name="bm25_retriever",
+        factory=lambda cfg: BM25Retriever(
+            corpus=task.train, k=int(cfg.get("k", 3)),
+            k1=float(cfg.get("k1", 1.5)),
+            b=float(cfg.get("b", 0.75)),
+        ),
+        allowed_fields=("k", "k1", "b"),
     ))
 
     # Reranker (richer action space beyond RAG)
