@@ -7,6 +7,7 @@ encoded below as ``higher_is_better`` flags so Pareto logic stays symmetric.
 
 from __future__ import annotations
 
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from typing import Sequence
 
@@ -67,24 +68,52 @@ class Scorer:
         examples: Sequence[TaskExample],
         *,
         n_repeats: int = 1,
+        max_workers: int = 1,
     ) -> ScoreVector:
+        """Evaluate ``harness`` on ``examples``.
+
+        ``max_workers > 1`` (parallel-scoring branch): when set, fans out
+        per-example evaluation across a thread pool. Useful for cloud-API
+        backends where each ``harness.run(ex)`` is dominated by network
+        latency — one thread per example with concurrent HTTP requests
+        gets a 5-10× wall-clock speedup. Default 1 preserves the
+        sequential, deterministic-with-ScriptedClient behaviour.
+
+        Threading is safe with ``LLMPredictor`` over a real network client
+        (urllib releases the GIL during I/O). It is NOT safe with
+        ``ScriptedClient`` (its response queue has shared state); tests
+        that use ScriptedClient must keep ``max_workers=1``.
+        """
         if not examples:
             return ScoreVector(0.0, 0.0, 0.0, 0, n_repeats=max(1, n_repeats))
         if n_repeats < 1:
             raise ValueError(f"n_repeats must be >= 1, got {n_repeats}")
+        if max_workers < 1:
+            raise ValueError(f"max_workers must be >= 1, got {max_workers}")
 
-        # Single-shot fast path — byte-identical to pre-branch behaviour.
+        def eval_one(ex: TaskExample) -> tuple[int, float, float]:
+            ctx = harness.run(ex)
+            return (
+                1 if ctx.prediction == ex.label else 0,
+                float(ctx.tokens),
+                float(ctx.latency_ms),
+            )
+
+        def eval_sweep() -> list[tuple[int, float, float]]:
+            if max_workers == 1:
+                return [eval_one(ex) for ex in examples]
+            with ThreadPoolExecutor(max_workers=max_workers) as pool:
+                # pool.map preserves the input order — important for
+                # determinism vs the sequential path.
+                return list(pool.map(eval_one, examples))
+
+        n = len(examples)
+
         if n_repeats == 1:
-            correct = 0
-            total_tokens = 0
-            total_latency = 0.0
-            for ex in examples:
-                ctx = harness.run(ex)
-                if ctx.prediction == ex.label:
-                    correct += 1
-                total_tokens += ctx.tokens
-                total_latency += ctx.latency_ms
-            n = len(examples)
+            results = eval_sweep()
+            correct = sum(r[0] for r in results)
+            total_tokens = sum(r[1] for r in results)
+            total_latency = sum(r[2] for r in results)
             return ScoreVector(
                 accuracy=correct / n,
                 tokens=total_tokens / n,
@@ -96,20 +125,14 @@ class Scorer:
         accs: list[float] = []
         tok_sums: list[float] = []
         lat_sums: list[float] = []
-        n = len(examples)
         for _ in range(n_repeats):
-            correct = 0
-            total_tokens = 0
-            total_latency = 0.0
-            for ex in examples:
-                ctx = harness.run(ex)
-                if ctx.prediction == ex.label:
-                    correct += 1
-                total_tokens += ctx.tokens
-                total_latency += ctx.latency_ms
+            results = eval_sweep()
+            correct = sum(r[0] for r in results)
+            tok_sum = sum(r[1] for r in results)
+            lat_sum = sum(r[2] for r in results)
             accs.append(correct / n)
-            tok_sums.append(total_tokens / n)
-            lat_sums.append(total_latency / n)
+            tok_sums.append(tok_sum / n)
+            lat_sums.append(lat_sum / n)
         return ScoreVector(
             accuracy=_median(accs),
             tokens=sum(tok_sums) / n_repeats,

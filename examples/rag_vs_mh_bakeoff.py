@@ -105,6 +105,8 @@ def run_one_model(model: str, ollama_url: str, run_dir: Path, args) -> dict:
     else:
         cache = None
         client = raw_client
+    if args.max_workers > 1:
+        print(f"  parallel scoring: {args.max_workers} threads", flush=True)
 
     registry = llm_search_registry(task, client, predictor_max_tokens=args.predictor_max_tokens)
     if args.proposer_mode == "ensemble":
@@ -156,6 +158,7 @@ def run_one_model(model: str, ollama_url: str, run_dir: Path, args) -> dict:
             attribution_repeats=args.attribution_repeats,
             attribution_screen_size=args.attribution_screen_size,
             frontier_max_spread=args.frontier_max_spread,
+            max_workers=args.max_workers,
             run_dir=str(run_dir),
         ),
         # Seed order: bare first, then RAG. Both get full-evaluated and
@@ -309,6 +312,12 @@ def main():
                     help="JSONL prompt cache file. Cache hits skip the LLM "
                          "call entirely. Persistent across runs. Only caches "
                          "temperature=0 calls.")
+    # parallel-scoring branch — fan out per-example LLM calls across threads
+    ap.add_argument("--max-workers", type=int, default=1,
+                    help="ThreadPoolExecutor concurrency for per-example LLM "
+                         "calls during scoring. 1 = sequential. Useful with "
+                         "cloud APIs (urllib releases GIL during I/O); skip "
+                         "with ScriptedClient (shared-state race).")
     ap.add_argument("--eval-repeats", type=int, default=2)
     ap.add_argument("--screen-repeats", type=int, default=1)
     ap.add_argument("--attribution-repeats", type=int, default=2)

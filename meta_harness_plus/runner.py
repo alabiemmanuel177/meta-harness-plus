@@ -48,6 +48,11 @@ class SearchConfig:
     # threshold are rejected from the Pareto frontier. Only meaningful
     # when eval_repeats > 1.
     frontier_max_spread: float | None = None
+    # parallel-scoring branch: ThreadPoolExecutor concurrency for
+    # per-example LLM calls during full-eval / screen / attribution.
+    # Only effective when eval_one is I/O-bound (real network client).
+    # Default 1 preserves sequential, ScriptedClient-safe behaviour.
+    max_workers: int = 1
 
 
 @dataclass
@@ -124,11 +129,16 @@ class SearchRunner:
         full = self._full_eval_set()
         for h in self.seed_harnesses:
             cid = self._next_id()
-            score = self.scorer.score(h, full, n_repeats=self.config.eval_repeats)
+            score = self.scorer.score(
+                h, full,
+                n_repeats=self.config.eval_repeats,
+                max_workers=self.config.max_workers,
+            )
             admitted = self._admit(frontier, cid, h, score)
             self.attribution.analyze(
                 cid, h, attribution_screen, full_score=None,
                 n_repeats=self.config.attribution_repeats,
+                max_workers=self.config.max_workers,
             )
             state.history.append({
                 "phase": "seed",
@@ -165,7 +175,9 @@ class SearchRunner:
             # Screening evaluator closure — uses deterministic subset of screen set.
             def screen_eval(h: Harness, k: int) -> ScoreVector:
                 return self.scorer.score(
-                    h, screen[:k], n_repeats=self.config.screen_repeats,
+                    h, screen[:k],
+                    n_repeats=self.config.screen_repeats,
+                    max_workers=self.config.max_workers,
                 )
 
             result = halving.run(list(proposal.harnesses), screen_eval)
@@ -176,12 +188,15 @@ class SearchRunner:
                 cid = id_by_h[id(surv)]
                 # Full eval on the survivor (median-over-repeats for robustness).
                 full_score = self.scorer.score(
-                    surv, full, n_repeats=self.config.eval_repeats,
+                    surv, full,
+                    n_repeats=self.config.eval_repeats,
+                    max_workers=self.config.max_workers,
                 )
                 admitted = self._admit(frontier, cid, surv, full_score)
                 snapshots = self.attribution.analyze(
                     cid, surv, attribution_screen, full_score=full_score,
                     n_repeats=self.config.attribution_repeats,
+                    max_workers=self.config.max_workers,
                 )
                 state.history.append({
                     "phase": "survivor_full_eval",
