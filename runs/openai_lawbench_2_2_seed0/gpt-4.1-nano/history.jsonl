@@ -1,0 +1,5 @@
+{"admitted": true, "candidate_id": "cand_0001", "phase": "seed", "score": [0.14583333333333334, 517.1875, 726.9187895834742]}
+{"admitted": true, "candidate_id": "cand_0002", "phase": "seed", "score": [0.16666666666666666, 524.3125, 728.0213513959128]}
+{"frontier_size": 4, "iter": 0, "phase": "iter_end", "total_screen_evals": 32}
+{"frontier_size": 5, "iter": 1, "phase": "iter_end", "total_screen_evals": 8}
+{"frontier_size": 5, "iter": 2, "phase": "iter_end", "total_screen_evals": 28}

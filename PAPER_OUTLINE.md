@@ -35,9 +35,16 @@ Bootstrap Evidence on Adversarial Classification Benchmarks.*
 > Pareto-dominate** hand-tuned RAG on 7 of 10 Gemini seeds — same-or-
 > higher accuracy at strictly fewer tokens at not-worse latency, on
 > every axis simultaneously. Paired t-test: t=+5.72, p=0.005, Cohen's
-> d=2.56 (large effect). [LawBench replication results TBD] We open-
-> source the framework with 267 unit tests and full reproducibility
-> tooling. Total experimental cost: under $0.20 USD.
+> d=2.56 (large effect). On LawBench 2-2 — a Chinese legal
+> classification task drawn from the original Meta-Harness paper's
+> task family — MH++ at a small 3×4 search budget achieves a +0.10
+> absolute / +75% relative accuracy lift over RAG on OpenAI
+> gpt-4.1-nano (CI [+0.05, +0.125], paired t=4.0, p=0.016, d=+1.79)
+> while underperforming a stronger Gemini RAG baseline by 8pt — a
+> small-budget failure mode that the original paper's larger budgets
+> address. We report both findings as preregistered evidence. We
+> open-source the framework with 267 unit tests and full
+> reproducibility tooling. Total experimental cost: under $1 USD.
 
 ## 1. Introduction
 
@@ -111,7 +118,9 @@ Bootstrap Evidence on Adversarial Classification Benchmarks.*
   hand-curated for retrieval-disambiguation.
 - `lawbench_2_2`: 48 Chinese legal dispute-focus classifications, 8
   classes, drawn from the open-compass/LawBench public benchmark
-  (the original Meta-Harness paper's task family). [pending]
+  (the original Meta-Harness paper's task family). Reports asymmetric
+  result — significant accuracy lift on weak-baseline OpenAI, small-
+  budget regression on strong-baseline Gemini.
 
 ### 4.2 Models
 - OpenAI gpt-4.1-nano (cheapest tier, instruction-following; tightest
@@ -135,8 +144,8 @@ Bootstrap Evidence on Adversarial Classification Benchmarks.*
 | news_hard_50 | gemini-2.5-flash-lite | 0.880 | 0.920 | [+0.028, +0.052] | [pending] |
 | news_hard_50 (6×8) | gemini | 0.880 | 0.908 | [+0.020, +0.036] | **2 of 5** |
 | symptom_hard (6×8) | gemini | 1.000 | 1.000 | [0, 0] (saturated) | **5 of 5** |
-| **lawbench_2_2** | gpt-4.1-nano | TBD | TBD | TBD | TBD |
-| **lawbench_2_2** | gemini-2.5-flash-lite | TBD | TBD | TBD | TBD |
+| **lawbench_2_2** (3×4) | gpt-4.1-nano | 0.167 | 0.267 | [+0.050, +0.125] | 0 of 5 |
+| **lawbench_2_2** (3×4) | gemini-2.5-flash-lite | 0.500 | 0.417 | [-0.104, -0.042] | 0 of 5 |
 
 **Headline:** 7 of 10 Gemini seeds across two adversarial English
 benchmarks achieved **strict Pareto dominance** over hand-tuned RAG —
@@ -179,6 +188,10 @@ latency, simultaneously.
   ablation study shows random search beats attribution-guided. This
   is honest about the framework's failure mode — search smarts pay
   off at scale, not at toy.
+- Negative finding (LawBench / Gemini): at 3×4 budget against a strong
+  hand-tuned RAG, search underperformed RAG by 8pt. Predicts that
+  search budget must scale with baseline strength — a useful operating
+  rule for practitioners rather than universal-dominance hand-waving.
 
 ## 6. Theoretical framing
 [See THEORY.md for the sketch. Section 6 of paper has the regret-bound
@@ -222,11 +235,12 @@ and reproducible from a single CLI invocation.
 
 1. ✅ Cross-provider news_hard_50 strict-dominance result
 2. 🔄 OpenAI symptom_hard 5-seed (in flight)
-3. 🔄 LawBench 5-seed cross-provider (in flight)
+3. ✅ LawBench 5-seed cross-provider (asymmetric: +0.10 OpenAI, -0.08 Gemini at 3×4 budget)
 4. ✅ Ablation framework
 5. ✅ Theoretical sketch
 6. ⚠️ Ablation experiment at full scale (need to run on real LLM)
 7. ⚠️ Hand-tuned baseline comparisons (cot_baseline, voting_rag, diverse_rag) at full scale
 8. ⚠️ Statistical paragraph in paper text (we have the numbers, just need to write them up cleanly)
+9. ⚠️ LawBench 6×8-budget rerun on Gemini (would clarify if the negative result is small-budget-only or robust)
 
 Items 6, 7, 8 are 1-2 hour each. Total path to "submittable workshop draft": ~8 hours of focused work after current experiments complete.

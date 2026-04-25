@@ -1,0 +1,407 @@
+[
+  {
+    "ablated_score": {
+      "accuracy": 0.5416666666666667,
+      "accuracy_spread": 0.08333333333333337,
+      "latency_ms": 1355.9602721253787,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "\u539f\u5ba1\u5224\u51b3\u662f\u5426\u9002\u5f53",
+          0.5
+        ],
+        [
+          "\u635f\u5931\u8ba4\u5b9a\u53ca\u5904\u7406",
+          1.0
+        ],
+        [
+          "\u672c\u91d1\u4e89\u8bae",
+          0.6666666666666666
+        ],
+        [
+          "\u79df\u91d1\u60c5\u51b5",
+          0.5
+        ],
+        [
+          "\u8d23\u4efb\u5212\u5206",
+          0.0
+        ],
+        [
+          "\u8d23\u4efb\u8ba4\u5b9a",
+          0.3333333333333333
+        ],
+        [
+          "\u9274\u5b9a\u7ed3\u8bba\u91c7\u4fe1\u95ee\u9898",
+          1.0
+        ]
+      ],
+      "tokens": 502.20833333333337
+    },
+    "accuracy_delta": 0.08333333333333326,
+    "candidate_id": "cand_0009",
+    "full_score": {
+      "accuracy": 0.625,
+      "accuracy_spread": 0.08333333333333326,
+      "latency_ms": 1311.2939752916575,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "\u539f\u5ba1\u5224\u51b3\u662f\u5426\u9002\u5f53",
+          1.0
+        ],
+        [
+          "\u635f\u5931\u8ba4\u5b9a\u53ca\u5904\u7406",
+          1.0
+        ],
+        [
+          "\u672c\u91d1\u4e89\u8bae",
+          0.6666666666666666
+        ],
+        [
+          "\u79df\u91d1\u60c5\u51b5",
+          0.5
+        ],
+        [
+          "\u8d23\u4efb\u5212\u5206",
+          0.0
+        ],
+        [
+          "\u8d23\u4efb\u8ba4\u5b9a",
+          0.3333333333333333
+        ],
+        [
+          "\u9274\u5b9a\u7ed3\u8bba\u91c7\u4fe1\u95ee\u9898",
+          1.0
+        ]
+      ],
+      "tokens": 569.375
+    },
+    "kind": "retriever"
+  },
+  {
+    "ablated_score": {
+      "accuracy": 0.6666666666666666,
+      "accuracy_spread": 0.0,
+      "latency_ms": 1628.1498055830457,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "\u539f\u5ba1\u5224\u51b3\u662f\u5426\u9002\u5f53",
+          1.0
+        ],
+        [
+          "\u635f\u5931\u8ba4\u5b9a\u53ca\u5904\u7406",
+          1.0
+        ],
+        [
+          "\u672c\u91d1\u4e89\u8bae",
+          0.6666666666666666
+        ],
+        [
+          "\u79df\u91d1\u60c5\u51b5",
+          0.5
+        ],
+        [
+          "\u8d23\u4efb\u5212\u5206",
+          0.0
+        ],
+        [
+          "\u8d23\u4efb\u8ba4\u5b9a",
+          0.5
+        ],
+        [
+          "\u9274\u5b9a\u7ed3\u8bba\u91c7\u4fe1\u95ee\u9898",
+          1.0
+        ]
+      ],
+      "tokens": 526.875
+    },
+    "accuracy_delta": -0.04166666666666663,
+    "candidate_id": "cand_0009",
+    "full_score": {
+      "accuracy": 0.625,
+      "accuracy_spread": 0.08333333333333326,
+      "latency_ms": 1311.2939752916575,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "\u539f\u5ba1\u5224\u51b3\u662f\u5426\u9002\u5f53",
+          1.0
+        ],
+        [
+          "\u635f\u5931\u8ba4\u5b9a\u53ca\u5904\u7406",
+          1.0
+        ],
+        [
+          "\u672c\u91d1\u4e89\u8bae",
+          0.6666666666666666
+        ],
+        [
+          "\u79df\u91d1\u60c5\u51b5",
+          0.5
+        ],
+        [
+          "\u8d23\u4efb\u5212\u5206",
+          0.0
+        ],
+        [
+          "\u8d23\u4efb\u8ba4\u5b9a",
+          0.3333333333333333
+        ],
+        [
+          "\u9274\u5b9a\u7ed3\u8bba\u91c7\u4fe1\u95ee\u9898",
+          1.0
+        ]
+      ],
+      "tokens": 569.375
+    },
+    "kind": "reranker"
+  },
+  {
+    "ablated_score": {
+      "accuracy": 0.5416666666666667,
+      "accuracy_spread": 0.08333333333333337,
+      "latency_ms": 1416.367440666486,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "\u539f\u5ba1\u5224\u51b3\u662f\u5426\u9002\u5f53",
+          0.5
+        ],
+        [
+          "\u635f\u5931\u8ba4\u5b9a\u53ca\u5904\u7406",
+          1.0
+        ],
+        [
+          "\u672c\u91d1\u4e89\u8bae",
+          0.6666666666666666
+        ],
+        [
+          "\u79df\u91d1\u60c5\u51b5",
+          0.5
+        ],
+        [
+          "\u8d23\u4efb\u5212\u5206",
+          0.0
+        ],
+        [
+          "\u8d23\u4efb\u8ba4\u5b9a",
+          0.3333333333333333
+        ],
+        [
+          "\u9274\u5b9a\u7ed3\u8bba\u91c7\u4fe1\u95ee\u9898",
+          1.0
+        ]
+      ],
+      "tokens": 544.9583333333333
+    },
+    "accuracy_delta": 0.08333333333333326,
+    "candidate_id": "cand_0009",
+    "full_score": {
+      "accuracy": 0.625,
+      "accuracy_spread": 0.08333333333333326,
+      "latency_ms": 1311.2939752916575,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "\u539f\u5ba1\u5224\u51b3\u662f\u5426\u9002\u5f53",
+          1.0
+        ],
+        [
+          "\u635f\u5931\u8ba4\u5b9a\u53ca\u5904\u7406",
+          1.0
+        ],
+        [
+          "\u672c\u91d1\u4e89\u8bae",
+          0.6666666666666666
+        ],
+        [
+          "\u79df\u91d1\u60c5\u51b5",
+          0.5
+        ],
+        [
+          "\u8d23\u4efb\u5212\u5206",
+          0.0
+        ],
+        [
+          "\u8d23\u4efb\u8ba4\u5b9a",
+          0.3333333333333333
+        ],
+        [
+          "\u9274\u5b9a\u7ed3\u8bba\u91c7\u4fe1\u95ee\u9898",
+          1.0
+        ]
+      ],
+      "tokens": 569.375
+    },
+    "kind": "fewshot"
+  },
+  {
+    "ablated_score": {
+      "accuracy": 0.6666666666666666,
+      "accuracy_spread": 0.0,
+      "latency_ms": 1138.801638999932,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "\u539f\u5ba1\u5224\u51b3\u662f\u5426\u9002\u5f53",
+          1.0
+        ],
+        [
+          "\u635f\u5931\u8ba4\u5b9a\u53ca\u5904\u7406",
+          0.0
+        ],
+        [
+          "\u672c\u91d1\u4e89\u8bae",
+          0.3333333333333333
+        ],
+        [
+          "\u79df\u91d1\u60c5\u51b5",
+          1.0
+        ],
+        [
+          "\u8d23\u4efb\u5212\u5206",
+          1.0
+        ],
+        [
+          "\u8d23\u4efb\u8ba4\u5b9a",
+          0.6666666666666666
+        ],
+        [
+          "\u9274\u5b9a\u7ed3\u8bba\u91c7\u4fe1\u95ee\u9898",
+          1.0
+        ]
+      ],
+      "tokens": 523.5
+    },
+    "accuracy_delta": -0.04166666666666663,
+    "candidate_id": "cand_0009",
+    "full_score": {
+      "accuracy": 0.625,
+      "accuracy_spread": 0.08333333333333326,
+      "latency_ms": 1311.2939752916575,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "\u539f\u5ba1\u5224\u51b3\u662f\u5426\u9002\u5f53",
+          1.0
+        ],
+        [
+          "\u635f\u5931\u8ba4\u5b9a\u53ca\u5904\u7406",
+          1.0
+        ],
+        [
+          "\u672c\u91d1\u4e89\u8bae",
+          0.6666666666666666
+        ],
+        [
+          "\u79df\u91d1\u60c5\u51b5",
+          0.5
+        ],
+        [
+          "\u8d23\u4efb\u5212\u5206",
+          0.0
+        ],
+        [
+          "\u8d23\u4efb\u8ba4\u5b9a",
+          0.3333333333333333
+        ],
+        [
+          "\u9274\u5b9a\u7ed3\u8bba\u91c7\u4fe1\u95ee\u9898",
+          1.0
+        ]
+      ],
+      "tokens": 569.375
+    },
+    "kind": "formatter"
+  },
+  {
+    "ablated_score": {
+      "accuracy": 0.6666666666666666,
+      "accuracy_spread": 0.0,
+      "latency_ms": 1039.4795156248754,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "\u539f\u5ba1\u5224\u51b3\u662f\u5426\u9002\u5f53",
+          1.0
+        ],
+        [
+          "\u635f\u5931\u8ba4\u5b9a\u53ca\u5904\u7406",
+          1.0
+        ],
+        [
+          "\u672c\u91d1\u4e89\u8bae",
+          0.6666666666666666
+        ],
+        [
+          "\u79df\u91d1\u60c5\u51b5",
+          0.5
+        ],
+        [
+          "\u8d23\u4efb\u5212\u5206",
+          0.0
+        ],
+        [
+          "\u8d23\u4efb\u8ba4\u5b9a",
+          0.5
+        ],
+        [
+          "\u9274\u5b9a\u7ed3\u8bba\u91c7\u4fe1\u95ee\u9898",
+          1.0
+        ]
+      ],
+      "tokens": 526.875
+    },
+    "accuracy_delta": -0.04166666666666663,
+    "candidate_id": "cand_0009",
+    "full_score": {
+      "accuracy": 0.625,
+      "accuracy_spread": 0.08333333333333326,
+      "latency_ms": 1311.2939752916575,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "\u539f\u5ba1\u5224\u51b3\u662f\u5426\u9002\u5f53",
+          1.0
+        ],
+        [
+          "\u635f\u5931\u8ba4\u5b9a\u53ca\u5904\u7406",
+          1.0
+        ],
+        [
+          "\u672c\u91d1\u4e89\u8bae",
+          0.6666666666666666
+        ],
+        [
+          "\u79df\u91d1\u60c5\u51b5",
+          0.5
+        ],
+        [
+          "\u8d23\u4efb\u5212\u5206",
+          0.0
+        ],
+        [
+          "\u8d23\u4efb\u8ba4\u5b9a",
+          0.3333333333333333
+        ],
+        [
+          "\u9274\u5b9a\u7ed3\u8bba\u91c7\u4fe1\u95ee\u9898",
+          1.0
+        ]
+      ],
+      "tokens": 569.375
+    },
+    "kind": "voter"
+  }
+]

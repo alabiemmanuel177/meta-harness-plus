@@ -1,0 +1,82 @@
+{
+  "label": "Gemini 2.5-flash-lite LawBench 2-2 (5 seeds, no smoke)",
+  "n_seeds": 5,
+  "per_seed_bare_acc": [
+    0.479,
+    0.479,
+    0.479,
+    0.479,
+    0.479
+  ],
+  "per_seed_rag_acc": [
+    0.5,
+    0.5,
+    0.5,
+    0.5,
+    0.5
+  ],
+  "per_seed_mh_peak_acc": [
+    0.396,
+    0.5,
+    0.396,
+    0.396,
+    0.396
+  ],
+  "per_seed_rag_tokens": [
+    485.0,
+    485.0,
+    485.0,
+    485.0,
+    485.0
+  ],
+  "per_seed_mh_peak_tokens": [
+    600.1,
+    485.0,
+    600.1,
+    571.2,
+    600.1
+  ],
+  "per_seed_n_dominate": [
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "per_seed_n_match_cheaper": [
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "ci": {
+    "mh_minus_rag_acc": {
+      "mean": -0.08319999999999998,
+      "low": -0.10399999999999998,
+      "high": -0.04159999999999999,
+      "confidence": 0.95
+    },
+    "mh_peak_acc": {
+      "mean": 0.4168,
+      "low": 0.396,
+      "high": 0.4584,
+      "confidence": 0.95
+    },
+    "rag_acc": {
+      "mean": 0.5,
+      "low": 0.5,
+      "high": 0.5,
+      "confidence": 0.95
+    }
+  },
+  "paired_t_test": {
+    "n": 5,
+    "mean_diff": -0.08319999999999998,
+    "std_diff": 0.046510213931995614,
+    "t_statistic": -4.0,
+    "p_value_two_sided": 0.016130089899401238,
+    "cohens_d": -1.7888543819998317
+  },
+  "per_class_delta": {}
+}

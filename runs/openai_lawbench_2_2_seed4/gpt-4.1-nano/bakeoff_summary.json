@@ -1,0 +1,194 @@
+{
+  "model": "gpt-4.1-nano",
+  "task": "lawbench_2-2",
+  "elapsed_s": 86.4,
+  "cache_stats": {
+    "hits": 1448,
+    "misses": 4,
+    "writes": 4,
+    "cached_keys": 260,
+    "hit_rate": 0.997,
+    "path": "runs/cache/openai_lawbench_2_2.jsonl"
+  },
+  "bare_baseline": {
+    "accuracy": 0.146,
+    "tokens": 517.2,
+    "latency_ms": 726.9
+  },
+  "rag_baseline": {
+    "accuracy": 0.167,
+    "tokens": 524.3,
+    "latency_ms": 728.0
+  },
+  "n_discovered_dominates_rag": 0,
+  "n_discovered_ties_rag_acc_cheaper": 0,
+  "frontier": [
+    {
+      "candidate_id": "cand_0006",
+      "label": "discovered",
+      "accuracy": 0.167,
+      "accuracy_spread": 0.083,
+      "tokens": 628.3,
+      "latency_ms": 1076.9,
+      "components": [
+        {
+          "kind": "retriever",
+          "name": "null_retriever"
+        },
+        {
+          "kind": "reranker",
+          "name": "null_reranker"
+        },
+        {
+          "kind": "fewshot",
+          "name": "null_fewshot"
+        },
+        {
+          "kind": "formatter",
+          "name": "cot_formatter"
+        },
+        {
+          "kind": "predictor",
+          "name": "llm_predictor",
+          "n_samples": 1
+        },
+        {
+          "kind": "voter",
+          "name": "null_voter"
+        }
+      ]
+    },
+    {
+      "candidate_id": "cand_0002",
+      "label": "[RAG]",
+      "accuracy": 0.167,
+      "accuracy_spread": 0.0,
+      "tokens": 524.3,
+      "latency_ms": 728.0,
+      "components": [
+        {
+          "kind": "retriever",
+          "name": "bow_retriever",
+          "k": 3
+        },
+        {
+          "kind": "fewshot",
+          "name": "topk_fewshot",
+          "k": 2
+        },
+        {
+          "kind": "formatter",
+          "name": "simple_formatter"
+        },
+        {
+          "kind": "predictor",
+          "name": "llm_predictor",
+          "n_samples": 1
+        },
+        {
+          "kind": "voter",
+          "name": "null_voter"
+        }
+      ]
+    },
+    {
+      "candidate_id": "cand_0001",
+      "label": "[BARE]",
+      "accuracy": 0.146,
+      "accuracy_spread": 0.0,
+      "tokens": 517.2,
+      "latency_ms": 726.9,
+      "components": [
+        {
+          "kind": "retriever",
+          "name": "null_retriever"
+        },
+        {
+          "kind": "fewshot",
+          "name": "null_fewshot"
+        },
+        {
+          "kind": "formatter",
+          "name": "simple_formatter"
+        },
+        {
+          "kind": "predictor",
+          "name": "llm_predictor",
+          "n_samples": 1
+        },
+        {
+          "kind": "voter",
+          "name": "null_voter"
+        }
+      ]
+    },
+    {
+      "candidate_id": "cand_0004",
+      "label": "discovered",
+      "accuracy": 0.146,
+      "accuracy_spread": 0.042,
+      "tokens": 517.4,
+      "latency_ms": 645.0,
+      "components": [
+        {
+          "kind": "retriever",
+          "name": "tfidf_retriever",
+          "k": 5
+        },
+        {
+          "kind": "reranker",
+          "name": "null_reranker"
+        },
+        {
+          "kind": "fewshot",
+          "name": "null_fewshot"
+        },
+        {
+          "kind": "formatter",
+          "name": "simple_formatter"
+        },
+        {
+          "kind": "predictor",
+          "name": "llm_predictor",
+          "n_samples": 1
+        },
+        {
+          "kind": "voter",
+          "name": "null_voter"
+        }
+      ]
+    }
+  ],
+  "attribution": [
+    {
+      "kind": "retriever",
+      "mean_delta": 0.031,
+      "variance": 0.005,
+      "n": 8
+    },
+    {
+      "kind": "fewshot",
+      "mean_delta": 0.021,
+      "variance": 0.007,
+      "n": 8
+    },
+    {
+      "kind": "voter",
+      "mean_delta": -0.005,
+      "variance": 0.001,
+      "n": 8
+    },
+    {
+      "kind": "reranker",
+      "mean_delta": -0.007,
+      "variance": 0.0,
+      "n": 6
+    },
+    {
+      "kind": "formatter",
+      "mean_delta": -0.031,
+      "variance": 0.003,
+      "n": 8
+    }
+  ]
+}
