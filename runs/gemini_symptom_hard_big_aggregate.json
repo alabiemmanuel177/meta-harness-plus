@@ -1,0 +1,82 @@
+{
+  "label": "Gemini 2.5-flash-lite \u00d7 symptom_hard (6\u00d78 budget, 5 seeds)",
+  "n_seeds": 5,
+  "per_seed_bare_acc": [
+    0.667,
+    0.667,
+    0.667,
+    0.667,
+    0.667
+  ],
+  "per_seed_rag_acc": [
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0
+  ],
+  "per_seed_mh_peak_acc": [
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0
+  ],
+  "per_seed_rag_tokens": [
+    184.1,
+    184.1,
+    184.1,
+    184.1,
+    184.1
+  ],
+  "per_seed_mh_peak_tokens": [
+    123.5,
+    146.5,
+    331.7,
+    123.5,
+    123.5
+  ],
+  "per_seed_n_dominate": [
+    1,
+    2,
+    1,
+    1,
+    1
+  ],
+  "per_seed_n_match_cheaper": [
+    1,
+    2,
+    1,
+    1,
+    1
+  ],
+  "ci": {
+    "mh_minus_rag_acc": {
+      "mean": 0.0,
+      "low": 0.0,
+      "high": 0.0,
+      "confidence": 0.95
+    },
+    "mh_peak_acc": {
+      "mean": 1.0,
+      "low": 1.0,
+      "high": 1.0,
+      "confidence": 0.95
+    },
+    "rag_acc": {
+      "mean": 1.0,
+      "low": 1.0,
+      "high": 1.0,
+      "confidence": 0.95
+    }
+  },
+  "paired_t_test": {
+    "n": 5,
+    "mean_diff": 0.0,
+    "std_diff": 0.0,
+    "t_statistic": 0.0,
+    "p_value_two_sided": 1.0,
+    "cohens_d": 0.0
+  },
+  "per_class_delta": {}
+}

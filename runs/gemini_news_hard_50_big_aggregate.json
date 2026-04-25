@@ -1,0 +1,82 @@
+{
+  "label": "Gemini 2.5-flash-lite \u00d7 news_hard_50 (6\u00d78 budget, 5 seeds)",
+  "n_seeds": 5,
+  "per_seed_bare_acc": [
+    0.84,
+    0.84,
+    0.84,
+    0.84,
+    0.84
+  ],
+  "per_seed_rag_acc": [
+    0.88,
+    0.88,
+    0.88,
+    0.88,
+    0.88
+  ],
+  "per_seed_mh_peak_acc": [
+    0.92,
+    0.92,
+    0.9,
+    0.9,
+    0.9
+  ],
+  "per_seed_rag_tokens": [
+    173.6,
+    173.6,
+    173.6,
+    173.6,
+    173.6
+  ],
+  "per_seed_mh_peak_tokens": [
+    419.6,
+    457.9,
+    249.5,
+    171.9,
+    230.9
+  ],
+  "per_seed_n_dominate": [
+    1,
+    0,
+    0,
+    1,
+    0
+  ],
+  "per_seed_n_match_cheaper": [
+    2,
+    0,
+    0,
+    2,
+    0
+  ],
+  "ci": {
+    "mh_minus_rag_acc": {
+      "mean": 0.028000000000000025,
+      "low": 0.020000000000000018,
+      "high": 0.03600000000000003,
+      "confidence": 0.95
+    },
+    "mh_peak_acc": {
+      "mean": 0.908,
+      "low": 0.9,
+      "high": 0.916,
+      "confidence": 0.95
+    },
+    "rag_acc": {
+      "mean": 0.8800000000000001,
+      "low": 0.8800000000000001,
+      "high": 0.8800000000000001,
+      "confidence": 0.95
+    }
+  },
+  "paired_t_test": {
+    "n": 5,
+    "mean_diff": 0.028000000000000025,
+    "std_diff": 0.010954451150103331,
+    "t_statistic": 5.715476066494083,
+    "p_value_two_sided": 0.004635839416680952,
+    "cohens_d": 2.5560386016907755
+  },
+  "per_class_delta": {}
+}
