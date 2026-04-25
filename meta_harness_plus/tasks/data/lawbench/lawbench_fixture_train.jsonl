@@ -1,0 +1,20 @@
+{"input": "Defendant signed contract under duress claiming undue influence", "label": "contract"}
+{"input": "Buyer alleges breach of warranty after defective goods delivered", "label": "contract"}
+{"input": "Lease terms ambiguous whether tenant or landlord pays repairs", "label": "contract"}
+{"input": "Vendor failed to deliver goods per agreed schedule", "label": "contract"}
+{"input": "Plaintiff struck by negligent driver in city intersection", "label": "tort"}
+{"input": "Doctor's misdiagnosis allegedly caused permanent disability", "label": "tort"}
+{"input": "Consumer claims defective product caused fire damage", "label": "tort"}
+{"input": "Property owner sued after slip and fall on icy walkway", "label": "tort"}
+{"input": "Defendant charged with felony robbery in armed incident", "label": "criminal"}
+{"input": "Prosecutor filed homicide charges with first-degree intent", "label": "criminal"}
+{"input": "Police seized evidence during warrantless vehicle search", "label": "criminal"}
+{"input": "Defendant pleaded guilty to white-collar embezzlement charges", "label": "criminal"}
+{"input": "Couple seeks divorce and division of marital assets", "label": "family"}
+{"input": "Father petitioning for sole custody of minor children", "label": "family"}
+{"input": "Adoption agency seeks termination of biological parental rights", "label": "family"}
+{"input": "Estate executor disputes validity of decedent will", "label": "family"}
+{"input": "Patent holder sues competitor for infringement of method claims", "label": "ip"}
+{"input": "Trademark owner alleges confusing similarity in branding", "label": "ip"}
+{"input": "Copyright holder claims unauthorized derivative work created", "label": "ip"}
+{"input": "Trade secret allegedly misappropriated by former employee", "label": "ip"}
