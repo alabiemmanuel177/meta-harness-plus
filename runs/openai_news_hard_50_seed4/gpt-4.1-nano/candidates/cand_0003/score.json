@@ -1,0 +1,8 @@
+{
+  "accuracy": 0.72,
+  "accuracy_spread": 0.0,
+  "latency_ms": 856.6910672798715,
+  "n_evaluated": 50,
+  "n_repeats": 2,
+  "tokens": 144.36
+}

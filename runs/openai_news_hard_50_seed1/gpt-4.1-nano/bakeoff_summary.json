@@ -1,0 +1,234 @@
+{
+  "model": "gpt-4.1-nano",
+  "task": "news_hard_50",
+  "elapsed_s": 269.9,
+  "cache_stats": {
+    "hits": 1051,
+    "misses": 33,
+    "writes": 33,
+    "cached_keys": 318,
+    "hit_rate": 0.97,
+    "path": "runs/cache/openai_news_hard_50.jsonl"
+  },
+  "bare_baseline": {
+    "accuracy": 0.72,
+    "tokens": 71.8,
+    "latency_ms": 845.7
+  },
+  "rag_baseline": {
+    "accuracy": 0.88,
+    "tokens": 181.6,
+    "latency_ms": 619.0
+  },
+  "n_discovered_dominates_rag": 0,
+  "n_discovered_ties_rag_acc_cheaper": 1,
+  "frontier": [
+    {
+      "candidate_id": "cand_0007",
+      "label": "discovered",
+      "accuracy": 0.92,
+      "accuracy_spread": 0.0,
+      "tokens": 317.7,
+      "latency_ms": 1021.8,
+      "components": [
+        {
+          "kind": "retriever",
+          "name": "bm25_retriever",
+          "k": 5
+        },
+        {
+          "kind": "reranker",
+          "name": "diversity_reranker"
+        },
+        {
+          "kind": "fewshot",
+          "name": "topk_fewshot",
+          "k": 2
+        },
+        {
+          "kind": "formatter",
+          "name": "cot_formatter"
+        },
+        {
+          "kind": "predictor",
+          "name": "llm_predictor",
+          "n_samples": 1
+        },
+        {
+          "kind": "voter",
+          "name": "null_voter"
+        }
+      ]
+    },
+    {
+      "candidate_id": "cand_0004",
+      "label": "discovered",
+      "accuracy": 0.91,
+      "accuracy_spread": 0.06,
+      "tokens": 395.0,
+      "latency_ms": 1000.3,
+      "components": [
+        {
+          "kind": "retriever",
+          "name": "tfidf_retriever",
+          "k": 15
+        },
+        {
+          "kind": "reranker",
+          "name": "null_reranker"
+        },
+        {
+          "kind": "fewshot",
+          "name": "topk_fewshot",
+          "k": 3
+        },
+        {
+          "kind": "formatter",
+          "name": "cot_formatter"
+        },
+        {
+          "kind": "predictor",
+          "name": "llm_predictor",
+          "n_samples": 1
+        },
+        {
+          "kind": "voter",
+          "name": "null_voter"
+        }
+      ]
+    },
+    {
+      "candidate_id": "cand_0010",
+      "label": "discovered",
+      "accuracy": 0.9,
+      "accuracy_spread": 0.0,
+      "tokens": 179.9,
+      "latency_ms": 625.3,
+      "components": [
+        {
+          "kind": "retriever",
+          "name": "bm25_retriever",
+          "k": 3
+        },
+        {
+          "kind": "reranker",
+          "name": "diversity_reranker"
+        },
+        {
+          "kind": "fewshot",
+          "name": "topk_fewshot",
+          "k": 2
+        },
+        {
+          "kind": "formatter",
+          "name": "simple_formatter"
+        },
+        {
+          "kind": "predictor",
+          "name": "llm_predictor",
+          "n_samples": 1
+        },
+        {
+          "kind": "voter",
+          "name": "majority_voter"
+        }
+      ]
+    },
+    {
+      "candidate_id": "cand_0002",
+      "label": "[RAG]",
+      "accuracy": 0.88,
+      "accuracy_spread": 0.0,
+      "tokens": 181.6,
+      "latency_ms": 619.0,
+      "components": [
+        {
+          "kind": "retriever",
+          "name": "bow_retriever",
+          "k": 3
+        },
+        {
+          "kind": "fewshot",
+          "name": "topk_fewshot",
+          "k": 2
+        },
+        {
+          "kind": "formatter",
+          "name": "simple_formatter"
+        },
+        {
+          "kind": "predictor",
+          "name": "llm_predictor",
+          "n_samples": 1
+        },
+        {
+          "kind": "voter",
+          "name": "null_voter"
+        }
+      ]
+    },
+    {
+      "candidate_id": "cand_0001",
+      "label": "[BARE]",
+      "accuracy": 0.72,
+      "accuracy_spread": 0.0,
+      "tokens": 71.8,
+      "latency_ms": 845.7,
+      "components": [
+        {
+          "kind": "retriever",
+          "name": "null_retriever"
+        },
+        {
+          "kind": "fewshot",
+          "name": "null_fewshot"
+        },
+        {
+          "kind": "formatter",
+          "name": "simple_formatter"
+        },
+        {
+          "kind": "predictor",
+          "name": "llm_predictor",
+          "n_samples": 1
+        },
+        {
+          "kind": "voter",
+          "name": "null_voter"
+        }
+      ]
+    }
+  ],
+  "attribution": [
+    {
+      "kind": "fewshot",
+      "mean_delta": 0.088,
+      "variance": 0.01,
+      "n": 8
+    },
+    {
+      "kind": "retriever",
+      "mean_delta": 0.088,
+      "variance": 0.007,
+      "n": 8
+    },
+    {
+      "kind": "formatter",
+      "mean_delta": 0.063,
+      "variance": 0.007,
+      "n": 8
+    },
+    {
+      "kind": "reranker",
+      "mean_delta": 0.006,
+      "variance": 0.001,
+      "n": 6
+    },
+    {
+      "kind": "voter",
+      "mean_delta": 0.004,
+      "variance": 0.0,
+      "n": 8
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "fewshot": {
+    "kind": "fewshot",
+    "m2": 0.006527777777777775,
+    "mean_delta": 0.02083333333333333,
+    "n": 8
+  },
+  "formatter": {
+    "kind": "formatter",
+    "m2": 0.019444444444444438,
+    "mean_delta": 0.04166666666666666,
+    "n": 8
+  },
+  "reranker": {
+    "kind": "reranker",
+    "m2": 0.0022222222222222214,
+    "mean_delta": 0.0,
+    "n": 6
+  },
+  "retriever": {
+    "kind": "retriever",
+    "m2": 0.004444444444444443,
+    "mean_delta": 0.016666666666666663,
+    "n": 8
+  },
+  "voter": {
+    "kind": "voter",
+    "m2": 0.0022222222222222214,
+    "mean_delta": 0.0,
+    "n": 8
+  }
+}
