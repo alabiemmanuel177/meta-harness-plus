@@ -1,0 +1,189 @@
+[
+  {
+    "model": "gemma4:26b",
+    "task": "news_hard_50",
+    "elapsed_s": 5755.0,
+    "bare_baseline": {
+      "accuracy": 0.82,
+      "tokens": 484.7,
+      "latency_ms": 5290.3
+    },
+    "rag_baseline": {
+      "accuracy": 0.88,
+      "tokens": 571.3,
+      "latency_ms": 4876.0
+    },
+    "n_discovered_dominates_rag": 0,
+    "n_discovered_ties_rag_acc_cheaper": 0,
+    "frontier": [
+      {
+        "candidate_id": "cand_0004",
+        "label": "discovered",
+        "accuracy": 0.9,
+        "accuracy_spread": 0.0,
+        "tokens": 607.3,
+        "latency_ms": 4700.7,
+        "components": [
+          {
+            "kind": "retriever",
+            "name": "bow_retriever",
+            "k": 5
+          },
+          {
+            "kind": "reranker",
+            "name": "null_reranker"
+          },
+          {
+            "kind": "fewshot",
+            "name": "topk_fewshot",
+            "k": 3
+          },
+          {
+            "kind": "formatter",
+            "name": "simple_formatter"
+          },
+          {
+            "kind": "predictor",
+            "name": "llm_predictor",
+            "n_samples": 1
+          },
+          {
+            "kind": "voter",
+            "name": "null_voter"
+          }
+        ]
+      },
+      {
+        "candidate_id": "cand_0002",
+        "label": "[RAG]",
+        "accuracy": 0.88,
+        "accuracy_spread": 0.0,
+        "tokens": 571.3,
+        "latency_ms": 4876.0,
+        "components": [
+          {
+            "kind": "retriever",
+            "name": "bow_retriever",
+            "k": 3
+          },
+          {
+            "kind": "fewshot",
+            "name": "topk_fewshot",
+            "k": 2
+          },
+          {
+            "kind": "formatter",
+            "name": "simple_formatter"
+          },
+          {
+            "kind": "predictor",
+            "name": "llm_predictor",
+            "n_samples": 1
+          },
+          {
+            "kind": "voter",
+            "name": "null_voter"
+          }
+        ]
+      },
+      {
+        "candidate_id": "cand_0001",
+        "label": "[BARE]",
+        "accuracy": 0.82,
+        "accuracy_spread": 0.0,
+        "tokens": 484.7,
+        "latency_ms": 5290.3,
+        "components": [
+          {
+            "kind": "retriever",
+            "name": "null_retriever"
+          },
+          {
+            "kind": "fewshot",
+            "name": "null_fewshot"
+          },
+          {
+            "kind": "formatter",
+            "name": "simple_formatter"
+          },
+          {
+            "kind": "predictor",
+            "name": "llm_predictor",
+            "n_samples": 1
+          },
+          {
+            "kind": "voter",
+            "name": "null_voter"
+          }
+        ]
+      },
+      {
+        "candidate_id": "cand_0003",
+        "label": "discovered",
+        "accuracy": 0.8,
+        "accuracy_spread": 0.0,
+        "tokens": 497.6,
+        "latency_ms": 5219.3,
+        "components": [
+          {
+            "kind": "retriever",
+            "name": "null_retriever"
+          },
+          {
+            "kind": "reranker",
+            "name": "null_reranker"
+          },
+          {
+            "kind": "fewshot",
+            "name": "null_fewshot"
+          },
+          {
+            "kind": "formatter",
+            "name": "simple_formatter"
+          },
+          {
+            "kind": "predictor",
+            "name": "llm_predictor",
+            "n_samples": 1
+          },
+          {
+            "kind": "voter",
+            "name": "null_voter"
+          }
+        ]
+      }
+    ],
+    "attribution": [
+      {
+        "kind": "retriever",
+        "mean_delta": 0.033,
+        "variance": 0.003,
+        "n": 4
+      },
+      {
+        "kind": "fewshot",
+        "mean_delta": 0.033,
+        "variance": 0.003,
+        "n": 4
+      },
+      {
+        "kind": "formatter",
+        "mean_delta": 0.017,
+        "variance": 0.001,
+        "n": 4
+      },
+      {
+        "kind": "voter",
+        "mean_delta": 0.0,
+        "variance": 0.0,
+        "n": 4
+      },
+      {
+        "kind": "reranker",
+        "mean_delta": 0.0,
+        "variance": 0.0,
+        "n": 2
+      }
+    ]
+  }
+]

@@ -82,11 +82,14 @@ class ScriptedClient:
 # ---------------- HTTPClient (real APIs) ----------------
 
 class HTTPClient:
-    """Minimal urllib-backed client. Supports three provider flavors:
+    """Minimal urllib-backed client. Supports four provider flavors:
 
     - **Anthropic** Messages API (auto-detected by ``anthropic.com`` in URL)
     - **Ollama** native chat API (auto-detected by ``/api/chat`` in URL — e.g.
       ``http://localhost:11434/api/chat``; no API key needed)
+    - **Gemini** generateContent (auto-detected by
+      ``generativelanguage.googleapis.com`` in URL; key passed as ``?key=``
+      query param, not a header)
     - **OpenAI-compatible** Chat Completions (everything else, including
       Ollama's ``/v1/chat/completions`` endpoint, LM Studio, vLLM, etc.)
 
@@ -109,6 +112,7 @@ class HTTPClient:
         self.timeout_s = timeout_s
         self._is_anthropic = "anthropic.com" in api_url
         self._is_ollama_native = "/api/chat" in api_url
+        self._is_gemini = "generativelanguage.googleapis.com" in api_url
 
     def _build_payload(self, system: str, user: str, max_tokens: int, temperature: float) -> dict:
         if self._is_anthropic:
@@ -132,6 +136,15 @@ class HTTPClient:
                     "num_predict": max_tokens,
                 },
             }
+        if self._is_gemini:
+            return {
+                "contents": [{"role": "user", "parts": [{"text": user}]}],
+                "systemInstruction": {"parts": [{"text": system}]},
+                "generationConfig": {
+                    "temperature": temperature,
+                    "maxOutputTokens": max_tokens,
+                },
+            }
         # OpenAI-compatible (includes Ollama /v1/chat/completions, vLLM, LM Studio)
         return {
             "model": self.model,
@@ -149,13 +162,21 @@ class HTTPClient:
             headers["x-api-key"] = self.api_key
             headers["anthropic-version"] = "2023-06-01"
         elif self._is_ollama_native:
-            # Ollama native needs no auth for local endpoints.
-            pass
+            pass  # local Ollama: no auth
+        elif self._is_gemini:
+            pass  # Gemini auth goes in the URL as ?key=...
         else:
             if self.api_key:
                 headers["authorization"] = f"Bearer {self.api_key}"
         headers.update(self.extra_headers)
         return headers
+
+    def _resolve_url(self) -> str:
+        """Gemini wants the API key as a URL query parameter, not a header."""
+        if self._is_gemini and self.api_key and "key=" not in self.api_url:
+            sep = "&" if "?" in self.api_url else "?"
+            return f"{self.api_url}{sep}key={self.api_key}"
+        return self.api_url
 
     def _parse(self, resp_json: dict) -> tuple[str, int, int]:
         if self._is_anthropic:
@@ -173,6 +194,16 @@ class HTTPClient:
             if not text.strip():
                 text = msg.get("thinking", "") or ""
             return text, resp_json.get("prompt_eval_count", 0), resp_json.get("eval_count", 0)
+        if self._is_gemini:
+            cands = resp_json.get("candidates", [])
+            text = ""
+            if cands:
+                parts = cands[0].get("content", {}).get("parts", [])
+                text = "".join(p.get("text", "") for p in parts)
+            usage = resp_json.get("usageMetadata", {})
+            return (text,
+                    int(usage.get("promptTokenCount", 0)),
+                    int(usage.get("candidatesTokenCount", 0)))
         # OpenAI
         choices = resp_json.get("choices", [])
         text = choices[0]["message"]["content"] if choices else ""
@@ -184,7 +215,7 @@ class HTTPClient:
         payload = self._build_payload(system, user, max_tokens, temperature)
         headers = self._build_headers()
         data = json.dumps(payload).encode("utf-8")
-        req = urllib.request.Request(self.api_url, data=data, headers=headers, method="POST")
+        req = urllib.request.Request(self._resolve_url(), data=data, headers=headers, method="POST")
         t0 = time.perf_counter()
         try:
             with urllib.request.urlopen(req, timeout=self.timeout_s) as r:

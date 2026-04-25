@@ -50,6 +50,37 @@ class TestProviderDetection(unittest.TestCase):
         self.assertNotIn("x-api-key", h)
         self.assertTrue(c._is_ollama_native)
 
+    def test_gemini_detection_and_payload(self):
+        c = HTTPClient(
+            api_url="https://generativelanguage.googleapis.com/v1beta/"
+                    "models/gemini-2.0-flash:generateContent",
+            api_key="GEMINI-KEY", model="gemini-2.0-flash",
+        )
+        self.assertTrue(c._is_gemini)
+        self.assertFalse(c._is_anthropic)
+        p = c._build_payload(system="S", user="U", max_tokens=10, temperature=0.1)
+        self.assertEqual(p["systemInstruction"]["parts"][0]["text"], "S")
+        self.assertEqual(p["contents"][0]["role"], "user")
+        self.assertEqual(p["contents"][0]["parts"][0]["text"], "U")
+        self.assertEqual(p["generationConfig"]["maxOutputTokens"], 10)
+        self.assertEqual(p["generationConfig"]["temperature"], 0.1)
+        # Gemini auth goes in the URL, not headers.
+        h = c._build_headers()
+        self.assertNotIn("authorization", h)
+        self.assertNotIn("x-api-key", h)
+        # _resolve_url should append ?key=...
+        self.assertIn("key=GEMINI-KEY", c._resolve_url())
+
+    def test_gemini_url_already_has_query(self):
+        # If the URL already contains ?key=... we shouldn't double-add it.
+        c = HTTPClient(
+            api_url="https://generativelanguage.googleapis.com/v1beta/"
+                    "models/gemini-2.0-flash:generateContent?key=PRESET",
+            api_key="OTHER", model="gemini-2.0-flash",
+        )
+        # When ?key= is already in the URL, _resolve_url leaves it alone.
+        self.assertEqual(c._resolve_url(), c.api_url)
+
     def test_openai_compatible_default(self):
         c = HTTPClient(api_url="https://api.openai.com/v1/chat/completions",
                        api_key="sk-x", model="gpt-4o-mini")
@@ -84,6 +115,22 @@ class TestResponseParsing(unittest.TestCase):
         text, in_tok, out_tok = c._parse(resp)
         self.assertEqual(text, "sports")
         self.assertEqual((in_tok, out_tok), (20, 1))
+
+    def test_parse_gemini(self):
+        c = HTTPClient(
+            api_url="https://generativelanguage.googleapis.com/v1beta/"
+                    "models/x:generateContent",
+            api_key="x", model="x",
+        )
+        resp = {
+            "candidates": [{
+                "content": {"parts": [{"text": "tech"}], "role": "model"},
+            }],
+            "usageMetadata": {"promptTokenCount": 18, "candidatesTokenCount": 1},
+        }
+        text, in_t, out_t = c._parse(resp)
+        self.assertEqual(text, "tech")
+        self.assertEqual((in_t, out_t), (18, 1))
 
     def test_parse_openai(self):
         c = HTTPClient(api_url="https://api.openai.com/v1/chat/completions",
