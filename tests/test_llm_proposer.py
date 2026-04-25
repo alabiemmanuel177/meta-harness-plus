@@ -129,7 +129,8 @@ class TestLLMProposer(unittest.TestCase):
 
         self.assertIn("cand_0001", captured["user"])
         self.assertIn("voter", captured["user"])
-        self.assertIn("mean_delta=+0.200", captured["user"])
+        # Attribution shown with both ewma and mean since per-class-and-ewma branch.
+        self.assertIn("mean=+0.200", captured["user"])
         # Exploration gap should appear too — bow_retriever is registered but
         # not on the seeded frontier.
         self.assertIn("retriever/bow_retriever", captured["user"])

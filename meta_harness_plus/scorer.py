@@ -24,6 +24,12 @@ class ScoreVector:
     # Reproducibility fields (populated only when n_repeats > 1):
     n_repeats: int = 1
     accuracy_spread: float = 0.0   # max(acc) - min(acc) across repeats
+    # Per-class breakdown of accuracy. Empty dict means "not computed";
+    # populated by Scorer.score() always (cheap to track inline). The
+    # LLMProposer reads this off the search-best frontier entry to
+    # surface failure-mode signal: "current top is at 0.6 on class X,
+    # 1.0 on class Y — propose components that fix the weak class."
+    per_class_accuracy: tuple[tuple[str, float], ...] = ()  # tuple-of-tuples for hashability
 
     @staticmethod
     def objective_signs() -> tuple[int, int, int]:
@@ -32,6 +38,10 @@ class ScoreVector:
 
     def as_tuple(self) -> tuple[float, float, float]:
         return (self.accuracy, self.tokens, self.latency_ms)
+
+    def per_class_dict(self) -> dict[str, float]:
+        """Convenience for callers that want a dict view."""
+        return dict(self.per_class_accuracy)
 
 
 def _median(values: list[float]) -> float:
@@ -91,21 +101,36 @@ class Scorer:
         if max_workers < 1:
             raise ValueError(f"max_workers must be >= 1, got {max_workers}")
 
-        def eval_one(ex: TaskExample) -> tuple[int, float, float]:
+        def eval_one(ex: TaskExample) -> tuple[int, float, float, str]:
             ctx = harness.run(ex)
             return (
                 1 if ctx.prediction == ex.label else 0,
                 float(ctx.tokens),
                 float(ctx.latency_ms),
+                ex.label,
             )
 
-        def eval_sweep() -> list[tuple[int, float, float]]:
+        def eval_sweep() -> list[tuple[int, float, float, str]]:
             if max_workers == 1:
                 return [eval_one(ex) for ex in examples]
             with ThreadPoolExecutor(max_workers=max_workers) as pool:
                 # pool.map preserves the input order — important for
                 # determinism vs the sequential path.
                 return list(pool.map(eval_one, examples))
+
+        def per_class_breakdown(
+            results: list[tuple[int, float, float, str]],
+        ) -> tuple[tuple[str, float], ...]:
+            """Compute per-class accuracy from a results list."""
+            counts: dict[str, list[int]] = {}
+            for r in results:
+                counts.setdefault(r[3], [0, 0])
+                counts[r[3]][1] += 1  # total
+                counts[r[3]][0] += r[0]  # correct
+            return tuple(
+                (klass, c / max(1, t))
+                for klass, (c, t) in sorted(counts.items())
+            )
 
         n = len(examples)
 
@@ -119,12 +144,15 @@ class Scorer:
                 tokens=total_tokens / n,
                 latency_ms=total_latency / n,
                 n_evaluated=n,
+                per_class_accuracy=per_class_breakdown(results),
             )
 
         # Multi-repeat path.
         accs: list[float] = []
         tok_sums: list[float] = []
         lat_sums: list[float] = []
+        # Aggregate per-class across repeats: dict[class] -> (correct_total, total).
+        per_class_agg: dict[str, list[int]] = {}
         for _ in range(n_repeats):
             results = eval_sweep()
             correct = sum(r[0] for r in results)
@@ -133,6 +161,14 @@ class Scorer:
             accs.append(correct / n)
             tok_sums.append(tok_sum / n)
             lat_sums.append(lat_sum / n)
+            for r in results:
+                per_class_agg.setdefault(r[3], [0, 0])
+                per_class_agg[r[3]][0] += r[0]
+                per_class_agg[r[3]][1] += 1
+        per_class_tuple = tuple(
+            (klass, c / max(1, t))
+            for klass, (c, t) in sorted(per_class_agg.items())
+        )
         return ScoreVector(
             accuracy=_median(accs),
             tokens=sum(tok_sums) / n_repeats,
@@ -140,4 +176,5 @@ class Scorer:
             n_evaluated=n,
             n_repeats=n_repeats,
             accuracy_spread=max(accs) - min(accs),
+            per_class_accuracy=per_class_tuple,
         )

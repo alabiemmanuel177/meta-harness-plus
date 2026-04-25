@@ -37,6 +37,13 @@ class AttributionStats:
     mean_delta: float = 0.0
     # Keep running mean + squared deviations for a stable variance read-out.
     m2: float = 0.0
+    # Exponentially-weighted moving average — weights recent ablation
+    # snapshots more heavily than old ones. Better signal for the
+    # proposer when the search is mid-flight: "what's working LATELY"
+    # is more actionable than "what's worked on average since iter 0",
+    # because the Pareto frontier shifts over the course of a search.
+    ewma_alpha: float = 0.3
+    ewma_delta: float = 0.0
 
     def update(self, delta: float) -> None:
         self.n += 1
@@ -44,6 +51,14 @@ class AttributionStats:
         self.mean_delta += d / self.n
         d2 = delta - self.mean_delta
         self.m2 += d * d2
+        # EWMA: first sample initializes; subsequent samples blend.
+        if self.n == 1:
+            self.ewma_delta = delta
+        else:
+            self.ewma_delta = (
+                self.ewma_alpha * delta
+                + (1.0 - self.ewma_alpha) * self.ewma_delta
+            )
 
     @property
     def variance(self) -> float:
