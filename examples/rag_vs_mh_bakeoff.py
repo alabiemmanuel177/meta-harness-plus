@@ -42,6 +42,7 @@ from meta_harness_plus.llm.registry import llm_search_registry
 from meta_harness_plus.pareto import dominates
 from meta_harness_plus.runner import SearchConfig, SearchRunner
 from meta_harness_plus.scorer import Scorer
+from meta_harness_plus.search.ensemble_proposer import EnsembleProposer
 from meta_harness_plus.tasks import (
     build_news_hard_task,
     build_news_task,
@@ -65,10 +66,30 @@ def run_one_model(model: str, ollama_url: str, run_dir: Path, args) -> dict:
     client = HTTPClient(api_url=ollama_url, model=model, timeout_s=300.0)
 
     registry = llm_search_registry(task, client, predictor_max_tokens=args.predictor_max_tokens)
-    proposer = LLMProposer(
-        client=client, registry=registry, run_dir=str(run_dir),
-        temperature=args.proposer_temperature, max_tokens=args.proposer_max_tokens,
-    )
+    if args.proposer_mode == "ensemble":
+        # Ensemble of K LLMProposers at different temperatures. Each reads
+        # the same filesystem run log but explores from different
+        # sampling-temperature regimes — diversity at no extra search-
+        # iteration cost (each child gets n // K proposals per call).
+        temps = [args.proposer_temperature * (1.0 + 0.3 * i)
+                 for i in range(args.ensemble_size)]
+        children = [
+            LLMProposer(
+                client=client, registry=registry, run_dir=str(run_dir),
+                temperature=t, max_tokens=args.proposer_max_tokens,
+            )
+            for t in temps
+        ]
+        proposer = EnsembleProposer(proposers=children, dedup=True)
+        print(f"  proposer: ensemble of {args.ensemble_size} at temps={temps}",
+              flush=True)
+    else:
+        proposer = LLMProposer(
+            client=client, registry=registry, run_dir=str(run_dir),
+            temperature=args.proposer_temperature, max_tokens=args.proposer_max_tokens,
+        )
+        print(f"  proposer: single LLMProposer at temp={args.proposer_temperature}",
+              flush=True)
 
     scorer = Scorer(task)
     attribution = AttributionTracker(scorer, baseline_for)
@@ -93,6 +114,7 @@ def run_one_model(model: str, ollama_url: str, run_dir: Path, args) -> dict:
             screen_repeats=args.screen_repeats,
             attribution_repeats=args.attribution_repeats,
             attribution_screen_size=args.attribution_screen_size,
+            frontier_max_spread=args.frontier_max_spread,
             run_dir=str(run_dir),
         ),
         # Seed order: bare first, then RAG. Both get full-evaluated and
@@ -220,6 +242,15 @@ def main():
     ap.add_argument("--proposer-temperature", type=float, default=0.5)
     ap.add_argument("--proposer-max-tokens", type=int, default=4096)
     ap.add_argument("--predictor-max-tokens", type=int, default=1024)  # bigger for CoT
+    # Tier 5.2 — ensemble proposer with diversity pressure
+    ap.add_argument("--proposer-mode", choices=("single", "ensemble"), default="single",
+                    help="single LLMProposer or N-member ensemble at varied temps")
+    ap.add_argument("--ensemble-size", type=int, default=4,
+                    help="how many LLMProposers in the ensemble")
+    # Tier 4.2 — variance-gated frontier admission
+    ap.add_argument("--frontier-max-spread", type=float, default=None,
+                    help="reject frontier candidates with accuracy_spread > this "
+                         "(only effective when eval_repeats > 1)")
     ap.add_argument("--eval-repeats", type=int, default=2)
     ap.add_argument("--screen-repeats", type=int, default=1)
     ap.add_argument("--attribution-repeats", type=int, default=2)

@@ -43,6 +43,11 @@ class SearchConfig:
     screen_repeats: int = 1            # repeats during successive-halving screen
     attribution_repeats: int = 1
     attribution_screen_size: int | None = None  # None = use screen_size
+    # Tier 4.2 — variance-gated frontier admission. When set, candidates
+    # whose accuracy_spread (max-min across eval_repeats) exceeds this
+    # threshold are rejected from the Pareto frontier. Only meaningful
+    # when eval_repeats > 1.
+    frontier_max_spread: float | None = None
 
 
 @dataclass
@@ -106,7 +111,7 @@ class SearchRunner:
 
     # --- main loop ---
     def run(self) -> SearchState:
-        frontier = ParetoFrontier()
+        frontier = ParetoFrontier(max_accuracy_spread=self.config.frontier_max_spread)
         state = SearchState(frontier=frontier, attribution=self.attribution)
 
         # Seed the frontier with any initial harnesses.
