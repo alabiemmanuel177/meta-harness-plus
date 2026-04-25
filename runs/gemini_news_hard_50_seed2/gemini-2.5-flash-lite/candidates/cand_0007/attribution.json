@@ -1,0 +1,107 @@
+[
+  {
+    "ablated_score": {
+      "accuracy": 0.8666666666666667,
+      "accuracy_spread": 0.0,
+      "latency_ms": 1694.3382249996494,
+      "n_evaluated": 15,
+      "n_repeats": 2,
+      "tokens": 179.53333333333333
+    },
+    "accuracy_delta": 0.06666666666666665,
+    "candidate_id": "cand_0007",
+    "full_score": {
+      "accuracy": 0.9333333333333333,
+      "accuracy_spread": 0.0,
+      "latency_ms": 2003.0398553668247,
+      "n_evaluated": 15,
+      "n_repeats": 2,
+      "tokens": 468.20000000000005
+    },
+    "kind": "retriever"
+  },
+  {
+    "ablated_score": {
+      "accuracy": 0.9333333333333333,
+      "accuracy_spread": 0.0,
+      "latency_ms": 1092.330951866686,
+      "n_evaluated": 15,
+      "n_repeats": 2,
+      "tokens": 347.6
+    },
+    "accuracy_delta": 0.0,
+    "candidate_id": "cand_0007",
+    "full_score": {
+      "accuracy": 0.9333333333333333,
+      "accuracy_spread": 0.0,
+      "latency_ms": 2003.0398553668247,
+      "n_evaluated": 15,
+      "n_repeats": 2,
+      "tokens": 468.20000000000005
+    },
+    "kind": "reranker"
+  },
+  {
+    "ablated_score": {
+      "accuracy": 0.8666666666666667,
+      "accuracy_spread": 0.0,
+      "latency_ms": 2524.9111024994363,
+      "n_evaluated": 15,
+      "n_repeats": 2,
+      "tokens": 350.1333333333333
+    },
+    "accuracy_delta": 0.06666666666666665,
+    "candidate_id": "cand_0007",
+    "full_score": {
+      "accuracy": 0.9333333333333333,
+      "accuracy_spread": 0.0,
+      "latency_ms": 2003.0398553668247,
+      "n_evaluated": 15,
+      "n_repeats": 2,
+      "tokens": 468.20000000000005
+    },
+    "kind": "fewshot"
+  },
+  {
+    "ablated_score": {
+      "accuracy": 0.9333333333333333,
+      "accuracy_spread": 0.0,
+      "latency_ms": 1896.1409535668108,
+      "n_evaluated": 15,
+      "n_repeats": 2,
+      "tokens": 356.3333333333333
+    },
+    "accuracy_delta": 0.0,
+    "candidate_id": "cand_0007",
+    "full_score": {
+      "accuracy": 0.9333333333333333,
+      "accuracy_spread": 0.0,
+      "latency_ms": 2003.0398553668247,
+      "n_evaluated": 15,
+      "n_repeats": 2,
+      "tokens": 468.20000000000005
+    },
+    "kind": "formatter"
+  },
+  {
+    "ablated_score": {
+      "accuracy": 0.9333333333333333,
+      "accuracy_spread": 0.0,
+      "latency_ms": 2046.917634333237,
+      "n_evaluated": 15,
+      "n_repeats": 2,
+      "tokens": 469.73333333333335
+    },
+    "accuracy_delta": 0.0,
+    "candidate_id": "cand_0007",
+    "full_score": {
+      "accuracy": 0.9333333333333333,
+      "accuracy_spread": 0.0,
+      "latency_ms": 2003.0398553668247,
+      "n_evaluated": 15,
+      "n_repeats": 2,
+      "tokens": 468.20000000000005
+    },
+    "kind": "voter"
+  }
+]

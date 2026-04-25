@@ -1,0 +1,73 @@
+{
+  "label": "Gemini 2.5 Flash Lite (5 seeds)",
+  "n_seeds": 5,
+  "per_seed_bare_acc": [
+    0.84,
+    0.84,
+    0.84,
+    0.84,
+    0.84
+  ],
+  "per_seed_rag_acc": [
+    0.88,
+    0.88,
+    0.88,
+    0.88,
+    0.88
+  ],
+  "per_seed_mh_peak_acc": [
+    0.9,
+    0.94,
+    0.92,
+    0.92,
+    0.92
+  ],
+  "per_seed_rag_tokens": [
+    173.6,
+    173.6,
+    173.6,
+    173.6,
+    173.6
+  ],
+  "per_seed_mh_peak_tokens": [
+    189.1,
+    459.5,
+    298.4,
+    337.7,
+    178.3
+  ],
+  "per_seed_n_dominate": [
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "per_seed_n_match_cheaper": [
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "ci": {
+    "mh_minus_rag_acc": {
+      "mean": 0.040000000000000015,
+      "low": 0.028000000000000025,
+      "high": 0.05199999999999998,
+      "confidence": 0.95
+    },
+    "mh_peak_acc": {
+      "mean": 0.9199999999999999,
+      "low": 0.908,
+      "high": 0.932,
+      "confidence": 0.95
+    },
+    "rag_acc": {
+      "mean": 0.8800000000000001,
+      "low": 0.8800000000000001,
+      "high": 0.8800000000000001,
+      "confidence": 0.95
+    }
+  }
+}
