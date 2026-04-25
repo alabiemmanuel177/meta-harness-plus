@@ -1,0 +1,50 @@
+{
+  "task": "symptom_hard",
+  "model": "gemini-2.5-flash-lite",
+  "api": "gemini",
+  "n_eval": 15,
+  "n_repeats": 3,
+  "baselines": {
+    "BARE": {
+      "accuracy": 0.6666666666666666,
+      "tokens": 70.6,
+      "latency_ms": 978.1806359997232,
+      "n_eval": 15,
+      "n_repeats": 3,
+      "elapsed_s": 2.5
+    },
+    "RAG": {
+      "accuracy": 1.0,
+      "tokens": 184.0666666666667,
+      "latency_ms": 694.362203266297,
+      "n_eval": 15,
+      "n_repeats": 3,
+      "elapsed_s": 1.9
+    },
+    "CoT-RAG": {
+      "accuracy": 0.9333333333333333,
+      "tokens": 323.0,
+      "latency_ms": 1208.2049528005784,
+      "n_eval": 15,
+      "n_repeats": 3,
+      "elapsed_s": 3.1
+    },
+    "voting-RAG": {
+      "accuracy": 1.0,
+      "tokens": 359.26666666666665,
+      "latency_ms": 2640.686344044429,
+      "n_eval": 15,
+      "n_repeats": 3,
+      "elapsed_s": 19.0
+    },
+    "diverse-RAG": {
+      "accuracy": 1.0,
+      "tokens": 246.33333333333334,
+      "latency_ms": 911.8273166002899,
+      "n_eval": 15,
+      "n_repeats": 3,
+      "elapsed_s": 2.0
+    }
+  },
+  "mh_aggregate_path": "runs/gemini_symptom_hard_big_aggregate.json"
+}

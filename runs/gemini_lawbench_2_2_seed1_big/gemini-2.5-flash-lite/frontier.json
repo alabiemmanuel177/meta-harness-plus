@@ -1,0 +1,222 @@
+[
+  {
+    "candidate_id": "cand_0001",
+    "describe": [
+      {
+        "kind": "retriever",
+        "name": "null_retriever"
+      },
+      {
+        "kind": "fewshot",
+        "name": "null_fewshot"
+      },
+      {
+        "kind": "formatter",
+        "name": "simple_formatter",
+        "system_hint": "Classify the input."
+      },
+      {
+        "kind": "predictor",
+        "n_samples": 1,
+        "name": "llm_predictor",
+        "temperature": 0.0
+      },
+      {
+        "kind": "voter",
+        "name": "null_voter"
+      }
+    ],
+    "score": {
+      "accuracy": 0.4791666666666667,
+      "accuracy_spread": 0.0,
+      "latency_ms": 1507.2396398121648,
+      "n_evaluated": 48,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "\u539f\u5ba1\u5224\u51b3\u662f\u5426\u9002\u5f53",
+          0.16666666666666666
+        ],
+        [
+          "\u635f\u5931\u8ba4\u5b9a\u53ca\u5904\u7406",
+          0.16666666666666666
+        ],
+        [
+          "\u672c\u91d1\u4e89\u8bae",
+          0.6666666666666666
+        ],
+        [
+          "\u79df\u91d1\u60c5\u51b5",
+          0.8333333333333334
+        ],
+        [
+          "\u8d23\u4efb\u5212\u5206",
+          0.8333333333333334
+        ],
+        [
+          "\u8d23\u4efb\u627f\u62c5",
+          0.0
+        ],
+        [
+          "\u8d23\u4efb\u8ba4\u5b9a",
+          0.5
+        ],
+        [
+          "\u9274\u5b9a\u7ed3\u8bba\u91c7\u4fe1\u95ee\u9898",
+          0.6666666666666666
+        ]
+      ],
+      "tokens": 478.6458333333333
+    }
+  },
+  {
+    "candidate_id": "cand_0002",
+    "describe": [
+      {
+        "k": 3,
+        "kind": "retriever",
+        "name": "bow_retriever"
+      },
+      {
+        "k": 2,
+        "kind": "fewshot",
+        "name": "topk_fewshot"
+      },
+      {
+        "kind": "formatter",
+        "name": "simple_formatter",
+        "system_hint": "Classify the input."
+      },
+      {
+        "kind": "predictor",
+        "n_samples": 1,
+        "name": "llm_predictor",
+        "temperature": 0.0
+      },
+      {
+        "kind": "voter",
+        "name": "null_voter"
+      }
+    ],
+    "score": {
+      "accuracy": 0.5,
+      "accuracy_spread": 0.0,
+      "latency_ms": 1509.0285299371953,
+      "n_evaluated": 48,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "\u539f\u5ba1\u5224\u51b3\u662f\u5426\u9002\u5f53",
+          0.3333333333333333
+        ],
+        [
+          "\u635f\u5931\u8ba4\u5b9a\u53ca\u5904\u7406",
+          0.16666666666666666
+        ],
+        [
+          "\u672c\u91d1\u4e89\u8bae",
+          0.6666666666666666
+        ],
+        [
+          "\u79df\u91d1\u60c5\u51b5",
+          0.8333333333333334
+        ],
+        [
+          "\u8d23\u4efb\u5212\u5206",
+          0.8333333333333334
+        ],
+        [
+          "\u8d23\u4efb\u627f\u62c5",
+          0.0
+        ],
+        [
+          "\u8d23\u4efb\u8ba4\u5b9a",
+          0.5
+        ],
+        [
+          "\u9274\u5b9a\u7ed3\u8bba\u91c7\u4fe1\u95ee\u9898",
+          0.6666666666666666
+        ]
+      ],
+      "tokens": 484.9791666666667
+    }
+  },
+  {
+    "candidate_id": "cand_0006",
+    "describe": [
+      {
+        "k": 5,
+        "kind": "retriever",
+        "name": "bow_retriever"
+      },
+      {
+        "kind": "reranker",
+        "m": 5,
+        "name": "llm_reranker",
+        "temperature": 0.5
+      },
+      {
+        "k": 4,
+        "kind": "fewshot",
+        "name": "topk_fewshot"
+      },
+      {
+        "kind": "formatter",
+        "name": "simple_formatter",
+        "system_hint": "Classify the input."
+      },
+      {
+        "kind": "predictor",
+        "n_samples": 1,
+        "name": "llm_predictor",
+        "temperature": 0.1
+      },
+      {
+        "kind": "voter",
+        "name": "null_voter"
+      }
+    ],
+    "score": {
+      "accuracy": 0.4791666666666667,
+      "accuracy_spread": 0.0,
+      "latency_ms": 1032.6300639894755,
+      "n_evaluated": 48,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "\u539f\u5ba1\u5224\u51b3\u662f\u5426\u9002\u5f53",
+          0.3333333333333333
+        ],
+        [
+          "\u635f\u5931\u8ba4\u5b9a\u53ca\u5904\u7406",
+          0.16666666666666666
+        ],
+        [
+          "\u672c\u91d1\u4e89\u8bae",
+          0.6666666666666666
+        ],
+        [
+          "\u79df\u91d1\u60c5\u51b5",
+          0.8333333333333334
+        ],
+        [
+          "\u8d23\u4efb\u5212\u5206",
+          0.8333333333333334
+        ],
+        [
+          "\u8d23\u4efb\u627f\u62c5",
+          0.0
+        ],
+        [
+          "\u8d23\u4efb\u8ba4\u5b9a",
+          0.5
+        ],
+        [
+          "\u9274\u5b9a\u7ed3\u8bba\u91c7\u4fe1\u95ee\u9898",
+          0.5
+        ]
+      ],
+      "tokens": 484.9583333333333
+    }
+  }
+]

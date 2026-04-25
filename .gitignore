@@ -62,6 +62,15 @@ runs/*
 !runs/gemini_lawbench_2_2_seed4/
 !runs/lawbench_2_2_openai_aggregate.json
 !runs/lawbench_2_2_gemini_aggregate.json
+!runs/gemini_lawbench_2_2_seed0_big/
+!runs/gemini_lawbench_2_2_seed1_big/
+!runs/gemini_lawbench_2_2_seed2_big/
+!runs/gemini_lawbench_2_2_seed3_big/
+!runs/gemini_lawbench_2_2_seed4_big/
+!runs/lawbench_2_2_gemini_big_aggregate.json
+!runs/hand_tuned_baselines_*.json
+!runs/ablation_*_seed*/
+!runs/ablation_*_aggregate.json
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/

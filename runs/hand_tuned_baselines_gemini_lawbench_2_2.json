@@ -1,0 +1,50 @@
+{
+  "task": "lawbench_2_2",
+  "model": "gemini-2.5-flash-lite",
+  "api": "gemini",
+  "n_eval": 48,
+  "n_repeats": 3,
+  "baselines": {
+    "BARE": {
+      "accuracy": 0.4791666666666667,
+      "tokens": 478.6458333333333,
+      "latency_ms": 854.614368333434,
+      "n_eval": 48,
+      "n_repeats": 3,
+      "elapsed_s": 5.5
+    },
+    "RAG": {
+      "accuracy": 0.5,
+      "tokens": 484.9791666666667,
+      "latency_ms": 862.783327916762,
+      "n_eval": 48,
+      "n_repeats": 3,
+      "elapsed_s": 1.2
+    },
+    "CoT-RAG": {
+      "accuracy": 0.3541666666666667,
+      "tokens": 744.4583333333334,
+      "latency_ms": 1842.4206389796261,
+      "n_eval": 48,
+      "n_repeats": 3,
+      "elapsed_s": 13.5
+    },
+    "voting-RAG": {
+      "accuracy": 0.4791666666666667,
+      "tokens": 1440.4722222222224,
+      "latency_ms": 2801.8469518472884,
+      "n_eval": 48,
+      "n_repeats": 3,
+      "elapsed_s": 56.3
+    },
+    "diverse-RAG": {
+      "accuracy": 0.5,
+      "tokens": 484.9791666666667,
+      "latency_ms": 862.7854112500953,
+      "n_eval": 48,
+      "n_repeats": 3,
+      "elapsed_s": 0.1
+    }
+  },
+  "mh_aggregate_path": "runs/lawbench_2_2_gemini_big_aggregate.json"
+}

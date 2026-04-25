@@ -1,0 +1,50 @@
+{
+  "task": "symptom_hard",
+  "model": "gpt-4.1-nano",
+  "api": "openai",
+  "n_eval": 15,
+  "n_repeats": 3,
+  "baselines": {
+    "BARE": {
+      "accuracy": 0.6,
+      "tokens": 83.53333333333333,
+      "latency_ms": 752.6261413332444,
+      "n_eval": 15,
+      "n_repeats": 3,
+      "elapsed_s": 1.7
+    },
+    "RAG": {
+      "accuracy": 0.6666666666666666,
+      "tokens": 200.19999999999996,
+      "latency_ms": 755.8618270003741,
+      "n_eval": 15,
+      "n_repeats": 3,
+      "elapsed_s": 1.6
+    },
+    "CoT-RAG": {
+      "accuracy": 0.8666666666666667,
+      "tokens": 336.8,
+      "latency_ms": 1112.048407732548,
+      "n_eval": 15,
+      "n_repeats": 3,
+      "elapsed_s": 2.6
+    },
+    "voting-RAG": {
+      "accuracy": 0.7333333333333333,
+      "tokens": 407.6666666666667,
+      "latency_ms": 2052.84175924455,
+      "n_eval": 15,
+      "n_repeats": 3,
+      "elapsed_s": 14.1
+    },
+    "diverse-RAG": {
+      "accuracy": 0.8,
+      "tokens": 263.53333333333336,
+      "latency_ms": 678.3033736670467,
+      "n_eval": 15,
+      "n_repeats": 3,
+      "elapsed_s": 1.6
+    }
+  },
+  "mh_aggregate_path": "runs/openai_symptom_hard_big_aggregate.json"
+}

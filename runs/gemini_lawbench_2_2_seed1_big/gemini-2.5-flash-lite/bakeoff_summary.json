@@ -1,0 +1,160 @@
+{
+  "model": "gemini-2.5-flash-lite",
+  "task": "lawbench_2-2",
+  "elapsed_s": 157.9,
+  "cache_stats": {
+    "hits": 5793,
+    "misses": 147,
+    "writes": 147,
+    "cached_keys": 377,
+    "hit_rate": 0.975,
+    "path": "runs/cache/gemini_lawbench_2_2_big.jsonl"
+  },
+  "bare_baseline": {
+    "accuracy": 0.479,
+    "tokens": 478.6,
+    "latency_ms": 1507.2
+  },
+  "rag_baseline": {
+    "accuracy": 0.5,
+    "tokens": 485.0,
+    "latency_ms": 1509.0
+  },
+  "n_discovered_dominates_rag": 0,
+  "n_discovered_ties_rag_acc_cheaper": 0,
+  "frontier": [
+    {
+      "candidate_id": "cand_0002",
+      "label": "[RAG]",
+      "accuracy": 0.5,
+      "accuracy_spread": 0.0,
+      "tokens": 485.0,
+      "latency_ms": 1509.0,
+      "components": [
+        {
+          "kind": "retriever",
+          "name": "bow_retriever",
+          "k": 3
+        },
+        {
+          "kind": "fewshot",
+          "name": "topk_fewshot",
+          "k": 2
+        },
+        {
+          "kind": "formatter",
+          "name": "simple_formatter"
+        },
+        {
+          "kind": "predictor",
+          "name": "llm_predictor",
+          "n_samples": 1
+        },
+        {
+          "kind": "voter",
+          "name": "null_voter"
+        }
+      ]
+    },
+    {
+      "candidate_id": "cand_0001",
+      "label": "[BARE]",
+      "accuracy": 0.479,
+      "accuracy_spread": 0.0,
+      "tokens": 478.6,
+      "latency_ms": 1507.2,
+      "components": [
+        {
+          "kind": "retriever",
+          "name": "null_retriever"
+        },
+        {
+          "kind": "fewshot",
+          "name": "null_fewshot"
+        },
+        {
+          "kind": "formatter",
+          "name": "simple_formatter"
+        },
+        {
+          "kind": "predictor",
+          "name": "llm_predictor",
+          "n_samples": 1
+        },
+        {
+          "kind": "voter",
+          "name": "null_voter"
+        }
+      ]
+    },
+    {
+      "candidate_id": "cand_0006",
+      "label": "discovered",
+      "accuracy": 0.479,
+      "accuracy_spread": 0.0,
+      "tokens": 485.0,
+      "latency_ms": 1032.6,
+      "components": [
+        {
+          "kind": "retriever",
+          "name": "bow_retriever",
+          "k": 5
+        },
+        {
+          "kind": "reranker",
+          "name": "llm_reranker"
+        },
+        {
+          "kind": "fewshot",
+          "name": "topk_fewshot",
+          "k": 4
+        },
+        {
+          "kind": "formatter",
+          "name": "simple_formatter"
+        },
+        {
+          "kind": "predictor",
+          "name": "llm_predictor",
+          "n_samples": 1
+        },
+        {
+          "kind": "voter",
+          "name": "null_voter"
+        }
+      ]
+    }
+  ],
+  "attribution": [
+    {
+      "kind": "retriever",
+      "mean_delta": 0.06,
+      "variance": 0.0,
+      "n": 20
+    },
+    {
+      "kind": "fewshot",
+      "mean_delta": 0.06,
+      "variance": 0.0,
+      "n": 20
+    },
+    {
+      "kind": "voter",
+      "mean_delta": 0.0,
+      "variance": 0.0,
+      "n": 20
+    },
+    {
+      "kind": "reranker",
+      "mean_delta": 0.0,
+      "variance": 0.0,
+      "n": 18
+    },
+    {
+      "kind": "formatter",
+      "mean_delta": -0.043,
+      "variance": 0.001,
+      "n": 20
+    }
+  ]
+}

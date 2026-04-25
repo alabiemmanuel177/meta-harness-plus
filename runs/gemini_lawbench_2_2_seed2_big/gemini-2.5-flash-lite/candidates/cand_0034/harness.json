@@ -1,0 +1,36 @@
+[
+  {
+    "b": 0.75,
+    "k": 2,
+    "k1": 1.5,
+    "kind": "retriever",
+    "name": "bm25_retriever"
+  },
+  {
+    "kind": "reranker",
+    "m": 2,
+    "name": "llm_reranker",
+    "temperature": 0.2
+  },
+  {
+    "k": 2,
+    "kind": "fewshot",
+    "name": "topk_fewshot"
+  },
+  {
+    "kind": "formatter",
+    "max_reasoning_words": 15,
+    "name": "compressed_cot_formatter",
+    "system_hint": "Classify the input into one of the given classes. Reason in at most 15 words about which key terms point to which class. Then on the final line output ONLY the class name, lowercase. Be terse \u2014 every extra word costs."
+  },
+  {
+    "kind": "predictor",
+    "n_samples": 1,
+    "name": "llm_predictor",
+    "temperature": 0.0
+  },
+  {
+    "kind": "voter",
+    "name": "null_voter"
+  }
+]

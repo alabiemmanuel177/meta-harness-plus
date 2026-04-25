@@ -1,0 +1,50 @@
+{
+  "task": "news_hard_50",
+  "model": "gpt-4.1-nano",
+  "api": "openai",
+  "n_eval": 50,
+  "n_repeats": 3,
+  "baselines": {
+    "BARE": {
+      "accuracy": 0.72,
+      "tokens": 71.76,
+      "latency_ms": 802.1830357201106,
+      "n_eval": 50,
+      "n_repeats": 3,
+      "elapsed_s": 5.4
+    },
+    "RAG": {
+      "accuracy": 0.88,
+      "tokens": 181.58,
+      "latency_ms": 672.2697704198462,
+      "n_eval": 50,
+      "n_repeats": 3,
+      "elapsed_s": 5.1
+    },
+    "CoT-RAG": {
+      "accuracy": 0.84,
+      "tokens": 303.0,
+      "latency_ms": 973.2757627798518,
+      "n_eval": 50,
+      "n_repeats": 3,
+      "elapsed_s": 6.7
+    },
+    "voting-RAG": {
+      "accuracy": 0.9,
+      "tokens": 356.02,
+      "latency_ms": 1936.173669186847,
+      "n_eval": 50,
+      "n_repeats": 3,
+      "elapsed_s": 38.7
+    },
+    "diverse-RAG": {
+      "accuracy": 0.86,
+      "tokens": 236.88,
+      "latency_ms": 684.6839452796756,
+      "n_eval": 50,
+      "n_repeats": 3,
+      "elapsed_s": 4.2
+    }
+  },
+  "mh_aggregate_path": "runs/openai_news_hard_50_big_aggregate.json"
+}

@@ -1,0 +1,50 @@
+{
+  "task": "news_hard_50",
+  "model": "gemini-2.5-flash-lite",
+  "api": "gemini",
+  "n_eval": 50,
+  "n_repeats": 3,
+  "baselines": {
+    "BARE": {
+      "accuracy": 0.84,
+      "tokens": 63.54,
+      "latency_ms": 1063.9826065601228,
+      "n_eval": 50,
+      "n_repeats": 3,
+      "elapsed_s": 6.9
+    },
+    "RAG": {
+      "accuracy": 0.88,
+      "tokens": 173.64,
+      "latency_ms": 765.2920724000822,
+      "n_eval": 50,
+      "n_repeats": 3,
+      "elapsed_s": 5.0
+    },
+    "CoT-RAG": {
+      "accuracy": 0.94,
+      "tokens": 290.1,
+      "latency_ms": 1036.5140940999509,
+      "n_eval": 50,
+      "n_repeats": 3,
+      "elapsed_s": 7.6
+    },
+    "voting-RAG": {
+      "accuracy": 0.88,
+      "tokens": 332.2,
+      "latency_ms": 2580.956242353417,
+      "n_eval": 50,
+      "n_repeats": 3,
+      "elapsed_s": 53.2
+    },
+    "diverse-RAG": {
+      "accuracy": 0.84,
+      "tokens": 228.96,
+      "latency_ms": 806.0946731402418,
+      "n_eval": 50,
+      "n_repeats": 3,
+      "elapsed_s": 5.1
+    }
+  },
+  "mh_aggregate_path": "runs/gemini_news_hard_50_big_aggregate.json"
+}
