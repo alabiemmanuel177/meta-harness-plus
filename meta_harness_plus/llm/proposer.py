@@ -111,6 +111,24 @@ class DiagnosticContext:
                 f"Aim there. Heavier shapes only if they hit accuracy strictly above {best_acc:.2f}."
             )
             lines.append("")
+
+            # Per-class accuracy of the best harness — failure-mode signal.
+            # If a class is at 0.6 while others are 1.0, the proposer should
+            # try components that fix that class (more retrieval for that
+            # class's hard items, CoT, etc.).
+            best_score_dict = best_acc_pt.get("score", {})
+            per_class = best_score_dict.get("per_class_accuracy", [])
+            if per_class:
+                lines.append("# Per-class accuracy of best-accuracy frontier point")
+                lines.append("  (focus your next proposals on the WEAKEST classes)")
+                # Sort weakest first.
+                pairs = sorted(per_class, key=lambda kv: kv[1] if isinstance(kv, (list, tuple)) else 0)
+                for kv in pairs:
+                    if isinstance(kv, (list, tuple)) and len(kv) == 2:
+                        klass, acc = kv
+                        bar = "#" * max(1, int(acc * 10))
+                        lines.append(f"  {klass:20s}  {acc:.2f}  {bar}")
+                lines.append("")
         lines.append("# Available components (kind/name — allowed config fields)")
         for spec in self.available:
             req = ", ".join(spec.get("required_config_fields", [])) or "–"
@@ -141,15 +159,21 @@ class DiagnosticContext:
                 f"lat={s.get('latency_ms',0):.1f}  :: {shape}"
             )
         lines.append("")
-        lines.append("# Component attribution (mean accuracy delta from drop-one ablation)")
+        lines.append("# Component attribution (drop-one ablation deltas)")
         if not self.attribution:
             lines.append("  (no attribution data yet)")
         for kind, stats in sorted(self.attribution.items(),
-                                  key=lambda kv: -kv[1].get("mean_delta", 0.0)):
+                                  key=lambda kv: -kv[1].get("ewma_delta",
+                                                            kv[1].get("mean_delta", 0.0))):
+            mean = stats.get("mean_delta", 0.0)
+            ewma = stats.get("ewma_delta", mean)
+            n = stats.get("n", 0)
+            var = stats.get("variance", 0.0)
             lines.append(
-                f"  - {kind}: mean_delta={stats.get('mean_delta', 0.0):+.3f}  "
-                f"n={stats.get('n', 0)}  var={stats.get('variance', 0.0):.3f}"
+                f"  - {kind}: ewma={ewma:+.3f}  mean={mean:+.3f}  n={n}  var={var:.3f}"
             )
+        if self.attribution:
+            lines.append("  (ewma weights recent ablations more — trust it over mean for this iter)")
         lines.append("")
         lines.append("# Exploration gaps (components NEVER on the frontier)")
         if not self.exploration_gap:
@@ -203,6 +227,7 @@ class LLMProposer:
             if isinstance(stats, dict):
                 out[kind] = {
                     "mean_delta": stats.get("mean_delta", 0.0),
+                    "ewma_delta": stats.get("ewma_delta", stats.get("mean_delta", 0.0)),
                     "n": stats.get("n", 0),
                     "variance": stats.get("m2", 0.0) / stats.get("n", 1)
                     if stats.get("n", 0) > 1 else 0.0,

@@ -53,6 +53,13 @@ class SearchConfig:
     # Only effective when eval_one is I/O-bound (real network client).
     # Default 1 preserves sequential, ScriptedClient-safe behaviour.
     max_workers: int = 1
+    # Early-stopping (per-class-and-ewma branch): if the Pareto frontier's
+    # hypervolume hasn't moved by more than ``early_stop_min_hv_delta``
+    # for ``early_stop_patience`` consecutive iterations, terminate the
+    # search early. Saves compute when the frontier has converged.
+    # Default 0 (off) preserves prior fixed-iteration behavior.
+    early_stop_patience: int = 0
+    early_stop_min_hv_delta: float = 0.0
 
 
 @dataclass
@@ -215,7 +222,27 @@ class SearchRunner:
             # Track hypervolume progression — useful for plotting search
             # progress over time without picking a specific (acc, cost)
             # tradeoff to highlight.
-            state.hypervolume_per_iter.append(hypervolume(frontier.entries))
+            current_hv = hypervolume(frontier.entries)
+            state.hypervolume_per_iter.append(current_hv)
+
+            # Early-stopping check: if HV hasn't moved across the patience
+            # window, terminate.
+            patience = self.config.early_stop_patience
+            if patience > 0 and len(state.hypervolume_per_iter) >= patience:
+                window = state.hypervolume_per_iter[-patience:]
+                if max(window) - min(window) <= self.config.early_stop_min_hv_delta:
+                    state.history.append({
+                        "phase": "early_stop",
+                        "iter": it,
+                        "hv_window": window,
+                        "patience": patience,
+                    })
+                    if self.logger:
+                        self.logger.event(
+                            phase="early_stop", iter=it,
+                            hv_window=window, patience=patience,
+                        )
+                    break
 
             # Record end-of-iter state to disk.
             if self.logger:
