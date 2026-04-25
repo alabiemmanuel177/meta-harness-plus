@@ -71,6 +71,7 @@ class AttributionTracker:
         full_score: ScoreVector | None = None,
         *,
         n_repeats: int = 1,
+        max_workers: int = 1,
     ) -> list[AttributionSnapshot]:
         """Drop-one ablation on ``harness`` against ``examples``.
 
@@ -83,6 +84,9 @@ class AttributionTracker:
         accuracy aggregation. Cuts the noise floor on drop-one deltas — the
         chief complaint from the RESULTS.md bakeoff where 6-item screens
         produced near-zero attribution signal.
+
+        ``max_workers`` (branch: parallel-scoring): forwarded to the
+        Scorer so per-example LLM calls fan out across a thread pool.
         """
         cache_valid = (
             full_score is not None
@@ -90,7 +94,8 @@ class AttributionTracker:
             and full_score.n_repeats == n_repeats
         )
         if not cache_valid:
-            full_score = self.scorer.score(harness, examples, n_repeats=n_repeats)
+            full_score = self.scorer.score(harness, examples, n_repeats=n_repeats,
+                                           max_workers=max_workers)
         out: list[AttributionSnapshot] = []
         seen_kinds: set[str] = set()
         for comp in harness.components:
@@ -104,7 +109,9 @@ class AttributionTracker:
                 # meaningless and the attribution misleading.
                 continue
             ablated_harness = harness.swap(comp.kind, baseline)
-            ablated_score = self.scorer.score(ablated_harness, examples, n_repeats=n_repeats)
+            ablated_score = self.scorer.score(ablated_harness, examples,
+                                              n_repeats=n_repeats,
+                                              max_workers=max_workers)
             delta = full_score.accuracy - ablated_score.accuracy
             snap = AttributionSnapshot(
                 candidate_id=candidate_id,
