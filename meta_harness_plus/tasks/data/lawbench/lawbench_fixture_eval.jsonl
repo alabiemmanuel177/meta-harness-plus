@@ -1,0 +1,10 @@
+{"input": "Borrower defaulted on loan secured by personal property", "label": "contract"}
+{"input": "Software license alleged to be breached by sublicensee", "label": "contract"}
+{"input": "Pedestrian injured when struck by falling construction debris", "label": "tort"}
+{"input": "Patient claims hospital staff caused infection through negligence", "label": "tort"}
+{"input": "Defendant accused of arson with intent to defraud insurance", "label": "criminal"}
+{"input": "Detective obtained confession during prolonged interrogation", "label": "criminal"}
+{"input": "Mother seeks child support modification after job loss", "label": "family"}
+{"input": "Sibling contests trustee distribution from family trust", "label": "family"}
+{"input": "Author alleges publisher exceeded scope of licensing agreement", "label": "ip"}
+{"input": "Designer claims competitor copied protected trade dress", "label": "ip"}
