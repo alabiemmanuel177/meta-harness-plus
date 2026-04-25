@@ -55,6 +55,172 @@ class BagOfWordsRetriever(Retriever):
         return {"kind": self.kind, "name": self.name, "k": self.k}
 
 
+@dataclass
+class TFIDFRetriever(Retriever):
+    """TF-IDF retriever over the training corpus.
+
+    Better than ``BagOfWordsRetriever`` when class-diagnostic keywords
+    are rare across the corpus (rare = high IDF = high score for
+    matching items). Pure stdlib — IDF is computed once at construction
+    from the corpus, then queries are scored against pre-computed
+    document term-frequency vectors.
+
+    Cost accounting matches BoW (~10 tokens per retrieved example, 1ms
+    per retrieval) — token cost is what reaches the LLM, not the
+    retriever's internal compute.
+    """
+    name: str = "tfidf_retriever"
+    k: int = 3
+    corpus: Sequence[TaskExample] = field(default_factory=list)
+    kind: str = field(default="retriever", init=False)
+    _idf: dict[str, float] = field(default_factory=dict, init=False, repr=False)
+    _doc_vecs: list[dict[str, float]] = field(default_factory=list, init=False, repr=False)
+
+    def __post_init__(self) -> None:
+        # Build IDF + per-doc TF.
+        n = len(self.corpus)
+        if n == 0:
+            return
+        df: dict[str, int] = {}
+        doc_token_sets = []
+        doc_token_counts = []
+        for ex in self.corpus:
+            toks = self._tokenize(ex.input)
+            counts: dict[str, int] = {}
+            for t in toks:
+                counts[t] = counts.get(t, 0) + 1
+            doc_token_counts.append(counts)
+            unique = set(counts)
+            doc_token_sets.append(unique)
+            for t in unique:
+                df[t] = df.get(t, 0) + 1
+        import math
+        self._idf = {t: math.log((1.0 + n) / (1.0 + dfi)) + 1.0
+                     for t, dfi in df.items()}
+        # Per-doc tf-idf vector (sparse dict).
+        self._doc_vecs = []
+        for counts in doc_token_counts:
+            total = sum(counts.values()) or 1
+            vec = {t: (c / total) * self._idf.get(t, 0.0)
+                   for t, c in counts.items()}
+            self._doc_vecs.append(vec)
+
+    @staticmethod
+    def _tokenize(text: str) -> list[str]:
+        return [t.strip(".,;:!?\"'()[]") for t in text.lower().split() if t.strip()]
+
+    def _score(self, query: str, doc_idx: int) -> float:
+        q_toks = self._tokenize(query)
+        if not q_toks:
+            return 0.0
+        q_total = len(q_toks)
+        q_counts: dict[str, int] = {}
+        for t in q_toks:
+            q_counts[t] = q_counts.get(t, 0) + 1
+        # tf-idf dot product on the intersection.
+        doc_vec = self._doc_vecs[doc_idx] if doc_idx < len(self._doc_vecs) else {}
+        score = 0.0
+        for t, qc in q_counts.items():
+            if t in doc_vec:
+                qtfidf = (qc / q_total) * self._idf.get(t, 0.0)
+                score += qtfidf * doc_vec[t]
+        return score
+
+    def run(self, ctx: Context, harness: Harness) -> None:
+        if not self.corpus:
+            ctx.retrieved = []
+            return
+        scored = [(self._score(ctx.example.input, i), e)
+                  for i, e in enumerate(self.corpus)]
+        scored.sort(key=lambda t: t[0], reverse=True)
+        ctx.retrieved = [e for s, e in scored[: self.k] if s > 0.0]
+        ctx.tokens += 10 * len(ctx.retrieved)
+        ctx.latency_ms += 1.5 * len(ctx.retrieved)
+
+    def config(self) -> dict:
+        return {"kind": self.kind, "name": self.name, "k": self.k}
+
+
+@dataclass
+class BM25Retriever(Retriever):
+    """Okapi BM25 retriever — TF-IDF with document-length normalization.
+
+    Practical sweet spot for short-to-medium-length classification
+    documents. Parameters ``k1=1.5`` and ``b=0.75`` are the defaults
+    used in most IR systems and rarely benefit from tuning at this scale.
+    """
+    name: str = "bm25_retriever"
+    k: int = 3
+    corpus: Sequence[TaskExample] = field(default_factory=list)
+    k1: float = 1.5
+    b: float = 0.75
+    kind: str = field(default="retriever", init=False)
+    _idf: dict[str, float] = field(default_factory=dict, init=False, repr=False)
+    _tf: list[dict[str, int]] = field(default_factory=list, init=False, repr=False)
+    _doc_lens: list[int] = field(default_factory=list, init=False, repr=False)
+    _avg_doc_len: float = field(default=0.0, init=False, repr=False)
+
+    def __post_init__(self) -> None:
+        n = len(self.corpus)
+        if n == 0:
+            return
+        import math
+        df: dict[str, int] = {}
+        for ex in self.corpus:
+            toks = TFIDFRetriever._tokenize(ex.input)
+            counts: dict[str, int] = {}
+            for t in toks:
+                counts[t] = counts.get(t, 0) + 1
+            self._tf.append(counts)
+            self._doc_lens.append(len(toks))
+            for t in set(counts):
+                df[t] = df.get(t, 0) + 1
+        # Robertson-Sparck-Jones IDF (BM25 standard form).
+        self._idf = {
+            t: math.log(1.0 + (n - dfi + 0.5) / (dfi + 0.5))
+            for t, dfi in df.items()
+        }
+        self._avg_doc_len = sum(self._doc_lens) / n if n > 0 else 0.0
+
+    def _score(self, query: str, doc_idx: int) -> float:
+        q_toks = TFIDFRetriever._tokenize(query)
+        if not q_toks or doc_idx >= len(self._tf):
+            return 0.0
+        tf = self._tf[doc_idx]
+        dlen = self._doc_lens[doc_idx]
+        if self._avg_doc_len == 0:
+            return 0.0
+        norm = self.k1 * (1.0 - self.b + self.b * dlen / self._avg_doc_len)
+        score = 0.0
+        seen = set()
+        for t in q_toks:
+            if t in seen:
+                continue
+            seen.add(t)
+            f = tf.get(t, 0)
+            if f == 0:
+                continue
+            score += self._idf.get(t, 0.0) * (f * (self.k1 + 1.0)) / (f + norm)
+        return score
+
+    def run(self, ctx: Context, harness: Harness) -> None:
+        if not self.corpus:
+            ctx.retrieved = []
+            return
+        scored = [(self._score(ctx.example.input, i), e)
+                  for i, e in enumerate(self.corpus)]
+        scored.sort(key=lambda t: t[0], reverse=True)
+        ctx.retrieved = [e for s, e in scored[: self.k] if s > 0.0]
+        ctx.tokens += 10 * len(ctx.retrieved)
+        ctx.latency_ms += 1.5 * len(ctx.retrieved)
+
+    def config(self) -> dict:
+        return {
+            "kind": self.kind, "name": self.name, "k": self.k,
+            "k1": self.k1, "b": self.b,
+        }
+
+
 # ---------- Reranker ----------
 
 class Reranker(Component):
