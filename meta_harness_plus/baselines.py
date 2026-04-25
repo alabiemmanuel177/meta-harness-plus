@@ -13,7 +13,11 @@ from typing import Any
 
 from .components import (
     BagOfWordsRetriever,
+    CoTFormatter,
+    DiversityReranker,
+    MajorityVoter,
     NullFewShot,
+    NullReranker,
     NullRetriever,
     NullVoter,
     SimpleFormatter,
@@ -56,6 +60,80 @@ def bare_baseline(task: Task, predictor: Component) -> Harness:
     return Harness(components=[
         NullRetriever(),
         NullFewShot(),
+        SimpleFormatter(),
+        predictor,
+        NullVoter(),
+    ])
+
+
+def cot_baseline(
+    task: Task,
+    predictor: Component,
+    *,
+    fewshot_k: int = 2,
+    retriever_k: int = 3,
+) -> Harness:
+    """Hand-tuned chain-of-thought + RAG baseline (Tier 1.3 strong baseline).
+
+    A reasonable manual prompt-engineering effort: BoW retrieval with
+    top-k few-shot + CoT formatter elicits step-by-step reasoning before
+    the class label. Stronger than vanilla RAG on tasks where reasoning
+    helps; weaker on tasks where the bare LLM already aces it.
+
+    Reviewers will ask 'did MH++ beat hand-tuned CoT?' — having the
+    baseline available as a one-liner makes the comparison cheap.
+    """
+    return Harness(components=[
+        BagOfWordsRetriever(corpus=task.train, k=retriever_k),
+        TopKFewShot(k=fewshot_k),
+        CoTFormatter(),
+        predictor,
+        NullVoter(),
+    ])
+
+
+def voting_rag_baseline(
+    task: Task,
+    predictor: Component,
+    *,
+    retriever_k: int = 3,
+    fewshot_k: int = 2,
+) -> Harness:
+    """RAG + self-consistency voting (Tier 1.3 strong baseline).
+
+    Caller is expected to have constructed ``predictor`` with
+    ``n_samples > 1`` and ``temperature > 0`` for voting to actually
+    matter. We add MajorityVoter on the back end. Common production
+    shape; another reasonable RAG variant to compare MH++ against.
+    """
+    return Harness(components=[
+        BagOfWordsRetriever(corpus=task.train, k=retriever_k),
+        TopKFewShot(k=fewshot_k),
+        SimpleFormatter(),
+        predictor,
+        MajorityVoter(),
+    ])
+
+
+def diverse_rag_baseline(
+    task: Task,
+    predictor: Component,
+    *,
+    retriever_k: int = 5,
+    fewshot_k: int = 3,
+) -> Harness:
+    """RAG with diversity reranker on the retrieved set (Tier 1.3).
+
+    Picks more retrievals than fewshot uses, then diversity-reranks so
+    each unique retrieved label is represented before duplicates fill
+    in. The fewshot then gets a more class-balanced sample. Fully
+    deterministic (no LLM call in the reranker), so the only added cost
+    is the larger retrieval pool.
+    """
+    return Harness(components=[
+        BagOfWordsRetriever(corpus=task.train, k=retriever_k),
+        DiversityReranker(),
+        TopKFewShot(k=fewshot_k),
         SimpleFormatter(),
         predictor,
         NullVoter(),

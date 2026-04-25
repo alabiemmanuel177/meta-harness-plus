@@ -4,10 +4,18 @@ from __future__ import annotations
 
 import unittest
 
-from meta_harness_plus.baselines import bare_baseline, rag_baseline
+from meta_harness_plus.baselines import (
+    bare_baseline,
+    cot_baseline,
+    diverse_rag_baseline,
+    rag_baseline,
+    voting_rag_baseline,
+)
 from meta_harness_plus.components import (
     BagOfWordsRetriever,
     CoTFormatter,
+    DiversityReranker,
+    MajorityVoter,
     MockLLMPredictor,
     NullFewShot,
     NullRetriever,
@@ -49,6 +57,30 @@ class TestBaselines(unittest.TestCase):
         self.assertIsInstance(h.components[0], NullRetriever)
         self.assertIsInstance(h.components[1], NullFewShot)
         self.assertIsInstance(h.components[4], NullVoter)
+
+    def test_cot_baseline_uses_cot_formatter(self):
+        h = cot_baseline(self.task, self.predictor)
+        self.assertIsInstance(h.components[0], BagOfWordsRetriever)
+        self.assertIsInstance(h.components[1], TopKFewShot)
+        self.assertIsInstance(h.components[2], CoTFormatter)
+        self.assertIsInstance(h.components[4], NullVoter)
+
+    def test_voting_rag_baseline_has_majority_voter(self):
+        h = voting_rag_baseline(self.task, self.predictor)
+        self.assertIsInstance(h.components[0], BagOfWordsRetriever)
+        self.assertIsInstance(h.components[3], type(self.predictor))
+        self.assertIsInstance(h.components[4], MajorityVoter)
+
+    def test_diverse_rag_baseline_has_reranker(self):
+        h = diverse_rag_baseline(self.task, self.predictor)
+        kinds = [c.kind for c in h.components]
+        self.assertIn("reranker", kinds)
+        # Order: retriever -> reranker -> fewshot -> formatter -> predictor -> voter.
+        self.assertEqual(
+            kinds,
+            ["retriever", "reranker", "fewshot", "formatter", "predictor", "voter"],
+        )
+        self.assertIsInstance(h.components[1], DiversityReranker)
 
 
 class TestCoTFormatter(unittest.TestCase):

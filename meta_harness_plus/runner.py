@@ -15,7 +15,7 @@ from .attribution import AttributionTracker
 from .halving import SuccessiveHalving
 from .harness import Harness
 from .logging_utils import RunLogger
-from .pareto import FrontierEntry, ParetoFrontier
+from .pareto import FrontierEntry, ParetoFrontier, hypervolume
 from .scorer import Scorer, ScoreVector
 from .search.proposer import Proposer
 from .task import Task, TaskExample
@@ -55,6 +55,10 @@ class SearchState:
     frontier: ParetoFrontier
     attribution: AttributionTracker
     history: list[dict] = field(default_factory=list)
+    # Hypervolume after each iteration — single-number progress signal
+    # for plotting search-quality over time. Reference point matches
+    # ScoreVector axes: (min_acc=0, max_tokens=1000, max_lat=10000ms).
+    hypervolume_per_iter: list[float] = field(default_factory=list)
 
 
 class SearchRunner:
@@ -192,6 +196,11 @@ class SearchRunner:
                     self.logger.record_candidate(cid, surv.describe())
                     self.logger.record_score(cid, full_score)
                     self.logger.record_attribution(cid, snapshots)
+
+            # Track hypervolume progression — useful for plotting search
+            # progress over time without picking a specific (acc, cost)
+            # tradeoff to highlight.
+            state.hypervolume_per_iter.append(hypervolume(frontier.entries))
 
             # Record end-of-iter state to disk.
             if self.logger:
