@@ -1,0 +1,30 @@
+{
+  "accuracy": 0.9,
+  "accuracy_spread": 0.19999999999999996,
+  "latency_ms": 927.7992735334012,
+  "n_evaluated": 15,
+  "n_repeats": 2,
+  "per_class_accuracy": [
+    [
+      "cardiology",
+      0.8333333333333334
+    ],
+    [
+      "dermatology",
+      1.0
+    ],
+    [
+      "gastroenterology",
+      1.0
+    ],
+    [
+      "neurology",
+      0.75
+    ],
+    [
+      "orthopedics",
+      1.0
+    ]
+  ],
+  "tokens": 265.73333333333335
+}

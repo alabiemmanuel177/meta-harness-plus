@@ -4,3 +4,5 @@
 {"frontier_size": 5, "iter": 1, "phase": "iter_end", "total_screen_evals": 80}
 {"frontier_size": 6, "iter": 2, "phase": "iter_end", "total_screen_evals": 36}
 {"frontier_size": 7, "iter": 3, "phase": "iter_end", "total_screen_evals": 80}
+{"frontier_size": 7, "iter": 4, "phase": "iter_end", "total_screen_evals": 80}
+{"frontier_size": 8, "iter": 5, "phase": "iter_end", "total_screen_evals": 36}

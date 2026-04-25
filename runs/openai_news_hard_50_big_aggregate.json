@@ -1,5 +1,5 @@
 {
-  "label": "OpenAI gpt-4.1-nano news_hard_50 6\u00d78 (5 seeds)",
+  "label": "OpenAI gpt-4.1-nano news_hard_50 (6\u00d78, 5 seeds, post-fix)",
   "n_seeds": 5,
   "per_seed_bare_acc": [
     0.72,

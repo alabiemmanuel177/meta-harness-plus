@@ -140,12 +140,12 @@ Bootstrap Evidence on Adversarial Classification Benchmarks.*
 
 | Task | Provider | RAG acc | MH++ peak (5-seed mean) | Δ 95% CI | Strict-dominant seeds |
 |---|---|---|---|---|---|
-| news_hard_50 | gpt-4.1-nano | 0.880 | 0.924 | [+0.040, +0.052] | [pending] |
-| news_hard_50 | gemini-2.5-flash-lite | 0.880 | 0.920 | [+0.028, +0.052] | [pending] |
-| news_hard_50 (6×8) | gemini | 0.880 | 0.908 | [+0.020, +0.036] | **2 of 5** |
-| symptom_hard (6×8) | gemini | 1.000 | 1.000 | [0, 0] (saturated) | **5 of 5** |
+| news_hard_50 (6×8) | gemini-2.5-flash-lite | 0.880 | 0.908 | [+0.020, +0.036] | **2 of 5** |
+| symptom_hard (6×8) | gemini-2.5-flash-lite | 1.000 | 1.000 | [0, 0] (saturated) | **5 of 5** |
+| news_hard_50 (6×8) | gpt-4.1-nano | 0.880 | 0.924 | [+0.040, +0.052] | 0 of 5 (4/5 match-cheaper) |
+| **symptom_hard (6×8)** | **gpt-4.1-nano** | **0.667** | **0.960** | **[+0.266, +0.320]** | **0 of 5 (+29.3pt at +tokens)** |
 | **lawbench_2_2** (3×4) | gpt-4.1-nano | 0.167 | 0.267 | [+0.050, +0.125] | 0 of 5 |
-| **lawbench_2_2** (3×4) | gemini-2.5-flash-lite | 0.500 | 0.417 | [-0.104, -0.042] | 0 of 5 |
+| **lawbench_2_2** (3×4) | gemini-2.5-flash-lite | 0.500 | 0.417 | [-0.104, -0.042] | 0 of 5 (negative — small budget vs strong baseline) |
 
 **Headline:** 7 of 10 Gemini seeds across two adversarial English
 benchmarks achieved **strict Pareto dominance** over hand-tuned RAG —
@@ -234,7 +234,7 @@ and reproducible from a single CLI invocation.
 ## Outstanding for first submission
 
 1. ✅ Cross-provider news_hard_50 strict-dominance result
-2. 🔄 OpenAI symptom_hard 5-seed (in flight)
+2. ✅ OpenAI symptom_hard 5-seed at 6×8 (Δ=+0.293, p=6e-5, d=+7.98)
 3. ✅ LawBench 5-seed cross-provider (asymmetric: +0.10 OpenAI, -0.08 Gemini at 3×4 budget)
 4. ✅ Ablation framework
 5. ✅ Theoretical sketch
