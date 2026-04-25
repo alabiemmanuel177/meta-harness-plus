@@ -275,15 +275,17 @@ def llm_search_registry(
         allowed_fields=("k",),
     ))
 
-    # Formatters
+    # Formatters — coerce system_hint to str defensively (LLM proposers
+    # sometimes emit ``"system_hint": true`` in their JSON which would
+    # otherwise crash the formatter mid-run).
     reg.register(Entry(
         kind="formatter", name="simple_formatter",
-        factory=lambda cfg: SimpleFormatter(system_hint=cfg.get("system_hint", "Classify the input.")),
+        factory=lambda cfg: SimpleFormatter(system_hint=str(cfg.get("system_hint", "Classify the input."))),
         allowed_fields=("system_hint",),
     ))
     reg.register(Entry(
         kind="formatter", name="cot_formatter",
-        factory=lambda cfg: CoTFormatter(system_hint=cfg["system_hint"]) if "system_hint" in cfg else CoTFormatter(),
+        factory=lambda cfg: CoTFormatter(system_hint=str(cfg["system_hint"])) if "system_hint" in cfg else CoTFormatter(),
         allowed_fields=("system_hint",),
     ))
     reg.register(Entry(
