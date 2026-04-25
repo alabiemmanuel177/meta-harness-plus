@@ -1,0 +1,7 @@
+
+========================================================================
+  RAG vs MH++ bakeoff: gemini-2.5-flash-lite on news_hard_50 via gemini
+========================================================================
+  prompt cache: runs/cache/gemini_news_hard_50.jsonl (273 preloaded keys)
+  parallel scoring: 8 threads
+  proposer: single LLMProposer at temp=0.5

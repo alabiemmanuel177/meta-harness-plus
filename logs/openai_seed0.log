@@ -1,0 +1,7 @@
+
+========================================================================
+  RAG vs MH++ bakeoff: gpt-4.1-nano on news_hard_50 via openai
+========================================================================
+  prompt cache: runs/cache/openai_news_hard_50.jsonl (261 preloaded keys)
+  parallel scoring: 8 threads
+  proposer: single LLMProposer at temp=0.5

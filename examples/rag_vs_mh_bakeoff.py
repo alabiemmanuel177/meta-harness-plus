@@ -159,6 +159,7 @@ def run_one_model(model: str, ollama_url: str, run_dir: Path, args) -> dict:
             attribution_screen_size=args.attribution_screen_size,
             frontier_max_spread=args.frontier_max_spread,
             max_workers=args.max_workers,
+            screen_seed=args.screen_seed,
             run_dir=str(run_dir),
         ),
         # Seed order: bare first, then RAG. Both get full-evaluated and
@@ -298,6 +299,9 @@ def main():
     ap.add_argument("--proposer-temperature", type=float, default=0.5)
     ap.add_argument("--proposer-max-tokens", type=int, default=4096)
     ap.add_argument("--predictor-max-tokens", type=int, default=1024)  # bigger for CoT
+    ap.add_argument("--screen-seed", type=int, default=0,
+                    help="seed for screening subset selection — vary across "
+                         "multi-seed runs to get different held-in slices")
     # Tier 5.2 — ensemble proposer with diversity pressure
     ap.add_argument("--proposer-mode", choices=("single", "ensemble"), default="single",
                     help="single LLMProposer or N-member ensemble at varied temps")
