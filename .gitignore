@@ -13,6 +13,7 @@ runs/*
 !runs/rag_vs_mh_news/
 !runs/rag_vs_mh_news_hard/
 !runs/richer_news_hard/
+!runs/bigger_eval_news_hard/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/

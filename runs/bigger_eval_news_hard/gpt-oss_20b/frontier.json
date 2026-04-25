@@ -1,0 +1,158 @@
+[
+  {
+    "candidate_id": "cand_0001",
+    "describe": [
+      {
+        "kind": "retriever",
+        "name": "null_retriever"
+      },
+      {
+        "kind": "fewshot",
+        "name": "null_fewshot"
+      },
+      {
+        "kind": "formatter",
+        "name": "simple_formatter",
+        "system_hint": "Classify the input."
+      },
+      {
+        "kind": "predictor",
+        "n_samples": 1,
+        "name": "llm_predictor",
+        "temperature": 0.0
+      },
+      {
+        "kind": "voter",
+        "name": "null_voter"
+      }
+    ],
+    "score": {
+      "accuracy": 0.94,
+      "accuracy_spread": 0.0,
+      "latency_ms": 1388.549278799721,
+      "n_evaluated": 50,
+      "n_repeats": 2,
+      "tokens": 255.29
+    }
+  },
+  {
+    "candidate_id": "cand_0002",
+    "describe": [
+      {
+        "k": 3,
+        "kind": "retriever",
+        "name": "bow_retriever"
+      },
+      {
+        "k": 2,
+        "kind": "fewshot",
+        "name": "topk_fewshot"
+      },
+      {
+        "kind": "formatter",
+        "name": "simple_formatter",
+        "system_hint": "Classify the input."
+      },
+      {
+        "kind": "predictor",
+        "n_samples": 1,
+        "name": "llm_predictor",
+        "temperature": 0.0
+      },
+      {
+        "kind": "voter",
+        "name": "null_voter"
+      }
+    ],
+    "score": {
+      "accuracy": 0.92,
+      "accuracy_spread": 0.0,
+      "latency_ms": 1349.5763560598089,
+      "n_evaluated": 50,
+      "n_repeats": 2,
+      "tokens": 361.92
+    }
+  },
+  {
+    "candidate_id": "cand_0004",
+    "describe": [
+      {
+        "kind": "retriever",
+        "name": "null_retriever"
+      },
+      {
+        "kind": "reranker",
+        "name": "null_reranker"
+      },
+      {
+        "kind": "fewshot",
+        "name": "null_fewshot"
+      },
+      {
+        "kind": "formatter",
+        "name": "simple_formatter",
+        "system_hint": "Answer concisely."
+      },
+      {
+        "kind": "predictor",
+        "n_samples": 1,
+        "name": "llm_predictor",
+        "temperature": 0.0
+      },
+      {
+        "kind": "voter",
+        "name": "null_voter"
+      }
+    ],
+    "score": {
+      "accuracy": 0.89,
+      "accuracy_spread": 0.020000000000000018,
+      "latency_ms": 1336.9331483599963,
+      "n_evaluated": 50,
+      "n_repeats": 2,
+      "tokens": 251.20999999999998
+    }
+  },
+  {
+    "candidate_id": "cand_0005",
+    "describe": [
+      {
+        "k": 10,
+        "kind": "retriever",
+        "name": "bow_retriever"
+      },
+      {
+        "kind": "reranker",
+        "name": "null_reranker"
+      },
+      {
+        "k": 5,
+        "kind": "fewshot",
+        "name": "topk_fewshot"
+      },
+      {
+        "kind": "formatter",
+        "name": "simple_formatter",
+        "system_hint": "Answer in one sentence."
+      },
+      {
+        "kind": "predictor",
+        "n_samples": 1,
+        "name": "llm_predictor",
+        "temperature": 0.7
+      },
+      {
+        "kind": "voter",
+        "name": "majority_voter"
+      }
+    ],
+    "score": {
+      "accuracy": 0.9299999999999999,
+      "accuracy_spread": 0.019999999999999907,
+      "latency_ms": 1370.0240277997573,
+      "n_evaluated": 50,
+      "n_repeats": 2,
+      "tokens": 511.46000000000004
+    }
+  }
+]
