@@ -55,3 +55,28 @@ def build_news_hard_task(seed: int = 0) -> Task:
         eval_path=_DATA_DIR / "news_hard_eval.jsonl",
         classes=NEWS_CLASSES,
     )
+
+
+def build_news_hard_50_task(seed: int = 0) -> Task:
+    """Bigger-eval variant of news_hard — 50 eval items vs 15.
+
+    Same training set (56 items including disambiguating patterns).
+    50 hand-curated adversarial eval items balanced ~12-13 per class
+    (13 sports / 12 business / 13 world / 12 tech). Mix of the original
+    15 + 35 new items spanning class bridges (athlete-business deals,
+    nation-state cyberattacks, league financial structure, etc.).
+
+    Why bigger eval: with 15 items × 2 repeats, each correct/incorrect
+    moves accuracy by 1/30 ≈ 3.3pt. Strict Pareto dominance over RAG
+    (matching tokens, ≥1pt accuracy) requires beating RAG by ≥3.3pt —
+    an entire example. With 50 items × 2 repeats = 100 forward passes,
+    each example moves accuracy by 1pt, making fine-grained dominance
+    targets actually meet-able.
+    """
+    _ = seed
+    return build_task_from_jsonl(
+        name="news_hard_50",
+        train_path=_DATA_DIR / "news_hard_train.jsonl",
+        eval_path=_DATA_DIR / "news_hard_50_eval.jsonl",
+        classes=NEWS_CLASSES,
+    )
