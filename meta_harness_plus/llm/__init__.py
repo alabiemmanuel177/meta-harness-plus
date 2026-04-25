@@ -16,6 +16,7 @@ alternative.
 """
 
 from .client import LLMClient, LLMResponse, ScriptedClient, HTTPClient
+from .cache import CachedLLMClient, PromptCache
 from .registry import ComponentRegistry, default_registry, llm_search_registry
 from .predictor import LLMPredictor
 from .proposer import LLMProposer, DiagnosticContext
@@ -25,6 +26,8 @@ __all__ = [
     "LLMResponse",
     "ScriptedClient",
     "HTTPClient",
+    "CachedLLMClient",
+    "PromptCache",
     "ComponentRegistry",
     "default_registry",
     "llm_search_registry",

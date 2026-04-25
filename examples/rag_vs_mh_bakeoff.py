@@ -35,6 +35,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 from meta_harness_plus.attribution import AttributionTracker
 from meta_harness_plus.baselines import bare_baseline, rag_baseline
 from meta_harness_plus.components import baseline_for
+from meta_harness_plus.llm.cache import CachedLLMClient, PromptCache
 from meta_harness_plus.llm.client import HTTPClient
 from meta_harness_plus.llm.predictor import LLMPredictor
 from meta_harness_plus.llm.proposer import LLMProposer
@@ -59,13 +60,51 @@ TASK_FACTORIES = {
 }
 
 
+def _build_client(model: str, args) -> HTTPClient:
+    """Pick the right HTTPClient backend based on --api."""
+    if args.api == "ollama":
+        return HTTPClient(api_url=args.ollama_url, model=model, timeout_s=300.0)
+    if args.api == "anthropic":
+        key = os.environ.get("ANTHROPIC_API_KEY", "")
+        if not key:
+            raise SystemExit("--api anthropic needs ANTHROPIC_API_KEY env var")
+        return HTTPClient(
+            api_url="https://api.anthropic.com/v1/messages",
+            api_key=key, model=model, timeout_s=300.0,
+        )
+    if args.api == "openai":
+        key = os.environ.get("OPENAI_API_KEY", "")
+        if not key:
+            raise SystemExit("--api openai needs OPENAI_API_KEY env var")
+        return HTTPClient(
+            api_url=args.openai_url, api_key=key,
+            model=model, timeout_s=300.0,
+        )
+    if args.api == "gemini":
+        key = os.environ.get("GEMINI_API_KEY", "")
+        if not key:
+            raise SystemExit("--api gemini needs GEMINI_API_KEY env var")
+        url = (f"https://generativelanguage.googleapis.com/v1beta/"
+               f"models/{model}:generateContent")
+        return HTTPClient(api_url=url, api_key=key, model=model, timeout_s=300.0)
+    raise SystemExit(f"unknown --api: {args.api}")
+
+
 def run_one_model(model: str, ollama_url: str, run_dir: Path, args) -> dict:
     task_name = args.task
-    print(f"\n{'=' * 72}\n  RAG vs MH++ bakeoff: {model} on {task_name}\n{'=' * 72}", flush=True)
+    print(f"\n{'=' * 72}\n  RAG vs MH++ bakeoff: {model} on {task_name} via {args.api}\n{'=' * 72}", flush=True)
     t0 = time.time()
 
     task = TASK_FACTORIES[task_name]()
-    client = HTTPClient(api_url=ollama_url, model=model, timeout_s=300.0)
+    raw_client = _build_client(model, args)
+    if args.cache_path:
+        cache = PromptCache(path=args.cache_path)
+        client = CachedLLMClient(raw_client, cache, model_id=model)
+        print(f"  prompt cache: {args.cache_path} ({len(cache)} preloaded keys)",
+              flush=True)
+    else:
+        cache = None
+        client = raw_client
 
     registry = llm_search_registry(task, client, predictor_max_tokens=args.predictor_max_tokens)
     if args.proposer_mode == "ensemble":
@@ -183,6 +222,7 @@ def run_one_model(model: str, ollama_url: str, run_dir: Path, args) -> dict:
         "model": model,
         "task": task.name,
         "elapsed_s": round(elapsed, 1),
+        "cache_stats": cache.stats() if cache else None,
         "bare_baseline": {
             "accuracy": round(bare_score.accuracy, 3),
             "tokens": round(bare_score.tokens, 1),
@@ -201,6 +241,10 @@ def run_one_model(model: str, ollama_url: str, run_dir: Path, args) -> dict:
 
     # Readable print
     print(f"\n[{model}] wall={elapsed:.1f}s   frontier_size={len(entries)}")
+    if cache is not None:
+        s = cache.stats()
+        print(f"[{model}] prompt cache: hits={s['hits']}  misses={s['misses']}  "
+              f"hit_rate={s['hit_rate']:.2%}  keys={s['cached_keys']}")
     print(f"[{model}] seeded references:")
     print(f"  BARE:  acc={bare_score.accuracy:.2f}  tok={bare_score.tokens:.0f}  "
           f"lat={bare_score.latency_ms:.0f}ms")
@@ -230,7 +274,14 @@ def run_one_model(model: str, ollama_url: str, run_dir: Path, args) -> dict:
 
 def main():
     ap = argparse.ArgumentParser()
+    ap.add_argument("--api", choices=("ollama", "anthropic", "openai", "gemini"),
+                    default="ollama",
+                    help="provider backend; reads {ANTHROPIC,OPENAI,GEMINI}_API_KEY "
+                         "from env when not ollama")
     ap.add_argument("--ollama-url", default="http://localhost:11434/api/chat")
+    ap.add_argument("--openai-url", default="https://api.openai.com/v1/chat/completions",
+                    help="OpenAI-compatible endpoint URL (also works for vLLM, "
+                         "LM Studio, etc.)")
     ap.add_argument("--models", nargs="+", required=True)
     ap.add_argument("--task", choices=sorted(TASK_FACTORIES.keys()), default="symptom_hard")
     ap.add_argument("--run-name", default=None,
@@ -253,6 +304,11 @@ def main():
     ap.add_argument("--frontier-max-spread", type=float, default=None,
                     help="reject frontier candidates with accuracy_spread > this "
                          "(only effective when eval_repeats > 1)")
+    # ROADMAP option C — prompt cache for cheaper multi-seed / ablation runs.
+    ap.add_argument("--cache-path", default=None,
+                    help="JSONL prompt cache file. Cache hits skip the LLM "
+                         "call entirely. Persistent across runs. Only caches "
+                         "temperature=0 calls.")
     ap.add_argument("--eval-repeats", type=int, default=2)
     ap.add_argument("--screen-repeats", type=int, default=1)
     ap.add_argument("--attribution-repeats", type=int, default=2)
