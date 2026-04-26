@@ -85,3 +85,46 @@ class LLMPredictor(Component):
             "n_samples": self.n_samples,
             "temperature": self.temperature,
         }
+
+
+@dataclass
+class MathLLMPredictor(Component):
+    """Predictor for open-ended math/numerical generation tasks (GSM8K, MATH).
+
+    Unlike LLMPredictor, this does NOT constrain output to a fixed class
+    list. Instead it extracts the numerical answer from the LLM's free-
+    form output via ``extract_math_answer`` (handles GSM8K's ``#### N``,
+    MATH's ``\\boxed{N}``, dollar amounts, and trailing-number heuristic).
+    """
+    client: LLMClient
+    name: str = "math_llm_predictor"
+    n_samples: int = 1
+    temperature: float = 0.0
+    max_tokens: int = 512
+    system_prompt_suffix: str = (
+        "Solve the problem step by step. End your response with the line "
+        "`#### N` where N is the numerical answer."
+    )
+    kind: str = field(default="predictor", init=False)
+
+    def run(self, ctx: Context, harness: Harness) -> None:
+        from ..tasks.math_task import extract_math_answer
+        preds: list[str] = []
+        for _ in range(self.n_samples):
+            resp = self.client.complete(
+                system=self.system_prompt_suffix,
+                user=ctx.prompt,
+                max_tokens=self.max_tokens,
+                temperature=self.temperature,
+            )
+            preds.append(extract_math_answer(resp.text))
+            ctx.tokens += resp.total_tokens
+            ctx.latency_ms += resp.latency_ms
+        ctx.candidate_predictions = preds
+
+    def config(self) -> dict:
+        return {
+            "kind": self.kind, "name": self.name,
+            "n_samples": self.n_samples,
+            "temperature": self.temperature,
+        }
