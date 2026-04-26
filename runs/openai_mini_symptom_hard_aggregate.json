@@ -1,0 +1,82 @@
+{
+  "label": "OpenAI gpt-4.1-mini \u00d7 symptom_hard (5 seeds, 6\u00d78)",
+  "n_seeds": 5,
+  "per_seed_bare_acc": [
+    0.6,
+    0.6,
+    0.6,
+    0.6,
+    0.6
+  ],
+  "per_seed_rag_acc": [
+    0.933,
+    0.933,
+    0.933,
+    0.933,
+    0.933
+  ],
+  "per_seed_mh_peak_acc": [
+    0.967,
+    1.0,
+    1.0,
+    0.933,
+    1.0
+  ],
+  "per_seed_rag_tokens": [
+    200.1,
+    200.1,
+    200.1,
+    200.1,
+    200.1
+  ],
+  "per_seed_mh_peak_tokens": [
+    484.5,
+    247.8,
+    305.0,
+    149.5,
+    245.0
+  ],
+  "per_seed_n_dominate": [
+    1,
+    1,
+    1,
+    0,
+    1
+  ],
+  "per_seed_n_match_cheaper": [
+    1,
+    2,
+    2,
+    1,
+    2
+  ],
+  "ci": {
+    "mh_minus_rag_acc": {
+      "mean": 0.04699999999999995,
+      "low": 0.020199999999999975,
+      "high": 0.06699999999999995,
+      "confidence": 0.95
+    },
+    "mh_peak_acc": {
+      "mean": 0.9800000000000001,
+      "low": 0.9532,
+      "high": 1.0,
+      "confidence": 0.95
+    },
+    "rag_acc": {
+      "mean": 0.933,
+      "low": 0.933,
+      "high": 0.933,
+      "confidence": 0.95
+    }
+  },
+  "paired_t_test": {
+    "n": 5,
+    "mean_diff": 0.04699999999999995,
+    "std_diff": 0.029908192857476344,
+    "t_statistic": 3.5139266168072303,
+    "p_value_two_sided": 0.024584509272107178,
+    "cohens_d": 1.5714757566253643
+  },
+  "per_class_delta": {}
+}

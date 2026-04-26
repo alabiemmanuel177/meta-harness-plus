@@ -1,0 +1,82 @@
+{
+  "label": "OpenAI gpt-4.1-mini \u00d7 news_hard_50 (5 seeds, 6\u00d78)",
+  "n_seeds": 5,
+  "per_seed_bare_acc": [
+    0.86,
+    0.86,
+    0.86,
+    0.86,
+    0.86
+  ],
+  "per_seed_rag_acc": [
+    0.88,
+    0.88,
+    0.88,
+    0.88,
+    0.88
+  ],
+  "per_seed_mh_peak_acc": [
+    0.94,
+    0.96,
+    0.94,
+    0.96,
+    0.94
+  ],
+  "per_seed_rag_tokens": [
+    181.6,
+    181.6,
+    181.6,
+    181.6,
+    181.6
+  ],
+  "per_seed_mh_peak_tokens": [
+    124.2,
+    278.0,
+    179.4,
+    126.3,
+    138.7
+  ],
+  "per_seed_n_dominate": [
+    4,
+    1,
+    2,
+    2,
+    1
+  ],
+  "per_seed_n_match_cheaper": [
+    4,
+    1,
+    2,
+    2,
+    2
+  ],
+  "ci": {
+    "mh_minus_rag_acc": {
+      "mean": 0.06799999999999995,
+      "low": 0.05999999999999994,
+      "high": 0.07599999999999996,
+      "confidence": 0.95
+    },
+    "mh_peak_acc": {
+      "mean": 0.9480000000000001,
+      "low": 0.9399999999999998,
+      "high": 0.9559999999999998,
+      "confidence": 0.95
+    },
+    "rag_acc": {
+      "mean": 0.8800000000000001,
+      "low": 0.8800000000000001,
+      "high": 0.8800000000000001,
+      "confidence": 0.95
+    }
+  },
+  "paired_t_test": {
+    "n": 5,
+    "mean_diff": 0.06799999999999995,
+    "std_diff": 0.010954451150103331,
+    "t_statistic": 13.880441875771321,
+    "p_value_two_sided": 0.00015619174885642093,
+    "cohens_d": 6.207522318391873
+  },
+  "per_class_delta": {}
+}

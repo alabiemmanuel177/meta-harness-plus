@@ -1,0 +1,29 @@
+[
+  {
+    "kind": "retriever",
+    "name": "null_retriever"
+  },
+  {
+    "kind": "reranker",
+    "name": "null_reranker"
+  },
+  {
+    "kind": "fewshot",
+    "name": "null_fewshot"
+  },
+  {
+    "kind": "formatter",
+    "name": "simple_formatter",
+    "system_hint": "Answer briefly."
+  },
+  {
+    "kind": "predictor",
+    "n_samples": 1,
+    "name": "llm_predictor",
+    "temperature": 0.0
+  },
+  {
+    "kind": "voter",
+    "name": "null_voter"
+  }
+]

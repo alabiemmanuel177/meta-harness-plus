@@ -1,0 +1,25 @@
+{
+  "task": "emotion",
+  "model": "gpt-4.1-nano",
+  "api": "openai",
+  "rounds": 3,
+  "beam_size": 3,
+  "seed_acc": 0.5208333333333334,
+  "best_acc": 0.5625,
+  "best_prompt": "Classify the emotional tone of the input text into one of the following categories: sadness, anger, fear, surprise, joy. Prioritize understanding subtle differences and context to accurately identify the primary emotion, especially when multiple feelings are present.",
+  "final_beam": [
+    [
+      "Classify the emotional tone of the input text into one of the following categories: sadness, anger, fear, surprise, joy. Prioritize understanding subtle differences and context to accurately identify the primary emotion, especially when multiple feelings are present.",
+      0.5625
+    ],
+    [
+      "Classify the input.",
+      0.5208333333333334
+    ],
+    [
+      "Classify the emotional tone of the input text into appropriate categories (e.g., joy, sadness, fear, surprise).",
+      0.5208333333333334
+    ]
+  ],
+  "elapsed_s": 94.6
+}

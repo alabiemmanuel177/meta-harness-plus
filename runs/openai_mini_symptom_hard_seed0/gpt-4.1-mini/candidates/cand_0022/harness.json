@@ -1,0 +1,31 @@
+[
+  {
+    "k": 6,
+    "kind": "retriever",
+    "name": "tfidf_retriever"
+  },
+  {
+    "kind": "reranker",
+    "name": "diversity_reranker"
+  },
+  {
+    "k": 3,
+    "kind": "fewshot",
+    "name": "topk_fewshot"
+  },
+  {
+    "kind": "formatter",
+    "name": "cot_formatter",
+    "system_hint": "Focus on dermatology cases"
+  },
+  {
+    "kind": "predictor",
+    "n_samples": 1,
+    "name": "llm_predictor",
+    "temperature": 0.0
+  },
+  {
+    "kind": "voter",
+    "name": "majority_voter"
+  }
+]

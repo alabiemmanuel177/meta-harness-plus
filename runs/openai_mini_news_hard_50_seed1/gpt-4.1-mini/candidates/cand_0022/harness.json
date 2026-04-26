@@ -1,0 +1,35 @@
+[
+  {
+    "b": 0.6,
+    "k": 3,
+    "k1": 1.2,
+    "kind": "retriever",
+    "name": "bm25_retriever"
+  },
+  {
+    "kind": "reranker",
+    "m": 3,
+    "name": "llm_reranker",
+    "temperature": 0.2
+  },
+  {
+    "k": 3,
+    "kind": "fewshot",
+    "name": "topk_fewshot"
+  },
+  {
+    "kind": "formatter",
+    "name": "cot_formatter",
+    "system_hint": "Focus on business domain reasoning"
+  },
+  {
+    "kind": "predictor",
+    "n_samples": 1,
+    "name": "llm_predictor",
+    "temperature": 0.0
+  },
+  {
+    "kind": "voter",
+    "name": "null_voter"
+  }
+]

@@ -1,0 +1,234 @@
+[
+  {
+    "candidate_id": "cand_0001",
+    "describe": [
+      {
+        "kind": "retriever",
+        "name": "null_retriever"
+      },
+      {
+        "kind": "fewshot",
+        "name": "null_fewshot"
+      },
+      {
+        "kind": "formatter",
+        "name": "simple_formatter",
+        "system_hint": "Classify the input."
+      },
+      {
+        "kind": "predictor",
+        "n_samples": 1,
+        "name": "llm_predictor",
+        "temperature": 0.0
+      },
+      {
+        "kind": "voter",
+        "name": "null_voter"
+      }
+    ],
+    "score": {
+      "accuracy": 0.86,
+      "accuracy_spread": 0.0,
+      "latency_ms": 771.5227628399834,
+      "n_evaluated": 50,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "business",
+          0.75
+        ],
+        [
+          "sports",
+          0.9230769230769231
+        ],
+        [
+          "tech",
+          0.9166666666666666
+        ],
+        [
+          "world",
+          0.8461538461538461
+        ]
+      ],
+      "tokens": 71.76
+    }
+  },
+  {
+    "candidate_id": "cand_0009",
+    "describe": [
+      {
+        "kind": "retriever",
+        "name": "null_retriever"
+      },
+      {
+        "kind": "reranker",
+        "name": "null_reranker"
+      },
+      {
+        "kind": "fewshot",
+        "name": "null_fewshot"
+      },
+      {
+        "kind": "formatter",
+        "name": "simple_formatter",
+        "system_hint": "Answer directly."
+      },
+      {
+        "kind": "predictor",
+        "n_samples": 1,
+        "name": "llm_predictor",
+        "temperature": 0.0
+      },
+      {
+        "kind": "voter",
+        "name": "null_voter"
+      }
+    ],
+    "score": {
+      "accuracy": 0.82,
+      "accuracy_spread": 0.0,
+      "latency_ms": 739.246602080013,
+      "n_evaluated": 50,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "business",
+          0.75
+        ],
+        [
+          "sports",
+          0.8461538461538461
+        ],
+        [
+          "tech",
+          1.0
+        ],
+        [
+          "world",
+          0.6923076923076923
+        ]
+      ],
+      "tokens": 68.76
+    }
+  },
+  {
+    "candidate_id": "cand_0016",
+    "describe": [
+      {
+        "k": 2,
+        "kind": "retriever",
+        "name": "bow_retriever"
+      },
+      {
+        "kind": "reranker",
+        "name": "null_reranker"
+      },
+      {
+        "k": 1,
+        "kind": "fewshot",
+        "name": "topk_fewshot"
+      },
+      {
+        "kind": "formatter",
+        "name": "simple_formatter",
+        "system_hint": "Focus on sports and world class accuracy"
+      },
+      {
+        "kind": "predictor",
+        "n_samples": 1,
+        "name": "llm_predictor",
+        "temperature": 0.0
+      },
+      {
+        "kind": "voter",
+        "name": "null_voter"
+      }
+    ],
+    "score": {
+      "accuracy": 0.94,
+      "accuracy_spread": 0.0,
+      "latency_ms": 727.2291961399908,
+      "n_evaluated": 50,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "business",
+          0.75
+        ],
+        [
+          "sports",
+          1.0
+        ],
+        [
+          "tech",
+          1.0
+        ],
+        [
+          "world",
+          1.0
+        ]
+      ],
+      "tokens": 138.66
+    }
+  },
+  {
+    "candidate_id": "cand_0017",
+    "describe": [
+      {
+        "k": 1,
+        "kind": "retriever",
+        "name": "tfidf_retriever"
+      },
+      {
+        "kind": "reranker",
+        "name": "null_reranker"
+      },
+      {
+        "k": 1,
+        "kind": "fewshot",
+        "name": "topk_fewshot"
+      },
+      {
+        "kind": "formatter",
+        "name": "cot_formatter",
+        "system_hint": "Emphasize clarity and brevity"
+      },
+      {
+        "kind": "predictor",
+        "n_samples": 1,
+        "name": "llm_predictor",
+        "temperature": 0.0
+      },
+      {
+        "kind": "voter",
+        "name": "null_voter"
+      }
+    ],
+    "score": {
+      "accuracy": 0.9,
+      "accuracy_spread": 0.0,
+      "latency_ms": 837.6809698600144,
+      "n_evaluated": 50,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "business",
+          0.9166666666666666
+        ],
+        [
+          "sports",
+          0.8461538461538461
+        ],
+        [
+          "tech",
+          1.0
+        ],
+        [
+          "world",
+          0.8461538461538461
+        ]
+      ],
+      "tokens": 125.18
+    }
+  }
+]

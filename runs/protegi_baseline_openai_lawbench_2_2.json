@@ -1,0 +1,25 @@
+{
+  "task": "lawbench_2_2",
+  "model": "gpt-4.1-nano",
+  "api": "openai",
+  "rounds": 3,
+  "beam_size": 3,
+  "seed_acc": 0.14583333333333334,
+  "best_acc": 0.1875,
+  "best_prompt": "Classify the input into one of the following categories: Responsibility Determination, Evidence Evaluation, Damage Assessment, Contract Dispute, or Other. Focus on identifying the primary legal issue or the core dispute type indicated by the content, ensuring the classification captures the main legal question or subject matter, especially distinguishing between responsibility, damage, and contractual issues.",
+  "final_beam": [
+    [
+      "Classify the input into one of the following categories: Responsibility Determination, Evidence Evaluation, Damage Assessment, Contract Dispute, or Other. Focus on identifying the primary legal issue or the core dispute type indicated by the content, ensuring the classification captures the main legal question or subject matter, especially distinguishing between responsibility, damage, and contractual issues.",
+      0.1875
+    ],
+    [
+      "Classify the input into one of the following specific categories: Responsibility Determination, Evidence Evaluation, Damage Assessment, Contract Dispute, or Other. Focus on identifying the primary legal issue or classification based on the content.",
+      0.16666666666666666
+    ],
+    [
+      "Classify the input.",
+      0.14583333333333334
+    ]
+  ],
+  "elapsed_s": 90.6
+}

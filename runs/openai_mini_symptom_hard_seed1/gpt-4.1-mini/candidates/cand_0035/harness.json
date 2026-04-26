@@ -1,0 +1,35 @@
+[
+  {
+    "b": 0.75,
+    "k": 1,
+    "k1": 1.5,
+    "kind": "retriever",
+    "name": "bm25_retriever"
+  },
+  {
+    "kind": "reranker",
+    "m": 1,
+    "name": "llm_reranker",
+    "temperature": 0.0
+  },
+  {
+    "k": 1,
+    "kind": "fewshot",
+    "name": "topk_fewshot"
+  },
+  {
+    "kind": "formatter",
+    "name": "cot_formatter",
+    "system_hint": "Use concise reasoning"
+  },
+  {
+    "kind": "predictor",
+    "n_samples": 1,
+    "name": "llm_predictor",
+    "temperature": 0.0
+  },
+  {
+    "kind": "voter",
+    "name": "null_voter"
+  }
+]

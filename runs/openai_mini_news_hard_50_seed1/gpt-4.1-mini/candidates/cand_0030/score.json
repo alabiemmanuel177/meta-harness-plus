@@ -1,0 +1,26 @@
+{
+  "accuracy": 0.8,
+  "accuracy_spread": 0.0,
+  "latency_ms": 1172.4945424999903,
+  "n_evaluated": 50,
+  "n_repeats": 2,
+  "per_class_accuracy": [
+    [
+      "business",
+      1.0
+    ],
+    [
+      "sports",
+      0.7692307692307693
+    ],
+    [
+      "tech",
+      0.8333333333333334
+    ],
+    [
+      "world",
+      0.6153846153846154
+    ]
+  ],
+  "tokens": 134.14
+}
