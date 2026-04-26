@@ -728,6 +728,32 @@
     "source": "lawbench_2_2_openai_aggregate.json"
   },
   {
+    "method": "MH++",
+    "api": "gemini",
+    "task": "newsgroups20",
+    "model": null,
+    "accuracy": 0.8122,
+    "tokens": 813.9,
+    "latency_ms": null,
+    "n": 5,
+    "ci_low": 0.7916,
+    "ci_high": 0.8288,
+    "source": "newsgroups20_gemini_aggregate.json"
+  },
+  {
+    "method": "MH++",
+    "api": "openai",
+    "task": "newsgroups20",
+    "model": null,
+    "accuracy": 0.7374,
+    "tokens": 778.6,
+    "latency_ms": null,
+    "n": 5,
+    "ci_low": 0.7206,
+    "ci_high": 0.75,
+    "source": "newsgroups20_openai_aggregate.json"
+  },
+  {
     "method": "MH++_6x8",
     "api": "openai",
     "task": "lawbench_2_2",
@@ -817,5 +843,31 @@
     "ci_low": 0.9465,
     "ci_high": 0.9767,
     "source": "openai_symptom_hard_big_aggregate_10seed.json"
+  },
+  {
+    "method": "MH++",
+    "api": "gemini",
+    "task": "symptom2disease",
+    "model": null,
+    "accuracy": 1.0,
+    "tokens": 394.0,
+    "latency_ms": null,
+    "n": 5,
+    "ci_low": 1.0,
+    "ci_high": 1.0,
+    "source": "symptom2disease_gemini_aggregate.json"
+  },
+  {
+    "method": "MH++",
+    "api": "openai",
+    "task": "symptom2disease",
+    "model": null,
+    "accuracy": 0.8064,
+    "tokens": 581.8,
+    "latency_ms": null,
+    "n": 5,
+    "ci_low": 0.792,
+    "ci_high": 0.8228,
+    "source": "symptom2disease_openai_aggregate.json"
   }
 ]

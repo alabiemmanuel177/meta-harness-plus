@@ -1,0 +1,367 @@
+[
+  {
+    "ablated_score": {
+      "accuracy": 0.9166666666666666,
+      "accuracy_spread": 0.0,
+      "latency_ms": 1050.4550815832433,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "rec.autos",
+          1.0
+        ],
+        [
+          "rec.motorcycles",
+          1.0
+        ],
+        [
+          "rec.sport.baseball",
+          1.0
+        ],
+        [
+          "rec.sport.hockey",
+          1.0
+        ],
+        [
+          "sci.med",
+          1.0
+        ],
+        [
+          "sci.space",
+          0.5
+        ]
+      ],
+      "tokens": 378.9166666666667
+    },
+    "accuracy_delta": 0.0,
+    "candidate_id": "cand_0039",
+    "full_score": {
+      "accuracy": 0.9166666666666666,
+      "accuracy_spread": 0.0,
+      "latency_ms": 1311.1985556667692,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "rec.autos",
+          1.0
+        ],
+        [
+          "rec.motorcycles",
+          1.0
+        ],
+        [
+          "rec.sport.baseball",
+          1.0
+        ],
+        [
+          "rec.sport.hockey",
+          1.0
+        ],
+        [
+          "sci.med",
+          1.0
+        ],
+        [
+          "sci.space",
+          0.5
+        ]
+      ],
+      "tokens": 526.75
+    },
+    "kind": "retriever"
+  },
+  {
+    "ablated_score": {
+      "accuracy": 0.9166666666666666,
+      "accuracy_spread": 0.0,
+      "latency_ms": 1311.1985556667692,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "rec.autos",
+          1.0
+        ],
+        [
+          "rec.motorcycles",
+          1.0
+        ],
+        [
+          "rec.sport.baseball",
+          1.0
+        ],
+        [
+          "rec.sport.hockey",
+          1.0
+        ],
+        [
+          "sci.med",
+          1.0
+        ],
+        [
+          "sci.space",
+          0.5
+        ]
+      ],
+      "tokens": 526.75
+    },
+    "accuracy_delta": 0.0,
+    "candidate_id": "cand_0039",
+    "full_score": {
+      "accuracy": 0.9166666666666666,
+      "accuracy_spread": 0.0,
+      "latency_ms": 1311.1985556667692,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "rec.autos",
+          1.0
+        ],
+        [
+          "rec.motorcycles",
+          1.0
+        ],
+        [
+          "rec.sport.baseball",
+          1.0
+        ],
+        [
+          "rec.sport.hockey",
+          1.0
+        ],
+        [
+          "sci.med",
+          1.0
+        ],
+        [
+          "sci.space",
+          0.5
+        ]
+      ],
+      "tokens": 526.75
+    },
+    "kind": "reranker"
+  },
+  {
+    "ablated_score": {
+      "accuracy": 0.9166666666666666,
+      "accuracy_spread": 0.0,
+      "latency_ms": 1054.9550815832433,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "rec.autos",
+          1.0
+        ],
+        [
+          "rec.motorcycles",
+          1.0
+        ],
+        [
+          "rec.sport.baseball",
+          1.0
+        ],
+        [
+          "rec.sport.hockey",
+          1.0
+        ],
+        [
+          "sci.med",
+          1.0
+        ],
+        [
+          "sci.space",
+          0.5
+        ]
+      ],
+      "tokens": 408.9166666666667
+    },
+    "accuracy_delta": 0.0,
+    "candidate_id": "cand_0039",
+    "full_score": {
+      "accuracy": 0.9166666666666666,
+      "accuracy_spread": 0.0,
+      "latency_ms": 1311.1985556667692,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "rec.autos",
+          1.0
+        ],
+        [
+          "rec.motorcycles",
+          1.0
+        ],
+        [
+          "rec.sport.baseball",
+          1.0
+        ],
+        [
+          "rec.sport.hockey",
+          1.0
+        ],
+        [
+          "sci.med",
+          1.0
+        ],
+        [
+          "sci.space",
+          0.5
+        ]
+      ],
+      "tokens": 526.75
+    },
+    "kind": "fewshot"
+  },
+  {
+    "ablated_score": {
+      "accuracy": 0.9166666666666666,
+      "accuracy_spread": 0.0,
+      "latency_ms": 863.1076813335703,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "rec.autos",
+          1.0
+        ],
+        [
+          "rec.motorcycles",
+          1.0
+        ],
+        [
+          "rec.sport.baseball",
+          1.0
+        ],
+        [
+          "rec.sport.hockey",
+          1.0
+        ],
+        [
+          "sci.med",
+          1.0
+        ],
+        [
+          "sci.space",
+          0.5
+        ]
+      ],
+      "tokens": 408.25
+    },
+    "accuracy_delta": 0.0,
+    "candidate_id": "cand_0039",
+    "full_score": {
+      "accuracy": 0.9166666666666666,
+      "accuracy_spread": 0.0,
+      "latency_ms": 1311.1985556667692,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "rec.autos",
+          1.0
+        ],
+        [
+          "rec.motorcycles",
+          1.0
+        ],
+        [
+          "rec.sport.baseball",
+          1.0
+        ],
+        [
+          "rec.sport.hockey",
+          1.0
+        ],
+        [
+          "sci.med",
+          1.0
+        ],
+        [
+          "sci.space",
+          0.5
+        ]
+      ],
+      "tokens": 526.75
+    },
+    "kind": "formatter"
+  },
+  {
+    "ablated_score": {
+      "accuracy": 0.9166666666666666,
+      "accuracy_spread": 0.0,
+      "latency_ms": 1311.0985556667692,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "rec.autos",
+          1.0
+        ],
+        [
+          "rec.motorcycles",
+          1.0
+        ],
+        [
+          "rec.sport.baseball",
+          1.0
+        ],
+        [
+          "rec.sport.hockey",
+          1.0
+        ],
+        [
+          "sci.med",
+          1.0
+        ],
+        [
+          "sci.space",
+          0.5
+        ]
+      ],
+      "tokens": 526.75
+    },
+    "accuracy_delta": 0.0,
+    "candidate_id": "cand_0039",
+    "full_score": {
+      "accuracy": 0.9166666666666666,
+      "accuracy_spread": 0.0,
+      "latency_ms": 1311.1985556667692,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "rec.autos",
+          1.0
+        ],
+        [
+          "rec.motorcycles",
+          1.0
+        ],
+        [
+          "rec.sport.baseball",
+          1.0
+        ],
+        [
+          "rec.sport.hockey",
+          1.0
+        ],
+        [
+          "sci.med",
+          1.0
+        ],
+        [
+          "sci.space",
+          0.5
+        ]
+      ],
+      "tokens": 526.75
+    },
+    "kind": "voter"
+  }
+]

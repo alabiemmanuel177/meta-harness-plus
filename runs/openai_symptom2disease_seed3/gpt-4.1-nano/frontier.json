@@ -1,0 +1,298 @@
+[
+  {
+    "candidate_id": "cand_0001",
+    "describe": [
+      {
+        "kind": "retriever",
+        "name": "null_retriever"
+      },
+      {
+        "kind": "fewshot",
+        "name": "null_fewshot"
+      },
+      {
+        "kind": "formatter",
+        "name": "simple_formatter",
+        "system_hint": "Classify the input."
+      },
+      {
+        "kind": "predictor",
+        "n_samples": 1,
+        "name": "llm_predictor",
+        "temperature": 0.0
+      },
+      {
+        "kind": "voter",
+        "name": "null_voter"
+      }
+    ],
+    "score": {
+      "accuracy": 0.75,
+      "accuracy_spread": 0.0,
+      "latency_ms": 674.8083901250178,
+      "n_evaluated": 48,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "allergy",
+          0.6666666666666666
+        ],
+        [
+          "arthritis",
+          0.8333333333333334
+        ],
+        [
+          "bronchial asthma",
+          1.0
+        ],
+        [
+          "cervical spondylosis",
+          1.0
+        ],
+        [
+          "dengue",
+          0.3333333333333333
+        ],
+        [
+          "drug reaction",
+          0.16666666666666666
+        ],
+        [
+          "impetigo",
+          1.0
+        ],
+        [
+          "malaria",
+          1.0
+        ]
+      ],
+      "tokens": 131.89583333333334
+    }
+  },
+  {
+    "candidate_id": "cand_0002",
+    "describe": [
+      {
+        "k": 3,
+        "kind": "retriever",
+        "name": "bow_retriever"
+      },
+      {
+        "k": 2,
+        "kind": "fewshot",
+        "name": "topk_fewshot"
+      },
+      {
+        "kind": "formatter",
+        "name": "simple_formatter",
+        "system_hint": "Classify the input."
+      },
+      {
+        "kind": "predictor",
+        "n_samples": 1,
+        "name": "llm_predictor",
+        "temperature": 0.0
+      },
+      {
+        "kind": "voter",
+        "name": "null_voter"
+      }
+    ],
+    "score": {
+      "accuracy": 0.7916666666666666,
+      "accuracy_spread": 0.0,
+      "latency_ms": 653.0166792290305,
+      "n_evaluated": 48,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "allergy",
+          0.8333333333333334
+        ],
+        [
+          "arthritis",
+          1.0
+        ],
+        [
+          "bronchial asthma",
+          0.8333333333333334
+        ],
+        [
+          "cervical spondylosis",
+          0.8333333333333334
+        ],
+        [
+          "dengue",
+          0.5
+        ],
+        [
+          "drug reaction",
+          0.5
+        ],
+        [
+          "impetigo",
+          1.0
+        ],
+        [
+          "malaria",
+          0.8333333333333334
+        ]
+      ],
+      "tokens": 347.9791666666667
+    }
+  },
+  {
+    "candidate_id": "cand_0007",
+    "describe": [
+      {
+        "k": 5,
+        "kind": "retriever",
+        "name": "bow_retriever"
+      },
+      {
+        "kind": "reranker",
+        "name": "diversity_reranker"
+      },
+      {
+        "k": 2,
+        "kind": "fewshot",
+        "name": "topk_fewshot"
+      },
+      {
+        "kind": "formatter",
+        "name": "cot_formatter",
+        "system_hint": "Classify the input into one of the given classes. Briefly analyze which key terms suggest each possibility, then output ONLY the class name, lowercase, on the final line. No other prose."
+      },
+      {
+        "kind": "predictor",
+        "n_samples": 4,
+        "name": "llm_predictor",
+        "temperature": 0.6
+      },
+      {
+        "kind": "voter",
+        "name": "majority_voter"
+      }
+    ],
+    "score": {
+      "accuracy": 0.8229166666666667,
+      "accuracy_spread": 0.10416666666666663,
+      "latency_ms": 5312.152410906069,
+      "n_evaluated": 48,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "allergy",
+          0.9166666666666666
+        ],
+        [
+          "arthritis",
+          1.0
+        ],
+        [
+          "bronchial asthma",
+          0.9166666666666666
+        ],
+        [
+          "cervical spondylosis",
+          0.8333333333333334
+        ],
+        [
+          "dengue",
+          0.6666666666666666
+        ],
+        [
+          "drug reaction",
+          0.3333333333333333
+        ],
+        [
+          "impetigo",
+          1.0
+        ],
+        [
+          "malaria",
+          0.9166666666666666
+        ]
+      ],
+      "tokens": 1393.75
+    }
+  },
+  {
+    "candidate_id": "cand_0018",
+    "describe": [
+      {
+        "k": 3,
+        "kind": "retriever",
+        "name": "tfidf_retriever"
+      },
+      {
+        "kind": "reranker",
+        "m": 2,
+        "name": "llm_reranker",
+        "temperature": 0.5
+      },
+      {
+        "k": 2,
+        "kind": "fewshot",
+        "name": "topk_fewshot"
+      },
+      {
+        "kind": "formatter",
+        "name": "simple_formatter",
+        "system_hint": "Classify the input."
+      },
+      {
+        "kind": "predictor",
+        "n_samples": 4,
+        "name": "llm_predictor",
+        "temperature": 0.2
+      },
+      {
+        "kind": "voter",
+        "name": "majority_voter"
+      }
+    ],
+    "score": {
+      "accuracy": 0.7916666666666667,
+      "accuracy_spread": 0.04166666666666663,
+      "latency_ms": 3233.2758850106547,
+      "n_evaluated": 48,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "allergy",
+          1.0
+        ],
+        [
+          "arthritis",
+          0.9166666666666666
+        ],
+        [
+          "bronchial asthma",
+          1.0
+        ],
+        [
+          "cervical spondylosis",
+          0.8333333333333334
+        ],
+        [
+          "dengue",
+          0.5
+        ],
+        [
+          "drug reaction",
+          0.16666666666666666
+        ],
+        [
+          "impetigo",
+          1.0
+        ],
+        [
+          "malaria",
+          0.9166666666666666
+        ]
+      ],
+      "tokens": 1061.4270833333333
+    }
+  }
+]

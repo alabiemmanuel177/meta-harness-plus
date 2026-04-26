@@ -1,0 +1,367 @@
+[
+  {
+    "ablated_score": {
+      "accuracy": 0.6666666666666666,
+      "accuracy_spread": 0.0,
+      "latency_ms": 852.5573851667677,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "rec.autos",
+          1.0
+        ],
+        [
+          "rec.motorcycles",
+          1.0
+        ],
+        [
+          "rec.sport.baseball",
+          0.5
+        ],
+        [
+          "rec.sport.hockey",
+          0.5
+        ],
+        [
+          "sci.crypt",
+          1.0
+        ],
+        [
+          "soc.religion.christian",
+          0.5
+        ]
+      ],
+      "tokens": 232.33333333333334
+    },
+    "accuracy_delta": 0.0,
+    "candidate_id": "cand_0023",
+    "full_score": {
+      "accuracy": 0.6666666666666666,
+      "accuracy_spread": 0.0,
+      "latency_ms": 1474.1793791252544,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "rec.autos",
+          1.0
+        ],
+        [
+          "rec.motorcycles",
+          1.0
+        ],
+        [
+          "rec.sport.baseball",
+          0.5
+        ],
+        [
+          "rec.sport.hockey",
+          0.5
+        ],
+        [
+          "sci.crypt",
+          1.0
+        ],
+        [
+          "soc.religion.christian",
+          0.5
+        ]
+      ],
+      "tokens": 649.375
+    },
+    "kind": "retriever"
+  },
+  {
+    "ablated_score": {
+      "accuracy": 0.6666666666666666,
+      "accuracy_spread": 0.0,
+      "latency_ms": 857.0573851667677,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "rec.autos",
+          1.0
+        ],
+        [
+          "rec.motorcycles",
+          1.0
+        ],
+        [
+          "rec.sport.baseball",
+          0.5
+        ],
+        [
+          "rec.sport.hockey",
+          0.5
+        ],
+        [
+          "sci.crypt",
+          1.0
+        ],
+        [
+          "soc.religion.christian",
+          0.5
+        ]
+      ],
+      "tokens": 262.3333333333333
+    },
+    "accuracy_delta": 0.0,
+    "candidate_id": "cand_0023",
+    "full_score": {
+      "accuracy": 0.6666666666666666,
+      "accuracy_spread": 0.0,
+      "latency_ms": 1474.1793791252544,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "rec.autos",
+          1.0
+        ],
+        [
+          "rec.motorcycles",
+          1.0
+        ],
+        [
+          "rec.sport.baseball",
+          0.5
+        ],
+        [
+          "rec.sport.hockey",
+          0.5
+        ],
+        [
+          "sci.crypt",
+          1.0
+        ],
+        [
+          "soc.religion.christian",
+          0.5
+        ]
+      ],
+      "tokens": 649.375
+    },
+    "kind": "reranker"
+  },
+  {
+    "ablated_score": {
+      "accuracy": 0.6666666666666666,
+      "accuracy_spread": 0.0,
+      "latency_ms": 1460.585733041842,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "rec.autos",
+          1.0
+        ],
+        [
+          "rec.motorcycles",
+          1.0
+        ],
+        [
+          "rec.sport.baseball",
+          0.5
+        ],
+        [
+          "rec.sport.hockey",
+          0.5
+        ],
+        [
+          "sci.crypt",
+          1.0
+        ],
+        [
+          "soc.religion.christian",
+          0.5
+        ]
+      ],
+      "tokens": 649.75
+    },
+    "accuracy_delta": 0.0,
+    "candidate_id": "cand_0023",
+    "full_score": {
+      "accuracy": 0.6666666666666666,
+      "accuracy_spread": 0.0,
+      "latency_ms": 1474.1793791252544,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "rec.autos",
+          1.0
+        ],
+        [
+          "rec.motorcycles",
+          1.0
+        ],
+        [
+          "rec.sport.baseball",
+          0.5
+        ],
+        [
+          "rec.sport.hockey",
+          0.5
+        ],
+        [
+          "sci.crypt",
+          1.0
+        ],
+        [
+          "soc.religion.christian",
+          0.5
+        ]
+      ],
+      "tokens": 649.375
+    },
+    "kind": "fewshot"
+  },
+  {
+    "ablated_score": {
+      "accuracy": 0.6666666666666666,
+      "accuracy_spread": 0.0,
+      "latency_ms": 1473.5750324583973,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "rec.autos",
+          1.0
+        ],
+        [
+          "rec.motorcycles",
+          1.0
+        ],
+        [
+          "rec.sport.baseball",
+          0.5
+        ],
+        [
+          "rec.sport.hockey",
+          0.5
+        ],
+        [
+          "sci.crypt",
+          1.0
+        ],
+        [
+          "soc.religion.christian",
+          0.5
+        ]
+      ],
+      "tokens": 649.625
+    },
+    "accuracy_delta": 0.0,
+    "candidate_id": "cand_0023",
+    "full_score": {
+      "accuracy": 0.6666666666666666,
+      "accuracy_spread": 0.0,
+      "latency_ms": 1474.1793791252544,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "rec.autos",
+          1.0
+        ],
+        [
+          "rec.motorcycles",
+          1.0
+        ],
+        [
+          "rec.sport.baseball",
+          0.5
+        ],
+        [
+          "rec.sport.hockey",
+          0.5
+        ],
+        [
+          "sci.crypt",
+          1.0
+        ],
+        [
+          "soc.religion.christian",
+          0.5
+        ]
+      ],
+      "tokens": 649.375
+    },
+    "kind": "formatter"
+  },
+  {
+    "ablated_score": {
+      "accuracy": 0.6666666666666666,
+      "accuracy_spread": 0.0,
+      "latency_ms": 1456.3636293336253,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "rec.autos",
+          1.0
+        ],
+        [
+          "rec.motorcycles",
+          1.0
+        ],
+        [
+          "rec.sport.baseball",
+          0.5
+        ],
+        [
+          "rec.sport.hockey",
+          0.5
+        ],
+        [
+          "sci.crypt",
+          1.0
+        ],
+        [
+          "soc.religion.christian",
+          0.5
+        ]
+      ],
+      "tokens": 649.7916666666667
+    },
+    "accuracy_delta": 0.0,
+    "candidate_id": "cand_0023",
+    "full_score": {
+      "accuracy": 0.6666666666666666,
+      "accuracy_spread": 0.0,
+      "latency_ms": 1474.1793791252544,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "rec.autos",
+          1.0
+        ],
+        [
+          "rec.motorcycles",
+          1.0
+        ],
+        [
+          "rec.sport.baseball",
+          0.5
+        ],
+        [
+          "rec.sport.hockey",
+          0.5
+        ],
+        [
+          "sci.crypt",
+          1.0
+        ],
+        [
+          "soc.religion.christian",
+          0.5
+        ]
+      ],
+      "tokens": 649.375
+    },
+    "kind": "voter"
+  }
+]

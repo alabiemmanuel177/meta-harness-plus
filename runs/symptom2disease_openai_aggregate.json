@@ -1,0 +1,82 @@
+{
+  "label": "openai \u00d7 symptom2disease (5 seeds, 6\u00d78)",
+  "n_seeds": 5,
+  "per_seed_bare_acc": [
+    0.75,
+    0.75,
+    0.75,
+    0.75,
+    0.75
+  ],
+  "per_seed_rag_acc": [
+    0.792,
+    0.792,
+    0.792,
+    0.792,
+    0.792
+  ],
+  "per_seed_mh_peak_acc": [
+    0.792,
+    0.833,
+    0.792,
+    0.823,
+    0.792
+  ],
+  "per_seed_rag_tokens": [
+    348.0,
+    348.0,
+    348.0,
+    348.0,
+    348.0
+  ],
+  "per_seed_mh_peak_tokens": [
+    218.1,
+    623.6,
+    336.2,
+    1393.8,
+    337.2
+  ],
+  "per_seed_n_dominate": [
+    1,
+    0,
+    0,
+    0,
+    0
+  ],
+  "per_seed_n_match_cheaper": [
+    1,
+    0,
+    2,
+    0,
+    2
+  ],
+  "ci": {
+    "mh_minus_rag_acc": {
+      "mean": 0.014399999999999968,
+      "low": 0.0,
+      "high": 0.03079999999999994,
+      "confidence": 0.95
+    },
+    "mh_peak_acc": {
+      "mean": 0.8064,
+      "low": 0.792,
+      "high": 0.8228,
+      "confidence": 0.95
+    },
+    "rag_acc": {
+      "mean": 0.792,
+      "low": 0.792,
+      "high": 0.792,
+      "confidence": 0.95
+    }
+  },
+  "paired_t_test": {
+    "n": 5,
+    "mean_diff": 0.014399999999999968,
+    "std_diff": 0.02003247363657315,
+    "t_statistic": 1.6073591040305035,
+    "p_value_two_sided": 0.1832538933378401,
+    "cohens_d": 0.7188328441730724
+  },
+  "per_class_delta": {}
+}

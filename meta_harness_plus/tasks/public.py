@@ -71,3 +71,19 @@ def build_symptom2disease_task() -> Task:
         train_path=d / "symptom2disease_train.jsonl",
         eval_path=d / "symptom2disease_test.jsonl",
     )
+
+
+def build_patents_task() -> Task:
+    """Patent classification (ccdv/patent-classification), top-8 of 9
+    high-level CPC categories: Physics, Electricity, Human Necessities, etc.
+
+    Public-dataset substitute for USPTO-50k. The original USPTO-50k uses
+    hundreds of fine-grained CPC codes which exceed our 8-class budget;
+    this benchmark uses the high-level CPC sections instead. Patent
+    abstracts truncated to first 600 chars for retrieval-friendliness."""
+    d = _DATA_DIR / "patents"
+    return build_task_from_jsonl(
+        name="patents",
+        train_path=d / "patents_train.jsonl",
+        eval_path=d / "patents_test.jsonl",
+    )

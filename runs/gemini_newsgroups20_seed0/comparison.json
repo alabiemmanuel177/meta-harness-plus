@@ -1,0 +1,167 @@
+[
+  {
+    "model": "gemini-2.5-flash-lite",
+    "task": "newsgroups20",
+    "ablation": "none",
+    "elapsed_s": 468.8,
+    "cache_stats": {
+      "hits": 2717,
+      "misses": 619,
+      "writes": 619,
+      "cached_keys": 619,
+      "hit_rate": 0.814,
+      "path": "runs/cache/gemini_newsgroups20.jsonl"
+    },
+    "bare_baseline": {
+      "accuracy": 0.729,
+      "tokens": 237.9,
+      "latency_ms": 912.3
+    },
+    "rag_baseline": {
+      "accuracy": 0.75,
+      "tokens": 818.1,
+      "latency_ms": 2641.1
+    },
+    "n_discovered_dominates_rag": 1,
+    "n_discovered_ties_rag_acc_cheaper": 1,
+    "frontier": [
+      {
+        "candidate_id": "cand_0004",
+        "label": "discovered",
+        "accuracy": 0.812,
+        "accuracy_spread": 0.0,
+        "tokens": 781.6,
+        "latency_ms": 1008.1,
+        "components": [
+          {
+            "kind": "retriever",
+            "name": "tfidf_retriever",
+            "k": 5
+          },
+          {
+            "kind": "reranker",
+            "name": "null_reranker"
+          },
+          {
+            "kind": "fewshot",
+            "name": "topk_fewshot",
+            "k": 3
+          },
+          {
+            "kind": "formatter",
+            "name": "simple_formatter"
+          },
+          {
+            "kind": "predictor",
+            "name": "llm_predictor",
+            "n_samples": 1
+          },
+          {
+            "kind": "voter",
+            "name": "majority_voter"
+          }
+        ]
+      },
+      {
+        "candidate_id": "cand_0029",
+        "label": "discovered",
+        "accuracy": 0.792,
+        "accuracy_spread": 0.0,
+        "tokens": 1006.5,
+        "latency_ms": 933.3,
+        "components": [
+          {
+            "kind": "retriever",
+            "name": "tfidf_retriever",
+            "k": 7
+          },
+          {
+            "kind": "reranker",
+            "name": "diversity_reranker"
+          },
+          {
+            "kind": "fewshot",
+            "name": "topk_fewshot",
+            "k": 4
+          },
+          {
+            "kind": "formatter",
+            "name": "simple_formatter"
+          },
+          {
+            "kind": "predictor",
+            "name": "llm_predictor",
+            "n_samples": 1
+          },
+          {
+            "kind": "voter",
+            "name": "majority_voter"
+          }
+        ]
+      },
+      {
+        "candidate_id": "cand_0001",
+        "label": "[BARE]",
+        "accuracy": 0.729,
+        "accuracy_spread": 0.0,
+        "tokens": 237.9,
+        "latency_ms": 912.3,
+        "components": [
+          {
+            "kind": "retriever",
+            "name": "null_retriever"
+          },
+          {
+            "kind": "fewshot",
+            "name": "null_fewshot"
+          },
+          {
+            "kind": "formatter",
+            "name": "simple_formatter"
+          },
+          {
+            "kind": "predictor",
+            "name": "llm_predictor",
+            "n_samples": 1
+          },
+          {
+            "kind": "voter",
+            "name": "null_voter"
+          }
+        ]
+      }
+    ],
+    "attribution": [
+      {
+        "kind": "retriever",
+        "mean_delta": 0.057,
+        "variance": 0.005,
+        "n": 14
+      },
+      {
+        "kind": "fewshot",
+        "mean_delta": 0.057,
+        "variance": 0.005,
+        "n": 14
+      },
+      {
+        "kind": "voter",
+        "mean_delta": -0.003,
+        "variance": 0.001,
+        "n": 14
+      },
+      {
+        "kind": "reranker",
+        "mean_delta": -0.021,
+        "variance": 0.002,
+        "n": 12
+      },
+      {
+        "kind": "formatter",
+        "mean_delta": -0.048,
+        "variance": 0.004,
+        "n": 14
+      }
+    ]
+  }
+]

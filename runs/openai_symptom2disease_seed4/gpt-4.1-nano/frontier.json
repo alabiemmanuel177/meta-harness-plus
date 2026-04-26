@@ -1,0 +1,378 @@
+[
+  {
+    "candidate_id": "cand_0001",
+    "describe": [
+      {
+        "kind": "retriever",
+        "name": "null_retriever"
+      },
+      {
+        "kind": "fewshot",
+        "name": "null_fewshot"
+      },
+      {
+        "kind": "formatter",
+        "name": "simple_formatter",
+        "system_hint": "Classify the input."
+      },
+      {
+        "kind": "predictor",
+        "n_samples": 1,
+        "name": "llm_predictor",
+        "temperature": 0.0
+      },
+      {
+        "kind": "voter",
+        "name": "null_voter"
+      }
+    ],
+    "score": {
+      "accuracy": 0.75,
+      "accuracy_spread": 0.0,
+      "latency_ms": 674.8083901250178,
+      "n_evaluated": 48,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "allergy",
+          0.6666666666666666
+        ],
+        [
+          "arthritis",
+          0.8333333333333334
+        ],
+        [
+          "bronchial asthma",
+          1.0
+        ],
+        [
+          "cervical spondylosis",
+          1.0
+        ],
+        [
+          "dengue",
+          0.3333333333333333
+        ],
+        [
+          "drug reaction",
+          0.16666666666666666
+        ],
+        [
+          "impetigo",
+          1.0
+        ],
+        [
+          "malaria",
+          1.0
+        ]
+      ],
+      "tokens": 131.89583333333334
+    }
+  },
+  {
+    "candidate_id": "cand_0002",
+    "describe": [
+      {
+        "k": 3,
+        "kind": "retriever",
+        "name": "bow_retriever"
+      },
+      {
+        "k": 2,
+        "kind": "fewshot",
+        "name": "topk_fewshot"
+      },
+      {
+        "kind": "formatter",
+        "name": "simple_formatter",
+        "system_hint": "Classify the input."
+      },
+      {
+        "kind": "predictor",
+        "n_samples": 1,
+        "name": "llm_predictor",
+        "temperature": 0.0
+      },
+      {
+        "kind": "voter",
+        "name": "null_voter"
+      }
+    ],
+    "score": {
+      "accuracy": 0.7916666666666666,
+      "accuracy_spread": 0.0,
+      "latency_ms": 653.0166792290305,
+      "n_evaluated": 48,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "allergy",
+          0.8333333333333334
+        ],
+        [
+          "arthritis",
+          1.0
+        ],
+        [
+          "bronchial asthma",
+          0.8333333333333334
+        ],
+        [
+          "cervical spondylosis",
+          0.8333333333333334
+        ],
+        [
+          "dengue",
+          0.5
+        ],
+        [
+          "drug reaction",
+          0.5
+        ],
+        [
+          "impetigo",
+          1.0
+        ],
+        [
+          "malaria",
+          0.8333333333333334
+        ]
+      ],
+      "tokens": 347.9791666666667
+    }
+  },
+  {
+    "candidate_id": "cand_0014",
+    "describe": [
+      {
+        "k": 3,
+        "kind": "retriever",
+        "name": "tfidf_retriever"
+      },
+      {
+        "kind": "reranker",
+        "m": 3,
+        "name": "llm_reranker",
+        "temperature": 0.6
+      },
+      {
+        "k": 2,
+        "kind": "fewshot",
+        "name": "topk_fewshot"
+      },
+      {
+        "kind": "formatter",
+        "name": "simple_formatter",
+        "system_hint": "Classify the input."
+      },
+      {
+        "kind": "predictor",
+        "n_samples": 1,
+        "name": "llm_predictor",
+        "temperature": 0.0
+      },
+      {
+        "kind": "voter",
+        "name": "majority_voter"
+      }
+    ],
+    "score": {
+      "accuracy": 0.7708333333333334,
+      "accuracy_spread": 0.0,
+      "latency_ms": 695.3960353124688,
+      "n_evaluated": 48,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "allergy",
+          1.0
+        ],
+        [
+          "arthritis",
+          0.8333333333333334
+        ],
+        [
+          "bronchial asthma",
+          1.0
+        ],
+        [
+          "cervical spondylosis",
+          1.0
+        ],
+        [
+          "dengue",
+          0.5
+        ],
+        [
+          "drug reaction",
+          0.16666666666666666
+        ],
+        [
+          "impetigo",
+          1.0
+        ],
+        [
+          "malaria",
+          0.6666666666666666
+        ]
+      ],
+      "tokens": 326.4583333333333
+    }
+  },
+  {
+    "candidate_id": "cand_0020",
+    "describe": [
+      {
+        "b": 0.75,
+        "k": 3,
+        "k1": 1.5,
+        "kind": "retriever",
+        "name": "bm25_retriever"
+      },
+      {
+        "kind": "reranker",
+        "name": "diversity_reranker"
+      },
+      {
+        "k": 2,
+        "kind": "fewshot",
+        "name": "topk_fewshot"
+      },
+      {
+        "kind": "formatter",
+        "name": "simple_formatter",
+        "system_hint": "Classify the input."
+      },
+      {
+        "kind": "predictor",
+        "n_samples": 1,
+        "name": "llm_predictor",
+        "temperature": 0.0
+      },
+      {
+        "kind": "voter",
+        "name": "null_voter"
+      }
+    ],
+    "score": {
+      "accuracy": 0.7916666666666666,
+      "accuracy_spread": 0.0,
+      "latency_ms": 691.3568702291417,
+      "n_evaluated": 48,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "allergy",
+          1.0
+        ],
+        [
+          "arthritis",
+          0.8333333333333334
+        ],
+        [
+          "bronchial asthma",
+          1.0
+        ],
+        [
+          "cervical spondylosis",
+          1.0
+        ],
+        [
+          "dengue",
+          0.5
+        ],
+        [
+          "drug reaction",
+          0.16666666666666666
+        ],
+        [
+          "impetigo",
+          1.0
+        ],
+        [
+          "malaria",
+          0.8333333333333334
+        ]
+      ],
+      "tokens": 337.2291666666667
+    }
+  },
+  {
+    "candidate_id": "cand_0023",
+    "describe": [
+      {
+        "b": 0.75,
+        "k": 3,
+        "k1": 1.5,
+        "kind": "retriever",
+        "name": "bm25_retriever"
+      },
+      {
+        "kind": "reranker",
+        "name": "null_reranker"
+      },
+      {
+        "k": 2,
+        "kind": "fewshot",
+        "name": "topk_fewshot"
+      },
+      {
+        "kind": "formatter",
+        "name": "simple_formatter",
+        "system_hint": "Classify the input."
+      },
+      {
+        "kind": "predictor",
+        "n_samples": 1,
+        "name": "llm_predictor",
+        "temperature": 0.0
+      },
+      {
+        "kind": "voter",
+        "name": "null_voter"
+      }
+    ],
+    "score": {
+      "accuracy": 0.7916666666666666,
+      "accuracy_spread": 0.0,
+      "latency_ms": 718.9478320415856,
+      "n_evaluated": 48,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "allergy",
+          1.0
+        ],
+        [
+          "arthritis",
+          0.8333333333333334
+        ],
+        [
+          "bronchial asthma",
+          1.0
+        ],
+        [
+          "cervical spondylosis",
+          1.0
+        ],
+        [
+          "dengue",
+          0.5
+        ],
+        [
+          "drug reaction",
+          0.16666666666666666
+        ],
+        [
+          "impetigo",
+          1.0
+        ],
+        [
+          "malaria",
+          0.8333333333333334
+        ]
+      ],
+      "tokens": 336.1875
+    }
+  }
+]

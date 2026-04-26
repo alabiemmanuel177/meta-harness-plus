@@ -1,0 +1,82 @@
+{
+  "label": "gemini \u00d7 newsgroups20 (5 seeds, 6\u00d78)",
+  "n_seeds": 5,
+  "per_seed_bare_acc": [
+    0.729,
+    0.729,
+    0.729,
+    0.729,
+    0.729
+  ],
+  "per_seed_rag_acc": [
+    0.75,
+    0.75,
+    0.75,
+    0.75,
+    0.75
+  ],
+  "per_seed_mh_peak_acc": [
+    0.812,
+    0.771,
+    0.833,
+    0.812,
+    0.833
+  ],
+  "per_seed_rag_tokens": [
+    818.1,
+    818.1,
+    818.1,
+    818.1,
+    818.1
+  ],
+  "per_seed_mh_peak_tokens": [
+    781.6,
+    918.4,
+    1086.5,
+    881.9,
+    401.1
+  ],
+  "per_seed_n_dominate": [
+    1,
+    1,
+    3,
+    2,
+    4
+  ],
+  "per_seed_n_match_cheaper": [
+    1,
+    1,
+    3,
+    2,
+    4
+  ],
+  "ci": {
+    "mh_minus_rag_acc": {
+      "mean": 0.06220000000000001,
+      "low": 0.04160000000000001,
+      "high": 0.07879999999999998,
+      "confidence": 0.95
+    },
+    "mh_peak_acc": {
+      "mean": 0.8122,
+      "low": 0.7916000000000001,
+      "high": 0.8288,
+      "confidence": 0.95
+    },
+    "rag_acc": {
+      "mean": 0.75,
+      "low": 0.75,
+      "high": 0.75,
+      "confidence": 0.95
+    }
+  },
+  "paired_t_test": {
+    "n": 5,
+    "mean_diff": 0.06220000000000001,
+    "std_diff": 0.025312052465179483,
+    "t_statistic": 5.494751102930789,
+    "p_value_two_sided": 0.005346516806160437,
+    "cohens_d": 2.4573273971190375
+  },
+  "per_class_delta": {}
+}

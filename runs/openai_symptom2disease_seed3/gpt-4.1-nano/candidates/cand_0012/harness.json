@@ -1,0 +1,33 @@
+[
+  {
+    "k": 5,
+    "kind": "retriever",
+    "name": "tfidf_retriever"
+  },
+  {
+    "kind": "reranker",
+    "m": 3,
+    "name": "llm_reranker",
+    "temperature": 0.3
+  },
+  {
+    "k": 2,
+    "kind": "fewshot",
+    "name": "topk_fewshot"
+  },
+  {
+    "kind": "formatter",
+    "name": "simple_formatter",
+    "system_hint": "Classify the input."
+  },
+  {
+    "kind": "predictor",
+    "n_samples": 4,
+    "name": "llm_predictor",
+    "temperature": 0.0
+  },
+  {
+    "kind": "voter",
+    "name": "majority_voter"
+  }
+]

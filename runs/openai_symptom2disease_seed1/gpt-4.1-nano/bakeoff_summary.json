@@ -1,0 +1,198 @@
+{
+  "model": "gpt-4.1-nano",
+  "task": "symptom2disease",
+  "ablation": "none",
+  "elapsed_s": 228.6,
+  "cache_stats": {
+    "hits": 3270,
+    "misses": 718,
+    "writes": 718,
+    "cached_keys": 1065,
+    "hit_rate": 0.82,
+    "path": "runs/cache/openai_symptom2disease.jsonl"
+  },
+  "bare_baseline": {
+    "accuracy": 0.75,
+    "tokens": 131.9,
+    "latency_ms": 674.8
+  },
+  "rag_baseline": {
+    "accuracy": 0.792,
+    "tokens": 348.0,
+    "latency_ms": 653.0
+  },
+  "n_discovered_dominates_rag": 0,
+  "n_discovered_ties_rag_acc_cheaper": 0,
+  "frontier": [
+    {
+      "candidate_id": "cand_0008",
+      "label": "discovered",
+      "accuracy": 0.833,
+      "accuracy_spread": 0.0,
+      "tokens": 623.6,
+      "latency_ms": 648.4,
+      "components": [
+        {
+          "kind": "retriever",
+          "name": "bow_retriever",
+          "k": 12
+        },
+        {
+          "kind": "reranker",
+          "name": "null_reranker"
+        },
+        {
+          "kind": "fewshot",
+          "name": "topk_fewshot",
+          "k": 4
+        },
+        {
+          "kind": "formatter",
+          "name": "simple_formatter"
+        },
+        {
+          "kind": "predictor",
+          "name": "llm_predictor",
+          "n_samples": 1
+        },
+        {
+          "kind": "voter",
+          "name": "majority_voter"
+        }
+      ]
+    },
+    {
+      "candidate_id": "cand_0029",
+      "label": "discovered",
+      "accuracy": 0.812,
+      "accuracy_spread": 0.0,
+      "tokens": 460.7,
+      "latency_ms": 654.0,
+      "components": [
+        {
+          "kind": "retriever",
+          "name": "bow_retriever",
+          "k": 5
+        },
+        {
+          "kind": "reranker",
+          "name": "null_reranker"
+        },
+        {
+          "kind": "fewshot",
+          "name": "topk_fewshot",
+          "k": 3
+        },
+        {
+          "kind": "formatter",
+          "name": "simple_formatter"
+        },
+        {
+          "kind": "predictor",
+          "name": "llm_predictor",
+          "n_samples": 1
+        },
+        {
+          "kind": "voter",
+          "name": "majority_voter"
+        }
+      ]
+    },
+    {
+      "candidate_id": "cand_0002",
+      "label": "[RAG]",
+      "accuracy": 0.792,
+      "accuracy_spread": 0.0,
+      "tokens": 348.0,
+      "latency_ms": 653.0,
+      "components": [
+        {
+          "kind": "retriever",
+          "name": "bow_retriever",
+          "k": 3
+        },
+        {
+          "kind": "fewshot",
+          "name": "topk_fewshot",
+          "k": 2
+        },
+        {
+          "kind": "formatter",
+          "name": "simple_formatter"
+        },
+        {
+          "kind": "predictor",
+          "name": "llm_predictor",
+          "n_samples": 1
+        },
+        {
+          "kind": "voter",
+          "name": "null_voter"
+        }
+      ]
+    },
+    {
+      "candidate_id": "cand_0001",
+      "label": "[BARE]",
+      "accuracy": 0.75,
+      "accuracy_spread": 0.0,
+      "tokens": 131.9,
+      "latency_ms": 674.8,
+      "components": [
+        {
+          "kind": "retriever",
+          "name": "null_retriever"
+        },
+        {
+          "kind": "fewshot",
+          "name": "null_fewshot"
+        },
+        {
+          "kind": "formatter",
+          "name": "simple_formatter"
+        },
+        {
+          "kind": "predictor",
+          "name": "llm_predictor",
+          "n_samples": 1
+        },
+        {
+          "kind": "voter",
+          "name": "null_voter"
+        }
+      ]
+    }
+  ],
+  "attribution": [
+    {
+      "kind": "voter",
+      "mean_delta": 0.0,
+      "variance": 0.0,
+      "n": 14
+    },
+    {
+      "kind": "reranker",
+      "mean_delta": -0.014,
+      "variance": 0.003,
+      "n": 12
+    },
+    {
+      "kind": "formatter",
+      "mean_delta": -0.018,
+      "variance": 0.002,
+      "n": 14
+    },
+    {
+      "kind": "retriever",
+      "mean_delta": -0.071,
+      "variance": 0.01,
+      "n": 14
+    },
+    {
+      "kind": "fewshot",
+      "mean_delta": -0.071,
+      "variance": 0.01,
+      "n": 14
+    }
+  ]
+}

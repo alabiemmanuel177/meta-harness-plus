@@ -1,0 +1,327 @@
+[
+  {
+    "ablated_score": {
+      "accuracy": 0.7916666666666667,
+      "accuracy_spread": 0.08333333333333337,
+      "latency_ms": 645.6725482916852,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "bronchial asthma",
+          1.0
+        ],
+        [
+          "cervical spondylosis",
+          0.75
+        ],
+        [
+          "drug reaction",
+          0.0
+        ],
+        [
+          "impetigo",
+          1.0
+        ],
+        [
+          "malaria",
+          0.6666666666666666
+        ]
+      ],
+      "tokens": 148.875
+    },
+    "accuracy_delta": 0.08333333333333326,
+    "candidate_id": "cand_0018",
+    "full_score": {
+      "accuracy": 0.875,
+      "accuracy_spread": 0.08333333333333326,
+      "latency_ms": 718.2219762501738,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "bronchial asthma",
+          1.0
+        ],
+        [
+          "cervical spondylosis",
+          0.75
+        ],
+        [
+          "drug reaction",
+          0.5
+        ],
+        [
+          "impetigo",
+          1.0
+        ],
+        [
+          "malaria",
+          0.8333333333333334
+        ]
+      ],
+      "tokens": 173.33333333333334
+    },
+    "kind": "retriever"
+  },
+  {
+    "ablated_score": {
+      "accuracy": 0.7916666666666667,
+      "accuracy_spread": 0.08333333333333337,
+      "latency_ms": 668.781405333187,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "bronchial asthma",
+          1.0
+        ],
+        [
+          "cervical spondylosis",
+          0.5
+        ],
+        [
+          "drug reaction",
+          0.0
+        ],
+        [
+          "impetigo",
+          1.0
+        ],
+        [
+          "malaria",
+          0.8333333333333334
+        ]
+      ],
+      "tokens": 172.91666666666669
+    },
+    "accuracy_delta": 0.08333333333333326,
+    "candidate_id": "cand_0018",
+    "full_score": {
+      "accuracy": 0.875,
+      "accuracy_spread": 0.08333333333333326,
+      "latency_ms": 718.2219762501738,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "bronchial asthma",
+          1.0
+        ],
+        [
+          "cervical spondylosis",
+          0.75
+        ],
+        [
+          "drug reaction",
+          0.5
+        ],
+        [
+          "impetigo",
+          1.0
+        ],
+        [
+          "malaria",
+          0.8333333333333334
+        ]
+      ],
+      "tokens": 173.33333333333334
+    },
+    "kind": "reranker"
+  },
+  {
+    "ablated_score": {
+      "accuracy": 0.7916666666666667,
+      "accuracy_spread": 0.08333333333333337,
+      "latency_ms": 658.4357180001834,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "bronchial asthma",
+          1.0
+        ],
+        [
+          "cervical spondylosis",
+          0.5
+        ],
+        [
+          "drug reaction",
+          0.5
+        ],
+        [
+          "impetigo",
+          1.0
+        ],
+        [
+          "malaria",
+          0.6666666666666666
+        ]
+      ],
+      "tokens": 164.875
+    },
+    "accuracy_delta": 0.08333333333333326,
+    "candidate_id": "cand_0018",
+    "full_score": {
+      "accuracy": 0.875,
+      "accuracy_spread": 0.08333333333333326,
+      "latency_ms": 718.2219762501738,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "bronchial asthma",
+          1.0
+        ],
+        [
+          "cervical spondylosis",
+          0.75
+        ],
+        [
+          "drug reaction",
+          0.5
+        ],
+        [
+          "impetigo",
+          1.0
+        ],
+        [
+          "malaria",
+          0.8333333333333334
+        ]
+      ],
+      "tokens": 173.33333333333334
+    },
+    "kind": "fewshot"
+  },
+  {
+    "ablated_score": {
+      "accuracy": 0.9166666666666666,
+      "accuracy_spread": 0.0,
+      "latency_ms": 654.6768207081861,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "bronchial asthma",
+          1.0
+        ],
+        [
+          "cervical spondylosis",
+          1.0
+        ],
+        [
+          "drug reaction",
+          0.0
+        ],
+        [
+          "impetigo",
+          1.0
+        ],
+        [
+          "malaria",
+          1.0
+        ]
+      ],
+      "tokens": 165.33333333333334
+    },
+    "accuracy_delta": -0.04166666666666663,
+    "candidate_id": "cand_0018",
+    "full_score": {
+      "accuracy": 0.875,
+      "accuracy_spread": 0.08333333333333326,
+      "latency_ms": 718.2219762501738,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "bronchial asthma",
+          1.0
+        ],
+        [
+          "cervical spondylosis",
+          0.75
+        ],
+        [
+          "drug reaction",
+          0.5
+        ],
+        [
+          "impetigo",
+          1.0
+        ],
+        [
+          "malaria",
+          0.8333333333333334
+        ]
+      ],
+      "tokens": 173.33333333333334
+    },
+    "kind": "formatter"
+  },
+  {
+    "ablated_score": {
+      "accuracy": 0.7916666666666667,
+      "accuracy_spread": 0.08333333333333337,
+      "latency_ms": 583.3348655836814,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "bronchial asthma",
+          1.0
+        ],
+        [
+          "cervical spondylosis",
+          0.5
+        ],
+        [
+          "drug reaction",
+          0.0
+        ],
+        [
+          "impetigo",
+          1.0
+        ],
+        [
+          "malaria",
+          0.8333333333333334
+        ]
+      ],
+      "tokens": 164.875
+    },
+    "accuracy_delta": 0.08333333333333326,
+    "candidate_id": "cand_0018",
+    "full_score": {
+      "accuracy": 0.875,
+      "accuracy_spread": 0.08333333333333326,
+      "latency_ms": 718.2219762501738,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "bronchial asthma",
+          1.0
+        ],
+        [
+          "cervical spondylosis",
+          0.75
+        ],
+        [
+          "drug reaction",
+          0.5
+        ],
+        [
+          "impetigo",
+          1.0
+        ],
+        [
+          "malaria",
+          0.8333333333333334
+        ]
+      ],
+      "tokens": 173.33333333333334
+    },
+    "kind": "voter"
+  }
+]

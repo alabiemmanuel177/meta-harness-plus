@@ -1,0 +1,367 @@
+[
+  {
+    "ablated_score": {
+      "accuracy": 0.75,
+      "accuracy_spread": 0.0,
+      "latency_ms": 1051.878566083205,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "allergy",
+          1.0
+        ],
+        [
+          "bronchial asthma",
+          1.0
+        ],
+        [
+          "dengue",
+          0.5
+        ],
+        [
+          "drug reaction",
+          0.0
+        ],
+        [
+          "impetigo",
+          1.0
+        ],
+        [
+          "malaria",
+          0.6666666666666666
+        ]
+      ],
+      "tokens": 135.91666666666666
+    },
+    "accuracy_delta": 0.25,
+    "candidate_id": "cand_0004",
+    "full_score": {
+      "accuracy": 1.0,
+      "accuracy_spread": 0.0,
+      "latency_ms": 2772.9753187499955,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "allergy",
+          1.0
+        ],
+        [
+          "bronchial asthma",
+          1.0
+        ],
+        [
+          "dengue",
+          1.0
+        ],
+        [
+          "drug reaction",
+          1.0
+        ],
+        [
+          "impetigo",
+          1.0
+        ],
+        [
+          "malaria",
+          1.0
+        ]
+      ],
+      "tokens": 433.1666666666667
+    },
+    "kind": "retriever"
+  },
+  {
+    "ablated_score": {
+      "accuracy": 1.0,
+      "accuracy_spread": 0.0,
+      "latency_ms": 2772.9753187499955,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "allergy",
+          1.0
+        ],
+        [
+          "bronchial asthma",
+          1.0
+        ],
+        [
+          "dengue",
+          1.0
+        ],
+        [
+          "drug reaction",
+          1.0
+        ],
+        [
+          "impetigo",
+          1.0
+        ],
+        [
+          "malaria",
+          1.0
+        ]
+      ],
+      "tokens": 433.1666666666667
+    },
+    "accuracy_delta": 0.0,
+    "candidate_id": "cand_0004",
+    "full_score": {
+      "accuracy": 1.0,
+      "accuracy_spread": 0.0,
+      "latency_ms": 2772.9753187499955,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "allergy",
+          1.0
+        ],
+        [
+          "bronchial asthma",
+          1.0
+        ],
+        [
+          "dengue",
+          1.0
+        ],
+        [
+          "drug reaction",
+          1.0
+        ],
+        [
+          "impetigo",
+          1.0
+        ],
+        [
+          "malaria",
+          1.0
+        ]
+      ],
+      "tokens": 433.1666666666667
+    },
+    "kind": "reranker"
+  },
+  {
+    "ablated_score": {
+      "accuracy": 0.75,
+      "accuracy_spread": 0.0,
+      "latency_ms": 1059.378566083205,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "allergy",
+          1.0
+        ],
+        [
+          "bronchial asthma",
+          1.0
+        ],
+        [
+          "dengue",
+          0.5
+        ],
+        [
+          "drug reaction",
+          0.0
+        ],
+        [
+          "impetigo",
+          1.0
+        ],
+        [
+          "malaria",
+          0.6666666666666666
+        ]
+      ],
+      "tokens": 185.91666666666666
+    },
+    "accuracy_delta": 0.25,
+    "candidate_id": "cand_0004",
+    "full_score": {
+      "accuracy": 1.0,
+      "accuracy_spread": 0.0,
+      "latency_ms": 2772.9753187499955,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "allergy",
+          1.0
+        ],
+        [
+          "bronchial asthma",
+          1.0
+        ],
+        [
+          "dengue",
+          1.0
+        ],
+        [
+          "drug reaction",
+          1.0
+        ],
+        [
+          "impetigo",
+          1.0
+        ],
+        [
+          "malaria",
+          1.0
+        ]
+      ],
+      "tokens": 433.1666666666667
+    },
+    "kind": "fewshot"
+  },
+  {
+    "ablated_score": {
+      "accuracy": 1.0,
+      "accuracy_spread": 0.0,
+      "latency_ms": 2772.9753187499955,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "allergy",
+          1.0
+        ],
+        [
+          "bronchial asthma",
+          1.0
+        ],
+        [
+          "dengue",
+          1.0
+        ],
+        [
+          "drug reaction",
+          1.0
+        ],
+        [
+          "impetigo",
+          1.0
+        ],
+        [
+          "malaria",
+          1.0
+        ]
+      ],
+      "tokens": 433.1666666666667
+    },
+    "accuracy_delta": 0.0,
+    "candidate_id": "cand_0004",
+    "full_score": {
+      "accuracy": 1.0,
+      "accuracy_spread": 0.0,
+      "latency_ms": 2772.9753187499955,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "allergy",
+          1.0
+        ],
+        [
+          "bronchial asthma",
+          1.0
+        ],
+        [
+          "dengue",
+          1.0
+        ],
+        [
+          "drug reaction",
+          1.0
+        ],
+        [
+          "impetigo",
+          1.0
+        ],
+        [
+          "malaria",
+          1.0
+        ]
+      ],
+      "tokens": 433.1666666666667
+    },
+    "kind": "formatter"
+  },
+  {
+    "ablated_score": {
+      "accuracy": 1.0,
+      "accuracy_spread": 0.0,
+      "latency_ms": 2772.8753187499956,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "allergy",
+          1.0
+        ],
+        [
+          "bronchial asthma",
+          1.0
+        ],
+        [
+          "dengue",
+          1.0
+        ],
+        [
+          "drug reaction",
+          1.0
+        ],
+        [
+          "impetigo",
+          1.0
+        ],
+        [
+          "malaria",
+          1.0
+        ]
+      ],
+      "tokens": 433.1666666666667
+    },
+    "accuracy_delta": 0.0,
+    "candidate_id": "cand_0004",
+    "full_score": {
+      "accuracy": 1.0,
+      "accuracy_spread": 0.0,
+      "latency_ms": 2772.9753187499955,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "allergy",
+          1.0
+        ],
+        [
+          "bronchial asthma",
+          1.0
+        ],
+        [
+          "dengue",
+          1.0
+        ],
+        [
+          "drug reaction",
+          1.0
+        ],
+        [
+          "impetigo",
+          1.0
+        ],
+        [
+          "malaria",
+          1.0
+        ]
+      ],
+      "tokens": 433.1666666666667
+    },
+    "kind": "voter"
+  }
+]

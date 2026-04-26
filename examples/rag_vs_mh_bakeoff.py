@@ -53,6 +53,7 @@ from meta_harness_plus.tasks import (
     build_agnews_task,
     build_emotion_task,
     build_newsgroups20_task,
+    build_patents_task,
     build_symptom2disease_task,
     build_news_hard_50_task,
     build_news_hard_task,
@@ -72,6 +73,7 @@ TASK_FACTORIES = {
     "emotion": build_emotion_task,
     "newsgroups20": build_newsgroups20_task,
     "symptom2disease": build_symptom2disease_task,
+    "patents": build_patents_task,
 }
 
 

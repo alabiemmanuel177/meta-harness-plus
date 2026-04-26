@@ -1,0 +1,42 @@
+{
+  "accuracy": 0.6875,
+  "accuracy_spread": 0.0,
+  "latency_ms": 649.4935665208138,
+  "n_evaluated": 48,
+  "n_repeats": 2,
+  "per_class_accuracy": [
+    [
+      "allergy",
+      0.5
+    ],
+    [
+      "arthritis",
+      0.6666666666666666
+    ],
+    [
+      "bronchial asthma",
+      1.0
+    ],
+    [
+      "cervical spondylosis",
+      1.0
+    ],
+    [
+      "dengue",
+      0.25
+    ],
+    [
+      "drug reaction",
+      0.08333333333333333
+    ],
+    [
+      "impetigo",
+      1.0
+    ],
+    [
+      "malaria",
+      1.0
+    ]
+  ],
+  "tokens": 172.10416666666669
+}

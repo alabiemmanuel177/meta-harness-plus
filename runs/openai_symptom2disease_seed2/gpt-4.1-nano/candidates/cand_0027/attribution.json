@@ -1,0 +1,407 @@
+[
+  {
+    "ablated_score": {
+      "accuracy": 0.75,
+      "accuracy_spread": 0.0,
+      "latency_ms": 669.0661632082958,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "allergy",
+          0.5
+        ],
+        [
+          "arthritis",
+          1.0
+        ],
+        [
+          "bronchial asthma",
+          1.0
+        ],
+        [
+          "cervical spondylosis",
+          1.0
+        ],
+        [
+          "dengue",
+          0.5
+        ],
+        [
+          "drug reaction",
+          0.0
+        ],
+        [
+          "impetigo",
+          1.0
+        ]
+      ],
+      "tokens": 131.41666666666666
+    },
+    "accuracy_delta": 0.16666666666666663,
+    "candidate_id": "cand_0027",
+    "full_score": {
+      "accuracy": 0.9166666666666666,
+      "accuracy_spread": 0.0,
+      "latency_ms": 751.9843296249394,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "allergy",
+          0.5
+        ],
+        [
+          "arthritis",
+          1.0
+        ],
+        [
+          "bronchial asthma",
+          1.0
+        ],
+        [
+          "cervical spondylosis",
+          1.0
+        ],
+        [
+          "dengue",
+          1.0
+        ],
+        [
+          "drug reaction",
+          1.0
+        ],
+        [
+          "impetigo",
+          1.0
+        ]
+      ],
+      "tokens": 355.25
+    },
+    "kind": "retriever"
+  },
+  {
+    "ablated_score": {
+      "accuracy": 0.9583333333333333,
+      "accuracy_spread": 0.08333333333333337,
+      "latency_ms": 625.5683098332613,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "allergy",
+          0.75
+        ],
+        [
+          "arthritis",
+          1.0
+        ],
+        [
+          "bronchial asthma",
+          1.0
+        ],
+        [
+          "cervical spondylosis",
+          1.0
+        ],
+        [
+          "dengue",
+          1.0
+        ],
+        [
+          "drug reaction",
+          1.0
+        ],
+        [
+          "impetigo",
+          1.0
+        ]
+      ],
+      "tokens": 355.375
+    },
+    "accuracy_delta": -0.04166666666666663,
+    "candidate_id": "cand_0027",
+    "full_score": {
+      "accuracy": 0.9166666666666666,
+      "accuracy_spread": 0.0,
+      "latency_ms": 751.9843296249394,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "allergy",
+          0.5
+        ],
+        [
+          "arthritis",
+          1.0
+        ],
+        [
+          "bronchial asthma",
+          1.0
+        ],
+        [
+          "cervical spondylosis",
+          1.0
+        ],
+        [
+          "dengue",
+          1.0
+        ],
+        [
+          "drug reaction",
+          1.0
+        ],
+        [
+          "impetigo",
+          1.0
+        ]
+      ],
+      "tokens": 355.25
+    },
+    "kind": "reranker"
+  },
+  {
+    "ablated_score": {
+      "accuracy": 0.7083333333333333,
+      "accuracy_spread": 0.08333333333333337,
+      "latency_ms": 667.6160426664123,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "allergy",
+          0.0
+        ],
+        [
+          "arthritis",
+          1.0
+        ],
+        [
+          "bronchial asthma",
+          1.0
+        ],
+        [
+          "cervical spondylosis",
+          1.0
+        ],
+        [
+          "dengue",
+          0.75
+        ],
+        [
+          "drug reaction",
+          0.0
+        ],
+        [
+          "impetigo",
+          1.0
+        ]
+      ],
+      "tokens": 161.625
+    },
+    "accuracy_delta": 0.20833333333333337,
+    "candidate_id": "cand_0027",
+    "full_score": {
+      "accuracy": 0.9166666666666666,
+      "accuracy_spread": 0.0,
+      "latency_ms": 751.9843296249394,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "allergy",
+          0.5
+        ],
+        [
+          "arthritis",
+          1.0
+        ],
+        [
+          "bronchial asthma",
+          1.0
+        ],
+        [
+          "cervical spondylosis",
+          1.0
+        ],
+        [
+          "dengue",
+          1.0
+        ],
+        [
+          "drug reaction",
+          1.0
+        ],
+        [
+          "impetigo",
+          1.0
+        ]
+      ],
+      "tokens": 355.25
+    },
+    "kind": "fewshot"
+  },
+  {
+    "ablated_score": {
+      "accuracy": 0.9166666666666667,
+      "accuracy_spread": 0.16666666666666663,
+      "latency_ms": 702.916032166781,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "allergy",
+          0.75
+        ],
+        [
+          "arthritis",
+          1.0
+        ],
+        [
+          "bronchial asthma",
+          1.0
+        ],
+        [
+          "cervical spondylosis",
+          1.0
+        ],
+        [
+          "dengue",
+          0.75
+        ],
+        [
+          "drug reaction",
+          1.0
+        ],
+        [
+          "impetigo",
+          1.0
+        ]
+      ],
+      "tokens": 356.0
+    },
+    "accuracy_delta": -1.1102230246251565e-16,
+    "candidate_id": "cand_0027",
+    "full_score": {
+      "accuracy": 0.9166666666666666,
+      "accuracy_spread": 0.0,
+      "latency_ms": 751.9843296249394,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "allergy",
+          0.5
+        ],
+        [
+          "arthritis",
+          1.0
+        ],
+        [
+          "bronchial asthma",
+          1.0
+        ],
+        [
+          "cervical spondylosis",
+          1.0
+        ],
+        [
+          "dengue",
+          1.0
+        ],
+        [
+          "drug reaction",
+          1.0
+        ],
+        [
+          "impetigo",
+          1.0
+        ]
+      ],
+      "tokens": 355.25
+    },
+    "kind": "formatter"
+  },
+  {
+    "ablated_score": {
+      "accuracy": 1.0,
+      "accuracy_spread": 0.0,
+      "latency_ms": 718.7664030000333,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "allergy",
+          1.0
+        ],
+        [
+          "arthritis",
+          1.0
+        ],
+        [
+          "bronchial asthma",
+          1.0
+        ],
+        [
+          "cervical spondylosis",
+          1.0
+        ],
+        [
+          "dengue",
+          1.0
+        ],
+        [
+          "drug reaction",
+          1.0
+        ],
+        [
+          "impetigo",
+          1.0
+        ]
+      ],
+      "tokens": 355.25
+    },
+    "accuracy_delta": -0.08333333333333337,
+    "candidate_id": "cand_0027",
+    "full_score": {
+      "accuracy": 0.9166666666666666,
+      "accuracy_spread": 0.0,
+      "latency_ms": 751.9843296249394,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "allergy",
+          0.5
+        ],
+        [
+          "arthritis",
+          1.0
+        ],
+        [
+          "bronchial asthma",
+          1.0
+        ],
+        [
+          "cervical spondylosis",
+          1.0
+        ],
+        [
+          "dengue",
+          1.0
+        ],
+        [
+          "drug reaction",
+          1.0
+        ],
+        [
+          "impetigo",
+          1.0
+        ]
+      ],
+      "tokens": 355.25
+    },
+    "kind": "voter"
+  }
+]

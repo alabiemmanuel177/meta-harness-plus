@@ -1,0 +1,42 @@
+{
+  "accuracy": 0.7291666666666666,
+  "accuracy_spread": 0.0,
+  "latency_ms": 916.8691977499935,
+  "n_evaluated": 48,
+  "n_repeats": 2,
+  "per_class_accuracy": [
+    [
+      "rec.autos",
+      0.5
+    ],
+    [
+      "rec.motorcycles",
+      0.6666666666666666
+    ],
+    [
+      "rec.sport.baseball",
+      1.0
+    ],
+    [
+      "rec.sport.hockey",
+      1.0
+    ],
+    [
+      "sci.crypt",
+      0.3333333333333333
+    ],
+    [
+      "sci.med",
+      0.8333333333333334
+    ],
+    [
+      "sci.space",
+      0.6666666666666666
+    ],
+    [
+      "soc.religion.christian",
+      0.8333333333333334
+    ]
+  ],
+  "tokens": 267.3125
+}

@@ -149,6 +149,36 @@ def main():
                 test_items, "input_text", "output_text", top8_s)
     print(f"  wrote symptom2disease (top-8): {len(train_items)} train, {len(test_items)} eval")
 
+    # === Patent classification (top-8 of 9 — substitute for USPTO-50k) ===
+    # USPTO-50k uses fine-grained CPC codes (hundreds). We use the higher-
+    # level patent-classification benchmark (9 categories), top-8 to match
+    # our other top-N caps.
+    print("Downloading patent-classification (top-8 of 9)...")
+    pat_train = load_dataset("ccdv/patent-classification", split="train")
+    pat_test = load_dataset("ccdv/patent-classification", split="test")
+    pat_classes = pat_train.features["label"].names
+    pat_label_counts = Counter(pat_train["label"])
+    top8_idx = [idx for idx, _ in pat_label_counts.most_common(8)]
+    top8_pat = [pat_classes[i] for i in top8_idx]
+    print(f"  top-8 patent classes: {top8_pat}")
+    pat_train_f = [r for r in pat_train if pat_classes[r["label"]] in top8_pat]
+    pat_test_f = [r for r in pat_test if pat_classes[r["label"]] in top8_pat]
+    n_per_class_train = max(1, args.n_train // 8)
+    n_per_class_eval = max(1, args.n_eval // 8)
+    train_items = balance_subset(pat_train_f, "label", pat_classes,
+                                 n_per_class_train, seed=args.seed)
+    test_items = balance_subset(pat_test_f, "label", pat_classes,
+                                n_per_class_eval, seed=args.seed + 1)
+    # Truncate long patent abstracts for retrieval-friendliness.
+    for it in train_items + test_items:
+        it["text"] = str(it["text"])[:600]
+    out_dir = Path("meta_harness_plus/tasks/data/patents")
+    write_jsonl(out_dir / "patents_train.jsonl",
+                train_items, "text", "label", pat_classes)
+    write_jsonl(out_dir / "patents_test.jsonl",
+                test_items, "text", "label", pat_classes)
+    print(f"  wrote patents (top-8): {len(train_items)} train, {len(test_items)} eval")
+
 
 if __name__ == "__main__":
     main()

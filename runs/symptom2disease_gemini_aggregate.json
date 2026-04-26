@@ -1,0 +1,82 @@
+{
+  "label": "gemini \u00d7 symptom2disease (5 seeds, 6\u00d78)",
+  "n_seeds": 5,
+  "per_seed_bare_acc": [
+    0.688,
+    0.688,
+    0.688,
+    0.688,
+    0.688
+  ],
+  "per_seed_rag_acc": [
+    0.917,
+    0.917,
+    0.917,
+    0.917,
+    0.917
+  ],
+  "per_seed_mh_peak_acc": [
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0
+  ],
+  "per_seed_rag_tokens": [
+    347.4,
+    347.4,
+    347.4,
+    347.4,
+    347.4
+  ],
+  "per_seed_mh_peak_tokens": [
+    428.4,
+    446.6,
+    343.2,
+    428.4,
+    323.2
+  ],
+  "per_seed_n_dominate": [
+    1,
+    1,
+    0,
+    1,
+    1
+  ],
+  "per_seed_n_match_cheaper": [
+    1,
+    2,
+    1,
+    1,
+    2
+  ],
+  "ci": {
+    "mh_minus_rag_acc": {
+      "mean": 0.08299999999999996,
+      "low": 0.08299999999999996,
+      "high": 0.08299999999999996,
+      "confidence": 0.95
+    },
+    "mh_peak_acc": {
+      "mean": 1.0,
+      "low": 1.0,
+      "high": 1.0,
+      "confidence": 0.95
+    },
+    "rag_acc": {
+      "mean": 0.917,
+      "low": 0.917,
+      "high": 0.917,
+      "confidence": 0.95
+    }
+  },
+  "paired_t_test": {
+    "n": 5,
+    "mean_diff": 0.08299999999999996,
+    "std_diff": 0.0,
+    "t_statistic": Infinity,
+    "p_value_two_sided": 0.0,
+    "cohens_d": Infinity
+  },
+  "per_class_delta": {}
+}

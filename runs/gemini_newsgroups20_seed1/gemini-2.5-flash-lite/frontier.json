@@ -1,0 +1,305 @@
+[
+  {
+    "candidate_id": "cand_0001",
+    "describe": [
+      {
+        "kind": "retriever",
+        "name": "null_retriever"
+      },
+      {
+        "kind": "fewshot",
+        "name": "null_fewshot"
+      },
+      {
+        "kind": "formatter",
+        "name": "simple_formatter",
+        "system_hint": "Classify the input."
+      },
+      {
+        "kind": "predictor",
+        "n_samples": 1,
+        "name": "llm_predictor",
+        "temperature": 0.0
+      },
+      {
+        "kind": "voter",
+        "name": "null_voter"
+      }
+    ],
+    "score": {
+      "accuracy": 0.7291666666666666,
+      "accuracy_spread": 0.0,
+      "latency_ms": 912.2650310833269,
+      "n_evaluated": 48,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "rec.autos",
+          0.5
+        ],
+        [
+          "rec.motorcycles",
+          0.6666666666666666
+        ],
+        [
+          "rec.sport.baseball",
+          1.0
+        ],
+        [
+          "rec.sport.hockey",
+          1.0
+        ],
+        [
+          "sci.crypt",
+          0.3333333333333333
+        ],
+        [
+          "sci.med",
+          0.8333333333333334
+        ],
+        [
+          "sci.space",
+          0.6666666666666666
+        ],
+        [
+          "soc.religion.christian",
+          0.8333333333333334
+        ]
+      ],
+      "tokens": 237.9375
+    }
+  },
+  {
+    "candidate_id": "cand_0006",
+    "describe": [
+      {
+        "b": 0.75,
+        "k": 3,
+        "k1": 1.5,
+        "kind": "retriever",
+        "name": "bm25_retriever"
+      },
+      {
+        "kind": "reranker",
+        "name": "null_reranker"
+      },
+      {
+        "kind": "fewshot",
+        "name": "null_fewshot"
+      },
+      {
+        "kind": "formatter",
+        "name": "simple_formatter",
+        "system_hint": "Classify the input."
+      },
+      {
+        "kind": "predictor",
+        "n_samples": 1,
+        "name": "llm_predictor",
+        "temperature": 0.7
+      },
+      {
+        "kind": "voter",
+        "name": "majority_voter"
+      }
+    ],
+    "score": {
+      "accuracy": 0.7604166666666667,
+      "accuracy_spread": 0.02083333333333337,
+      "latency_ms": 1090.8887928125341,
+      "n_evaluated": 48,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "rec.autos",
+          0.5
+        ],
+        [
+          "rec.motorcycles",
+          0.75
+        ],
+        [
+          "rec.sport.baseball",
+          0.9166666666666666
+        ],
+        [
+          "rec.sport.hockey",
+          1.0
+        ],
+        [
+          "sci.crypt",
+          0.5
+        ],
+        [
+          "sci.med",
+          0.9166666666666666
+        ],
+        [
+          "sci.space",
+          0.6666666666666666
+        ],
+        [
+          "soc.religion.christian",
+          0.8333333333333334
+        ]
+      ],
+      "tokens": 267.2604166666667
+    }
+  },
+  {
+    "candidate_id": "cand_0003",
+    "describe": [
+      {
+        "b": 0.75,
+        "k": 5,
+        "k1": 1.5,
+        "kind": "retriever",
+        "name": "bm25_retriever"
+      },
+      {
+        "kind": "reranker",
+        "name": "null_reranker"
+      },
+      {
+        "k": 3,
+        "kind": "fewshot",
+        "name": "topk_fewshot"
+      },
+      {
+        "kind": "formatter",
+        "name": "simple_formatter",
+        "system_hint": "Classify the input."
+      },
+      {
+        "kind": "predictor",
+        "n_samples": 1,
+        "name": "llm_predictor",
+        "temperature": 0.7
+      },
+      {
+        "kind": "voter",
+        "name": "majority_voter"
+      }
+    ],
+    "score": {
+      "accuracy": 0.7395833333333333,
+      "accuracy_spread": 0.02083333333333337,
+      "latency_ms": 1084.9383859582922,
+      "n_evaluated": 48,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "rec.autos",
+          0.6666666666666666
+        ],
+        [
+          "rec.motorcycles",
+          0.6666666666666666
+        ],
+        [
+          "rec.sport.baseball",
+          0.8333333333333334
+        ],
+        [
+          "rec.sport.hockey",
+          0.8333333333333334
+        ],
+        [
+          "sci.crypt",
+          0.6666666666666666
+        ],
+        [
+          "sci.med",
+          1.0
+        ],
+        [
+          "sci.space",
+          0.5833333333333334
+        ],
+        [
+          "soc.religion.christian",
+          0.6666666666666666
+        ]
+      ],
+      "tokens": 1033.65625
+    }
+  },
+  {
+    "candidate_id": "cand_0048",
+    "describe": [
+      {
+        "b": 0.75,
+        "k": 5,
+        "k1": 1.5,
+        "kind": "retriever",
+        "name": "bm25_retriever"
+      },
+      {
+        "kind": "reranker",
+        "name": "diversity_reranker"
+      },
+      {
+        "k": 2,
+        "kind": "fewshot",
+        "name": "topk_fewshot"
+      },
+      {
+        "kind": "formatter",
+        "name": "cot_formatter",
+        "system_hint": "Classify the input into one of the given classes. Briefly analyze which key terms suggest each possibility, then output ONLY the class name, lowercase, on the final line. No other prose."
+      },
+      {
+        "kind": "predictor",
+        "n_samples": 1,
+        "name": "llm_predictor",
+        "temperature": 0.0
+      },
+      {
+        "kind": "voter",
+        "name": "majority_voter"
+      }
+    ],
+    "score": {
+      "accuracy": 0.7708333333333334,
+      "accuracy_spread": 0.0,
+      "latency_ms": 1209.9916730418058,
+      "n_evaluated": 48,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "rec.autos",
+          0.6666666666666666
+        ],
+        [
+          "rec.motorcycles",
+          0.6666666666666666
+        ],
+        [
+          "rec.sport.baseball",
+          0.8333333333333334
+        ],
+        [
+          "rec.sport.hockey",
+          0.8333333333333334
+        ],
+        [
+          "sci.crypt",
+          0.6666666666666666
+        ],
+        [
+          "sci.med",
+          1.0
+        ],
+        [
+          "sci.space",
+          0.6666666666666666
+        ],
+        [
+          "soc.religion.christian",
+          0.8333333333333334
+        ]
+      ],
+      "tokens": 918.3958333333334
+    }
+  }
+]
