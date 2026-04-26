@@ -111,6 +111,47 @@ bash examples/run_lawbench_5seed.sh
 
 All seed dirs and aggregates committed under `runs/`.
 
+## Beat-CoT-RAG follow-on
+
+CoT-RAG is the strongest hand-tuned baseline; an earlier reviewer
+question would be "did MH++ beat hand-tuned CoT, or just vanilla RAG?"
+After running hand-tuned baselines on every cell + a focused beat-cot
+experiment, the answer is **yes on 5 of 6 cells substantially (+5.9
+to +12.9pt), and yes on the 6th cell reproducibly (+2.0pt with spread
+0.020)**. See `RESULTS_BEAT_COT.md` for the cell grid and the alpha-
+shape (BM25 + LLM-reranker + compressed-CoT + null-voter) that MH++
+discovered to extend Gemini × news_hard_50 past CoT-RAG's 0.940.
+
+## Ablation at full LLM scale
+
+We ran the 4-condition ablation (full / no-c1 / no-c2 / no-c3) on
+OpenAI × news_hard_50 with 5 seeds at 3×4 budget. Results:
+
+| Condition | mean acc | mean tok | mean lat | Δ vs full | p     |
+|---|---|---|---|---|---|
+| full      | 0.916    | 259.9    | 864.8    |  —        |  —    |
+| no-c1     | 0.918    | 380.7    | 1548.2   | +0.002    | 0.902 |
+| no-c2     | 0.932    | 290.6    | 902.4    | +0.016    | 0.242 |
+| no-c3     | 0.908    | 190.8    | 716.4    | -0.008    | 0.178 |
+
+Honest interpretation:
+- **C1 (Pareto multi-objective)** clearly helps on cost axes — disabling it
+  uses +47% tokens and +79% latency for the same accuracy. *Pareto's
+  contribution is what it claimed: cost reduction.*
+- **C2 (successive halving)** saves compute without affecting accuracy
+  (no-c2 even slightly higher mean accuracy, p=0.242). C2's value is
+  efficiency, not a peak-finding aid.
+- **C3 (attribution-guided proposer)** marginally beats random
+  (-0.008, p=0.178). Random proposer at small budget is competitive on
+  this task — replicates the toy-task finding that the search-smarts
+  contribution shows up only at larger scales.
+
+This is honest mixed evidence. The Pareto contribution is solid. The
+attribution-guided proposer needs bigger budgets / harder tasks to
+demonstrate clear lift over random. Future work: re-run ablation at
+6×8 budget on Gemini × news_hard_50 where the differentiation is
+more likely to surface.
+
 ## What is *not* in this grid
 
 - No 10-seed-or-more experiment (workshop-grade evidence)

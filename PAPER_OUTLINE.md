@@ -132,9 +132,16 @@ Bootstrap Evidence on Adversarial Classification Benchmarks.*
 - BARE: no retrieval, no fewshot, no voting (the floor).
 - RAG: BoW retriever k=3 + top-k fewshot k=2 + simple formatter +
   predictor + null voter (canonical hand-tuned shape).
-- [Hand-tuned CoT: same as RAG with CoT formatter.]
-- [Voting RAG: RAG + 3-sample majority voter.]
-- [Diverse RAG: RAG with diversity-reranker.]
+- Hand-tuned CoT-RAG: BoW retriever + topk fewshot + CoT formatter +
+  predictor + null voter. Strong baseline that beats vanilla RAG on
+  symptom and Gemini × news_hard_50. MH++ substantially exceeds it on
+  5 of 6 cells (+5.9 to +12.9pt absolute accuracy); reproducibly
+  extends it on the 6th (+2.0pt, spread 0.020). See RESULTS_BEAT_COT.md.
+- Voting RAG: RAG + 3-sample majority voter (n_samples=3,
+  temperature=0.4). Strongest hand-tuned baseline on OpenAI ×
+  news_hard_50 at 0.900; MH++ beats it by +2.4pt.
+- Diverse RAG: RAG with diversity-reranker. Mid-strength baseline;
+  MH++ beats it by +6.4pt on OpenAI × news_hard_50.
 
 ### 4.4 Headline results
 
@@ -157,12 +164,19 @@ latency, simultaneously.
 [Run ablation_study.py at full scale on news_hard_50: full vs no-C1
 (scalar) vs no-C2 (no halving) vs no-C3 (random proposer).]
 
-| Condition | Mean MH++ acc on news_hard_50 | Δ vs full MH++ |
-|---|---|---|
-| Full MH++ | TBD | — |
-| no-C1 (scalar accuracy only) | TBD | TBD |
-| no-C2 (full eval, no halving) | TBD | TBD |
-| no-C3 (random proposer) | TBD | TBD |
+| Condition | Mean MH++ acc on news_hard_50 | Mean tokens | Mean latency | Δ vs full MH++ | p |
+|---|---|---|---|---|---|
+| Full MH++ | 0.916 | 259.9 | 864.8 | — | — |
+| no-C1 (scalar accuracy only) | 0.918 | **380.7** | **1548.2** | +0.002 (acc), +47% (tok) | 0.902 |
+| no-C2 (full eval, no halving) | 0.932 | 290.6 | 902.4 | +0.016 | 0.242 |
+| no-C3 (random proposer) | 0.908 | 190.8 | 716.4 | -0.008 | 0.178 |
+
+**C1 (Pareto)** clearly differentiates on the cost axes (its claim):
++47% tokens / +79% latency without C1 for the same accuracy. **C2
+(halving)** saves compute without affecting accuracy. **C3
+(attribution-guided proposer)** is only marginally better than
+random at this small 3×4 budget — replicates the previously-noted
+"random ≈ attribution at small budget" phenomenon from the toy task.
 
 ### 4.6 Cost & wall time
 
@@ -238,9 +252,10 @@ and reproducible from a single CLI invocation.
 3. ✅ LawBench 5-seed cross-provider (asymmetric: +0.10 OpenAI, -0.08 Gemini at 3×4 budget)
 4. ✅ Ablation framework
 5. ✅ Theoretical sketch
-6. ⚠️ Ablation experiment at full scale (need to run on real LLM)
-7. ⚠️ Hand-tuned baseline comparisons (cot_baseline, voting_rag, diverse_rag) at full scale
-8. ⚠️ Statistical paragraph in paper text (we have the numbers, just need to write them up cleanly)
-9. ⚠️ LawBench 6×8-budget rerun on Gemini (would clarify if the negative result is small-budget-only or robust)
+6. ✅ Ablation experiment at full scale (4 conditions × 5 seeds, real LLM, on news_hard_50)
+7. ✅ Hand-tuned baseline comparisons (BARE/RAG/CoT-RAG/voting-RAG/diverse-RAG) on every cell
+8. ✅ Statistical paragraph in paper text (PAPER_SECTION_4_RESULTS.md)
+9. ✅ LawBench 6×8-budget rerun on Gemini (closes most of the small-budget gap, -1.7pt vs RAG, p=0.099)
+10. ✅ Beat CoT-RAG: 5/6 cells substantially, 6th cell +2pt with reproducible alpha shape (RESULTS_BEAT_COT.md)
 
 Items 6, 7, 8 are 1-2 hour each. Total path to "submittable workshop draft": ~8 hours of focused work after current experiments complete.
