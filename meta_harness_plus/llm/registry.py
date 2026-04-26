@@ -39,7 +39,7 @@ from ..components import (
 from ..harness import Component, Harness
 from ..task import Task
 from .client import LLMClient
-from .predictor import LLMPredictor
+from .predictor import LLMPredictor, MathLLMPredictor
 from .reranker import LLMReranker
 
 
@@ -327,17 +327,34 @@ def llm_search_registry(
     ))
 
     # Predictor — real LLM
-    reg.register(Entry(
-        kind="predictor", name="llm_predictor",
-        factory=lambda cfg: LLMPredictor(
-            client=client,
-            classes=task.classes,
-            n_samples=int(cfg.get("n_samples", 1)),
-            temperature=float(cfg.get("temperature", 0.0)),
-            max_tokens=predictor_max_tokens,
-        ),
-        allowed_fields=("n_samples", "temperature"),
-    ))
+    # For math tasks (open-ended generation), register MathLLMPredictor
+    # under the canonical "llm_predictor" name so the LLM proposer's
+    # existing prompt structure works unchanged. The Task.name == "gsm8k"
+    # heuristic identifies math tasks; future math benchmarks should
+    # match this convention.
+    if task.name == "gsm8k":
+        reg.register(Entry(
+            kind="predictor", name="llm_predictor",
+            factory=lambda cfg: MathLLMPredictor(
+                client=client,
+                n_samples=int(cfg.get("n_samples", 1)),
+                temperature=float(cfg.get("temperature", 0.0)),
+                max_tokens=predictor_max_tokens,
+            ),
+            allowed_fields=("n_samples", "temperature"),
+        ))
+    else:
+        reg.register(Entry(
+            kind="predictor", name="llm_predictor",
+            factory=lambda cfg: LLMPredictor(
+                client=client,
+                classes=task.classes,
+                n_samples=int(cfg.get("n_samples", 1)),
+                temperature=float(cfg.get("temperature", 0.0)),
+                max_tokens=predictor_max_tokens,
+            ),
+            allowed_fields=("n_samples", "temperature"),
+        ))
 
     if include_mock_predictor and mock_llm_fn is not None:
         reg.register(Entry(

@@ -42,7 +42,7 @@ from meta_harness_plus.components import baseline_for
 from meta_harness_plus.search.random_proposer import RandomProposer
 from meta_harness_plus.llm.cache import CachedLLMClient, PromptCache
 from meta_harness_plus.llm.client import HTTPClient
-from meta_harness_plus.llm.predictor import LLMPredictor
+from meta_harness_plus.llm.predictor import LLMPredictor, MathLLMPredictor
 from meta_harness_plus.llm.proposer import LLMProposer
 from meta_harness_plus.llm.registry import llm_search_registry
 from meta_harness_plus.pareto import dominates
@@ -52,6 +52,7 @@ from meta_harness_plus.search.ensemble_proposer import EnsembleProposer
 from meta_harness_plus.tasks import (
     build_agnews_task,
     build_emotion_task,
+    build_gsm8k_task,
     build_newsgroups20_task,
     build_patents_task,
     build_symptom2disease_task,
@@ -74,6 +75,7 @@ TASK_FACTORIES = {
     "newsgroups20": build_newsgroups20_task,
     "symptom2disease": build_symptom2disease_task,
     "patents": build_patents_task,
+    "gsm8k": lambda: build_gsm8k_task(n_train=80, n_eval=48),
 }
 
 
@@ -138,9 +140,13 @@ def run_one_model(model: str, ollama_url: str, run_dir: Path, args) -> dict:
             NullRetriever as _NR, NullFewShot as _NF, SimpleFormatter as _SF,
             NullVoter as _NV,
         )
-        _bp = LLMPredictor(client=client, classes=task.classes,
-                           n_samples=1, temperature=0.0,
-                           max_tokens=args.predictor_max_tokens)
+        if task_name == "gsm8k":
+            _bp = MathLLMPredictor(client=client, n_samples=1, temperature=0.0,
+                                   max_tokens=args.predictor_max_tokens)
+        else:
+            _bp = LLMPredictor(client=client, classes=task.classes,
+                               n_samples=1, temperature=0.0,
+                               max_tokens=args.predictor_max_tokens)
         _bh = _H(components=[_NR(), _NF(), _SF(), _bp, _NV()])
 
         def _predict_one(ex):
@@ -211,8 +217,13 @@ def run_one_model(model: str, ollama_url: str, run_dir: Path, args) -> dict:
 
     # Build the two labeled baselines. They share a predictor instance only
     # because LLMPredictor is stateless — the search doesn't assume this.
-    predictor = LLMPredictor(client=client, classes=task.classes, n_samples=1,
-                             max_tokens=args.predictor_max_tokens)
+    is_math = task_name == "gsm8k"
+    if is_math:
+        predictor = MathLLMPredictor(client=client, n_samples=1,
+                                     max_tokens=args.predictor_max_tokens)
+    else:
+        predictor = LLMPredictor(client=client, classes=task.classes, n_samples=1,
+                                 max_tokens=args.predictor_max_tokens)
     bare = bare_baseline(task, predictor)
     rag  = rag_baseline(task, predictor, retriever_k=3, fewshot_k=2)
 
@@ -223,11 +234,17 @@ def run_one_model(model: str, ollama_url: str, run_dir: Path, args) -> dict:
     extra_seeds: list = []
     if args.seed_extra_baselines:
         # Need a predictor with n_samples > 1 for voting-RAG to matter.
-        voting_pred = LLMPredictor(
-            client=client, classes=task.classes,
-            n_samples=3, temperature=0.4,
-            max_tokens=args.predictor_max_tokens,
-        )
+        if is_math:
+            voting_pred = MathLLMPredictor(
+                client=client, n_samples=3, temperature=0.4,
+                max_tokens=args.predictor_max_tokens,
+            )
+        else:
+            voting_pred = LLMPredictor(
+                client=client, classes=task.classes,
+                n_samples=3, temperature=0.4,
+                max_tokens=args.predictor_max_tokens,
+            )
         extra_seeds = [
             cot_baseline(task, predictor),
             voting_rag_baseline(task, voting_pred),
