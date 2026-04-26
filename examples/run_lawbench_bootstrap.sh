@@ -23,7 +23,7 @@ for SEED in 0 1 2 3 4; do
     --halving-k0 6 --halving-final-keep 3 \
     --eval-repeats 2 --attribution-repeats 2 --attribution-screen-size 15 \
     --cache-path runs/cache/openai_lawbench_2_2_dspyboot.jsonl \
-    --max-workers 8 --screen-seed $SEED \
+    --max-workers 4 --screen-seed $SEED \
     --bootstrap-demos --seed-extra-baselines \
     > "logs/openai_lawbench_2_2_seed${SEED}_dspyboot.log" 2>&1
 done
