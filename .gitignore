@@ -71,6 +71,14 @@ runs/*
 !runs/openai_symptom_hard_seed8_big/
 !runs/openai_symptom_hard_seed9_big/
 !runs/*_aggregate_10seed.json
+!runs/all_results.csv
+!runs/all_results.json
+!runs/openai_newsgroups20_seed*/
+!runs/gemini_newsgroups20_seed*/
+!runs/openai_symptom2disease_seed*/
+!runs/gemini_symptom2disease_seed*/
+!runs/newsgroups20_*_aggregate.json
+!runs/symptom2disease_*_aggregate.json
 !runs/openai_lawbench_2_2_seed0/
 !runs/openai_lawbench_2_2_seed1/
 !runs/openai_lawbench_2_2_seed2/
