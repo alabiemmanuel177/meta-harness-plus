@@ -127,6 +127,35 @@ def run_one_model(model: str, ollama_url: str, run_dir: Path, args) -> dict:
 
     registry = llm_search_registry(task, client, predictor_max_tokens=args.predictor_max_tokens)
 
+    # Pre-bootstrap demos for BootstrapFewShot (DSPy-style). One-time cost
+    # at search startup: run a vanilla predictor on training examples and
+    # keep the correctly-predicted ones. The pool is shared across all
+    # search candidates that pick the bootstrap_fewshot component.
+    if args.bootstrap_demos:
+        from meta_harness_plus.components import bootstrap_demos as _bd
+        from meta_harness_plus.harness import Harness as _H
+        from meta_harness_plus.components import (
+            NullRetriever as _NR, NullFewShot as _NF, SimpleFormatter as _SF,
+            NullVoter as _NV,
+        )
+        _bp = LLMPredictor(client=client, classes=task.classes,
+                           n_samples=1, temperature=0.0,
+                           max_tokens=args.predictor_max_tokens)
+        _bh = _H(components=[_NR(), _NF(), _SF(), _bp, _NV()])
+
+        def _predict_one(ex):
+            try:
+                ctx = _bh.run(ex)
+                return (ctx.prediction or "").strip().lower()
+            except Exception:
+                return ""
+        print(f"  bootstrapping demos from {len(task.train)} train examples ...",
+              flush=True)
+        demos = _bd(_predict_one, task.train, classes=task.classes, max_demos=16)
+        print(f"  bootstrap pool: {len(demos)} correct demos retained",
+              flush=True)
+        registry.set_bootstrap_demos(demos)
+
     if args.ablation == "no-c3":
         # C3 ablation: random proposer instead of attribution-guided LLMProposer.
         # Build mutators dict from the registry by enumerating each kind's
@@ -403,6 +432,10 @@ def main():
     ap.add_argument("--screen-repeats", type=int, default=1)
     ap.add_argument("--attribution-repeats", type=int, default=2)
     ap.add_argument("--attribution-screen-size", type=int, default=10)
+    ap.add_argument("--bootstrap-demos", action="store_true",
+                    help="Pre-bootstrap correct demos (DSPy-style) at search "
+                         "startup. Adds ~30s + N_train LLM calls but enables "
+                         "the bootstrap_fewshot component in the search space.")
     ap.add_argument("--seed-extra-baselines", action="store_true",
                     help="Seed CoT-RAG, voting-RAG, diverse-RAG into the search "
                          "frontier in addition to BARE and RAG. Use when the search "

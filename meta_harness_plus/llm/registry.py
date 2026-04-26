@@ -22,6 +22,7 @@ from typing import Any, Callable
 from ..components import (
     BagOfWordsRetriever,
     BM25Retriever,
+    BootstrapFewShot,
     CompressedCoTFormatter,
     CoTFormatter,
     DiversityReranker,
@@ -57,9 +58,16 @@ class Entry:
 class ComponentRegistry:
     def __init__(self) -> None:
         self._entries: dict[tuple[str, str], Entry] = {}
+        # Pre-bootstrapped correct demos for BootstrapFewShot. Set externally
+        # via set_bootstrap_demos() at search startup (one-time cost).
+        self._bootstrap_demos: list = []
 
     def register(self, entry: Entry) -> None:
         self._entries[(entry.kind, entry.name)] = entry
+
+    def set_bootstrap_demos(self, demos: list) -> None:
+        """Store pre-bootstrapped demos for BootstrapFewShot. Idempotent."""
+        self._bootstrap_demos = list(demos)
 
     def available(self) -> list[tuple[str, str]]:
         return sorted(self._entries.keys())
@@ -272,6 +280,16 @@ def llm_search_registry(
     reg.register(Entry(
         kind="fewshot", name="topk_fewshot",
         factory=lambda cfg: TopKFewShot(k=int(cfg.get("k", 2))),
+        allowed_fields=("k",),
+    ))
+    # DSPy-style bootstrap fewshot — uses pre-bootstrapped correct demos
+    # if available; falls back to top-k retrieval otherwise.
+    reg.register(Entry(
+        kind="fewshot", name="bootstrap_fewshot",
+        factory=lambda cfg: BootstrapFewShot(
+            k=int(cfg.get("k", 4)),
+            demos_pool=tuple(reg._bootstrap_demos),
+        ),
         allowed_fields=("k",),
     ))
 

@@ -301,6 +301,86 @@ class TopKFewShot(FewShotSelector):
         return {"kind": self.kind, "name": self.name, "k": self.k}
 
 
+@dataclass
+class BootstrapFewShot(FewShotSelector):
+    """DSPy-style fewshot: demos pre-filtered to ones the model gets correct.
+
+    Unlike TopKFewShot which picks demos by retrieval similarity (no quality
+    signal), BootstrapFewShot starts from a pre-bootstrapped pool of
+    *correctly-predicted* training examples and picks k of them, ranked by
+    retrieval similarity. This is the technique DSPy's BootstrapFewShot
+    teleprompter uses.
+
+    The bootstrapped pool is constructed once at task-load time by running
+    the predictor on training examples and keeping only the correct ones
+    (see ``bootstrap_demos`` in this module). Pass that pool via
+    ``demos_pool`` at construction.
+
+    If the pool is empty (predictor wrong on every train example), falls
+    back to top-K retrieved (i.e. behaves like TopKFewShot).
+    """
+    name: str = "bootstrap_fewshot"
+    k: int = 4
+    demos_pool: tuple = ()  # tuple of TaskExample, set externally
+    kind: str = field(default="fewshot", init=False)
+
+    def run(self, ctx: Context, harness: Harness) -> None:
+        if not self.demos_pool:
+            ctx.few_shots = ctx.retrieved[: self.k]
+        else:
+            # Pick top-k from the bootstrapped pool by similarity to the
+            # query. We reuse ctx.retrieved as the similarity-ranked source
+            # if the retriever populated it from the pool; otherwise just
+            # take the first k bootstrapped examples.
+            pool_set = set(id(d) for d in self.demos_pool)
+            ranked_from_pool = [r for r in ctx.retrieved if id(r) in pool_set]
+            if ranked_from_pool:
+                ctx.few_shots = ranked_from_pool[: self.k]
+            else:
+                ctx.few_shots = list(self.demos_pool[: self.k])
+        ctx.tokens += 15 * len(ctx.few_shots)
+        ctx.latency_ms += 0.5 * len(ctx.few_shots)
+
+    def config(self) -> dict:
+        return {"kind": self.kind, "name": self.name, "k": self.k,
+                "demos_pool_size": len(self.demos_pool)}
+
+
+def bootstrap_demos(
+    predictor,
+    train_examples: Sequence[TaskExample],
+    *,
+    classes: Sequence[str],
+    max_demos: int = 16,
+) -> list[TaskExample]:
+    """Run ``predictor`` on training examples; keep ones it predicts correctly.
+
+    This is the one-time bootstrap step DSPy does at compile time.
+    ``predictor`` is any callable that takes a ``TaskExample`` and returns
+    a string prediction; we compare case-insensitively to the gold label.
+
+    Returns up to ``max_demos`` correctly-predicted examples in the order
+    they appeared in ``train_examples`` (so deterministic given the train
+    set).
+    """
+    out: list[TaskExample] = []
+    classes_lower = {c.lower() for c in classes}
+    for ex in train_examples:
+        if len(out) >= max_demos:
+            break
+        try:
+            pred = predictor(ex)
+        except Exception:
+            continue
+        if not pred:
+            continue
+        pred_lower = str(pred).lower().strip()
+        gold_lower = ex.label.lower().strip()
+        if pred_lower == gold_lower or any(c == pred_lower for c in classes_lower if c == gold_lower):
+            out.append(ex)
+    return out
+
+
 # ---------- Formatter ----------
 
 class Formatter(Component):
