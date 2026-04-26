@@ -1,0 +1,340 @@
+[
+  {
+    "candidate_id": "cand_0001",
+    "describe": [
+      {
+        "kind": "retriever",
+        "name": "null_retriever"
+      },
+      {
+        "kind": "fewshot",
+        "name": "null_fewshot"
+      },
+      {
+        "kind": "formatter",
+        "name": "simple_formatter",
+        "system_hint": "Classify the input."
+      },
+      {
+        "kind": "predictor",
+        "n_samples": 1,
+        "name": "llm_predictor",
+        "temperature": 0.0
+      },
+      {
+        "kind": "voter",
+        "name": "null_voter"
+      }
+    ],
+    "score": {
+      "accuracy": 0.5208333333333334,
+      "accuracy_spread": 0.0,
+      "latency_ms": 618.0884142083963,
+      "n_evaluated": 48,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "anger",
+          0.375
+        ],
+        [
+          "fear",
+          0.625
+        ],
+        [
+          "joy",
+          0.625
+        ],
+        [
+          "love",
+          0.375
+        ],
+        [
+          "sadness",
+          0.625
+        ],
+        [
+          "surprise",
+          0.5
+        ]
+      ],
+      "tokens": 98.29166666666667
+    }
+  },
+  {
+    "candidate_id": "cand_0004",
+    "describe": [
+      {
+        "k": 5,
+        "kind": "retriever",
+        "name": "tfidf_retriever"
+      },
+      {
+        "kind": "reranker",
+        "name": "diversity_reranker"
+      },
+      {
+        "k": 3,
+        "kind": "fewshot",
+        "name": "topk_fewshot"
+      },
+      {
+        "kind": "formatter",
+        "name": "cot_formatter",
+        "system_hint": "Classify the input into one of the given classes. Briefly analyze which key terms suggest each possibility, then output ONLY the class name, lowercase, on the final line. No other prose."
+      },
+      {
+        "kind": "predictor",
+        "n_samples": 1,
+        "name": "llm_predictor",
+        "temperature": 0.0
+      },
+      {
+        "kind": "voter",
+        "name": "null_voter"
+      }
+    ],
+    "score": {
+      "accuracy": 0.5833333333333334,
+      "accuracy_spread": 0.0,
+      "latency_ms": 972.6330192081805,
+      "n_evaluated": 48,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "anger",
+          0.375
+        ],
+        [
+          "fear",
+          0.75
+        ],
+        [
+          "joy",
+          0.75
+        ],
+        [
+          "love",
+          0.5
+        ],
+        [
+          "sadness",
+          0.625
+        ],
+        [
+          "surprise",
+          0.5
+        ]
+      ],
+      "tokens": 420.9791666666667
+    }
+  },
+  {
+    "candidate_id": "cand_0020",
+    "describe": [
+      {
+        "k": 3,
+        "kind": "retriever",
+        "name": "tfidf_retriever"
+      },
+      {
+        "kind": "reranker",
+        "name": "diversity_reranker"
+      },
+      {
+        "k": 2,
+        "kind": "fewshot",
+        "name": "topk_fewshot"
+      },
+      {
+        "kind": "formatter",
+        "max_reasoning_words": 40,
+        "name": "compressed_cot_formatter",
+        "system_hint": "Classify the input into one of the given classes. Reason in at most 40 words about which key terms point to which class. Then on the final line output ONLY the class name, lowercase. Be terse \u2014 every extra word costs."
+      },
+      {
+        "kind": "predictor",
+        "n_samples": 1,
+        "name": "llm_predictor",
+        "temperature": 0.4
+      },
+      {
+        "kind": "voter",
+        "name": "majority_voter"
+      }
+    ],
+    "score": {
+      "accuracy": 0.5625,
+      "accuracy_spread": 0.0,
+      "latency_ms": 887.2332321458886,
+      "n_evaluated": 48,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "anger",
+          0.375
+        ],
+        [
+          "fear",
+          0.625
+        ],
+        [
+          "joy",
+          0.5625
+        ],
+        [
+          "love",
+          0.5
+        ],
+        [
+          "sadness",
+          0.875
+        ],
+        [
+          "surprise",
+          0.4375
+        ]
+      ],
+      "tokens": 338.26041666666663
+    }
+  },
+  {
+    "candidate_id": "cand_0026",
+    "describe": [
+      {
+        "b": 0.75,
+        "k": 4,
+        "k1": 1.5,
+        "kind": "retriever",
+        "name": "bm25_retriever"
+      },
+      {
+        "kind": "reranker",
+        "name": "null_reranker"
+      },
+      {
+        "k": 2,
+        "kind": "fewshot",
+        "name": "topk_fewshot"
+      },
+      {
+        "kind": "formatter",
+        "name": "cot_formatter",
+        "system_hint": "Classify the input into one of the given classes. Briefly analyze which key terms suggest each possibility, then output ONLY the class name, lowercase, on the final line. No other prose."
+      },
+      {
+        "kind": "predictor",
+        "n_samples": 1,
+        "name": "llm_predictor",
+        "temperature": 0.2
+      },
+      {
+        "kind": "voter",
+        "name": "null_voter"
+      }
+    ],
+    "score": {
+      "accuracy": 0.5833333333333333,
+      "accuracy_spread": 0.04166666666666663,
+      "latency_ms": 1145.241612333341,
+      "n_evaluated": 48,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "anger",
+          0.4375
+        ],
+        [
+          "fear",
+          0.625
+        ],
+        [
+          "joy",
+          0.75
+        ],
+        [
+          "love",
+          0.4375
+        ],
+        [
+          "sadness",
+          0.75
+        ],
+        [
+          "surprise",
+          0.5
+        ]
+      ],
+      "tokens": 398.0208333333333
+    }
+  },
+  {
+    "candidate_id": "cand_0032",
+    "describe": [
+      {
+        "k": 2,
+        "kind": "retriever",
+        "name": "bow_retriever"
+      },
+      {
+        "kind": "reranker",
+        "name": "null_reranker"
+      },
+      {
+        "k": 2,
+        "kind": "fewshot",
+        "name": "topk_fewshot"
+      },
+      {
+        "kind": "formatter",
+        "max_reasoning_words": 40,
+        "name": "compressed_cot_formatter",
+        "system_hint": "Classify the input into one of the given classes. Reason in at most 40 words about which key terms point to which class. Then on the final line output ONLY the class name, lowercase. Be terse \u2014 every extra word costs."
+      },
+      {
+        "kind": "predictor",
+        "n_samples": 1,
+        "name": "llm_predictor",
+        "temperature": 0.0
+      },
+      {
+        "kind": "voter",
+        "name": "null_voter"
+      }
+    ],
+    "score": {
+      "accuracy": 0.5833333333333334,
+      "accuracy_spread": 0.0,
+      "latency_ms": 1001.0288578334939,
+      "n_evaluated": 48,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "anger",
+          0.25
+        ],
+        [
+          "fear",
+          0.625
+        ],
+        [
+          "joy",
+          0.625
+        ],
+        [
+          "love",
+          0.5
+        ],
+        [
+          "sadness",
+          0.875
+        ],
+        [
+          "surprise",
+          0.625
+        ]
+      ],
+      "tokens": 419.5416666666667
+    }
+  }
+]

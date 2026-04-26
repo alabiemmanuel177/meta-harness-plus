@@ -1,0 +1,327 @@
+[
+  {
+    "ablated_score": {
+      "accuracy": 0.5,
+      "accuracy_spread": 0.0,
+      "latency_ms": 1249.3792480832594,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "anger",
+          0.0
+        ],
+        [
+          "fear",
+          0.3333333333333333
+        ],
+        [
+          "love",
+          0.5
+        ],
+        [
+          "sadness",
+          0.8
+        ],
+        [
+          "surprise",
+          0.0
+        ]
+      ],
+      "tokens": 207.33333333333334
+    },
+    "accuracy_delta": -0.08333333333333331,
+    "candidate_id": "cand_0034",
+    "full_score": {
+      "accuracy": 0.4166666666666667,
+      "accuracy_spread": 0.0,
+      "latency_ms": 1853.513362749978,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "anger",
+          0.0
+        ],
+        [
+          "fear",
+          0.3333333333333333
+        ],
+        [
+          "love",
+          0.5
+        ],
+        [
+          "sadness",
+          0.6
+        ],
+        [
+          "surprise",
+          0.0
+        ]
+      ],
+      "tokens": 296.0
+    },
+    "kind": "retriever"
+  },
+  {
+    "ablated_score": {
+      "accuracy": 0.4166666666666667,
+      "accuracy_spread": 0.0,
+      "latency_ms": 1853.513362749978,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "anger",
+          0.0
+        ],
+        [
+          "fear",
+          0.3333333333333333
+        ],
+        [
+          "love",
+          0.5
+        ],
+        [
+          "sadness",
+          0.6
+        ],
+        [
+          "surprise",
+          0.0
+        ]
+      ],
+      "tokens": 296.0
+    },
+    "accuracy_delta": 0.0,
+    "candidate_id": "cand_0034",
+    "full_score": {
+      "accuracy": 0.4166666666666667,
+      "accuracy_spread": 0.0,
+      "latency_ms": 1853.513362749978,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "anger",
+          0.0
+        ],
+        [
+          "fear",
+          0.3333333333333333
+        ],
+        [
+          "love",
+          0.5
+        ],
+        [
+          "sadness",
+          0.6
+        ],
+        [
+          "surprise",
+          0.0
+        ]
+      ],
+      "tokens": 296.0
+    },
+    "kind": "reranker"
+  },
+  {
+    "ablated_score": {
+      "accuracy": 0.5,
+      "accuracy_spread": 0.0,
+      "latency_ms": 1252.3792480832594,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "anger",
+          0.0
+        ],
+        [
+          "fear",
+          0.3333333333333333
+        ],
+        [
+          "love",
+          0.5
+        ],
+        [
+          "sadness",
+          0.8
+        ],
+        [
+          "surprise",
+          0.0
+        ]
+      ],
+      "tokens": 227.33333333333334
+    },
+    "accuracy_delta": -0.08333333333333331,
+    "candidate_id": "cand_0034",
+    "full_score": {
+      "accuracy": 0.4166666666666667,
+      "accuracy_spread": 0.0,
+      "latency_ms": 1853.513362749978,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "anger",
+          0.0
+        ],
+        [
+          "fear",
+          0.3333333333333333
+        ],
+        [
+          "love",
+          0.5
+        ],
+        [
+          "sadness",
+          0.6
+        ],
+        [
+          "surprise",
+          0.0
+        ]
+      ],
+      "tokens": 296.0
+    },
+    "kind": "fewshot"
+  },
+  {
+    "ablated_score": {
+      "accuracy": 0.4166666666666667,
+      "accuracy_spread": 0.0,
+      "latency_ms": 1169.892757333366,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "anger",
+          0.0
+        ],
+        [
+          "fear",
+          0.3333333333333333
+        ],
+        [
+          "love",
+          0.5
+        ],
+        [
+          "sadness",
+          0.6
+        ],
+        [
+          "surprise",
+          0.0
+        ]
+      ],
+      "tokens": 192.58333333333334
+    },
+    "accuracy_delta": 0.0,
+    "candidate_id": "cand_0034",
+    "full_score": {
+      "accuracy": 0.4166666666666667,
+      "accuracy_spread": 0.0,
+      "latency_ms": 1853.513362749978,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "anger",
+          0.0
+        ],
+        [
+          "fear",
+          0.3333333333333333
+        ],
+        [
+          "love",
+          0.5
+        ],
+        [
+          "sadness",
+          0.6
+        ],
+        [
+          "surprise",
+          0.0
+        ]
+      ],
+      "tokens": 296.0
+    },
+    "kind": "formatter"
+  },
+  {
+    "ablated_score": {
+      "accuracy": 0.4166666666666667,
+      "accuracy_spread": 0.0,
+      "latency_ms": 1853.4133627499778,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "anger",
+          0.0
+        ],
+        [
+          "fear",
+          0.3333333333333333
+        ],
+        [
+          "love",
+          0.5
+        ],
+        [
+          "sadness",
+          0.6
+        ],
+        [
+          "surprise",
+          0.0
+        ]
+      ],
+      "tokens": 296.0
+    },
+    "accuracy_delta": 0.0,
+    "candidate_id": "cand_0034",
+    "full_score": {
+      "accuracy": 0.4166666666666667,
+      "accuracy_spread": 0.0,
+      "latency_ms": 1853.513362749978,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "anger",
+          0.0
+        ],
+        [
+          "fear",
+          0.3333333333333333
+        ],
+        [
+          "love",
+          0.5
+        ],
+        [
+          "sadness",
+          0.6
+        ],
+        [
+          "surprise",
+          0.0
+        ]
+      ],
+      "tokens": 296.0
+    },
+    "kind": "voter"
+  }
+]

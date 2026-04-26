@@ -1,0 +1,82 @@
+{
+  "label": "OpenAI gpt-4.1-nano \u00d7 emotion (5 seeds)",
+  "n_seeds": 5,
+  "per_seed_bare_acc": [
+    0.521,
+    0.521,
+    0.521,
+    0.521,
+    0.521
+  ],
+  "per_seed_rag_acc": [
+    0.521,
+    0.521,
+    0.521,
+    0.521,
+    0.521
+  ],
+  "per_seed_mh_peak_acc": [
+    0.604,
+    0.583,
+    0.573,
+    0.615,
+    0.583
+  ],
+  "per_seed_rag_tokens": [
+    309.5,
+    309.5,
+    309.5,
+    309.5,
+    309.5
+  ],
+  "per_seed_mh_peak_tokens": [
+    1018.1,
+    520.6,
+    1275.2,
+    916.1,
+    421.0
+  ],
+  "per_seed_n_dominate": [
+    0,
+    1,
+    0,
+    2,
+    0
+  ],
+  "per_seed_n_match_cheaper": [
+    0,
+    3,
+    0,
+    2,
+    0
+  ],
+  "ci": {
+    "mh_minus_rag_acc": {
+      "mean": 0.07059999999999995,
+      "low": 0.05799999999999994,
+      "high": 0.08539999999999996,
+      "confidence": 0.95
+    },
+    "mh_peak_acc": {
+      "mean": 0.5915999999999999,
+      "low": 0.579,
+      "high": 0.6064,
+      "confidence": 0.95
+    },
+    "rag_acc": {
+      "mean": 0.521,
+      "low": 0.521,
+      "high": 0.521,
+      "confidence": 0.95
+    }
+  },
+  "paired_t_test": {
+    "n": 5,
+    "mean_diff": 0.07059999999999995,
+    "std_diff": 0.017285832349065534,
+    "t_statistic": 9.132704519144504,
+    "p_value_two_sided": 0.000797652985956878,
+    "cohens_d": 4.084269624645327
+  },
+  "per_class_delta": {}
+}

@@ -1,0 +1,367 @@
+[
+  {
+    "ablated_score": {
+      "accuracy": 0.41666666666666663,
+      "accuracy_spread": 0.16666666666666669,
+      "latency_ms": 1814.9245923332996,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "anger",
+          0.25
+        ],
+        [
+          "fear",
+          1.0
+        ],
+        [
+          "joy",
+          0.5
+        ],
+        [
+          "love",
+          0.0
+        ],
+        [
+          "sadness",
+          1.0
+        ],
+        [
+          "surprise",
+          0.375
+        ]
+      ],
+      "tokens": 398.8333333333333
+    },
+    "accuracy_delta": -0.16666666666666663,
+    "candidate_id": "cand_0036",
+    "full_score": {
+      "accuracy": 0.25,
+      "accuracy_spread": 0.0,
+      "latency_ms": 1800.9277816665747,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "anger",
+          0.25
+        ],
+        [
+          "fear",
+          1.0
+        ],
+        [
+          "joy",
+          0.0
+        ],
+        [
+          "love",
+          0.0
+        ],
+        [
+          "sadness",
+          0.5
+        ],
+        [
+          "surprise",
+          0.125
+        ]
+      ],
+      "tokens": 1076.875
+    },
+    "kind": "retriever"
+  },
+  {
+    "ablated_score": {
+      "accuracy": 0.3333333333333333,
+      "accuracy_spread": 0.0,
+      "latency_ms": 2027.106584791606,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "anger",
+          0.25
+        ],
+        [
+          "fear",
+          1.0
+        ],
+        [
+          "joy",
+          0.0
+        ],
+        [
+          "love",
+          0.5
+        ],
+        [
+          "sadness",
+          1.0
+        ],
+        [
+          "surprise",
+          0.125
+        ]
+      ],
+      "tokens": 1068.1666666666667
+    },
+    "accuracy_delta": -0.08333333333333331,
+    "candidate_id": "cand_0036",
+    "full_score": {
+      "accuracy": 0.25,
+      "accuracy_spread": 0.0,
+      "latency_ms": 1800.9277816665747,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "anger",
+          0.25
+        ],
+        [
+          "fear",
+          1.0
+        ],
+        [
+          "joy",
+          0.0
+        ],
+        [
+          "love",
+          0.0
+        ],
+        [
+          "sadness",
+          0.5
+        ],
+        [
+          "surprise",
+          0.125
+        ]
+      ],
+      "tokens": 1076.875
+    },
+    "kind": "reranker"
+  },
+  {
+    "ablated_score": {
+      "accuracy": 0.2916666666666667,
+      "accuracy_spread": 0.25,
+      "latency_ms": 2004.4650305415737,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "anger",
+          0.375
+        ],
+        [
+          "fear",
+          1.0
+        ],
+        [
+          "joy",
+          0.0
+        ],
+        [
+          "love",
+          0.0
+        ],
+        [
+          "sadness",
+          0.5
+        ],
+        [
+          "surprise",
+          0.125
+        ]
+      ],
+      "tokens": 947.4583333333334
+    },
+    "accuracy_delta": -0.041666666666666685,
+    "candidate_id": "cand_0036",
+    "full_score": {
+      "accuracy": 0.25,
+      "accuracy_spread": 0.0,
+      "latency_ms": 1800.9277816665747,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "anger",
+          0.25
+        ],
+        [
+          "fear",
+          1.0
+        ],
+        [
+          "joy",
+          0.0
+        ],
+        [
+          "love",
+          0.0
+        ],
+        [
+          "sadness",
+          0.5
+        ],
+        [
+          "surprise",
+          0.125
+        ]
+      ],
+      "tokens": 1076.875
+    },
+    "kind": "fewshot"
+  },
+  {
+    "ablated_score": {
+      "accuracy": 0.375,
+      "accuracy_spread": 0.08333333333333337,
+      "latency_ms": 1381.7370902917473,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "anger",
+          0.5
+        ],
+        [
+          "fear",
+          1.0
+        ],
+        [
+          "joy",
+          0.0
+        ],
+        [
+          "love",
+          0.0
+        ],
+        [
+          "sadness",
+          0.5
+        ],
+        [
+          "surprise",
+          0.25
+        ]
+      ],
+      "tokens": 862.9166666666667
+    },
+    "accuracy_delta": -0.125,
+    "candidate_id": "cand_0036",
+    "full_score": {
+      "accuracy": 0.25,
+      "accuracy_spread": 0.0,
+      "latency_ms": 1800.9277816665747,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "anger",
+          0.25
+        ],
+        [
+          "fear",
+          1.0
+        ],
+        [
+          "joy",
+          0.0
+        ],
+        [
+          "love",
+          0.0
+        ],
+        [
+          "sadness",
+          0.5
+        ],
+        [
+          "surprise",
+          0.125
+        ]
+      ],
+      "tokens": 1076.875
+    },
+    "kind": "formatter"
+  },
+  {
+    "ablated_score": {
+      "accuracy": 0.2916666666666667,
+      "accuracy_spread": 0.25,
+      "latency_ms": 2114.9000722916758,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "anger",
+          0.25
+        ],
+        [
+          "fear",
+          1.0
+        ],
+        [
+          "joy",
+          0.0
+        ],
+        [
+          "love",
+          0.5
+        ],
+        [
+          "sadness",
+          0.5
+        ],
+        [
+          "surprise",
+          0.125
+        ]
+      ],
+      "tokens": 1079.2083333333335
+    },
+    "accuracy_delta": -0.041666666666666685,
+    "candidate_id": "cand_0036",
+    "full_score": {
+      "accuracy": 0.25,
+      "accuracy_spread": 0.0,
+      "latency_ms": 1800.9277816665747,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "anger",
+          0.25
+        ],
+        [
+          "fear",
+          1.0
+        ],
+        [
+          "joy",
+          0.0
+        ],
+        [
+          "love",
+          0.0
+        ],
+        [
+          "sadness",
+          0.5
+        ],
+        [
+          "surprise",
+          0.125
+        ]
+      ],
+      "tokens": 1076.875
+    },
+    "kind": "voter"
+  }
+]

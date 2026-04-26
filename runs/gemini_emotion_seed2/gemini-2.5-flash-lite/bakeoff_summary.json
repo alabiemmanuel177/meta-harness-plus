@@ -1,0 +1,195 @@
+{
+  "model": "gemini-2.5-flash-lite",
+  "task": "emotion",
+  "ablation": "none",
+  "elapsed_s": 283.5,
+  "cache_stats": {
+    "hits": 2971,
+    "misses": 241,
+    "writes": 241,
+    "cached_keys": 1023,
+    "hit_rate": 0.925,
+    "path": "runs/cache/gemini_emotion.jsonl"
+  },
+  "bare_baseline": {
+    "accuracy": 0.479,
+    "tokens": 90.0,
+    "latency_ms": 877.7
+  },
+  "rag_baseline": {
+    "accuracy": 0.521,
+    "tokens": 300.4,
+    "latency_ms": 845.9
+  },
+  "n_discovered_dominates_rag": 0,
+  "n_discovered_ties_rag_acc_cheaper": 1,
+  "frontier": [
+    {
+      "candidate_id": "cand_0032",
+      "label": "discovered",
+      "accuracy": 0.583,
+      "accuracy_spread": 0.0,
+      "tokens": 191.2,
+      "latency_ms": 1215.3,
+      "components": [
+        {
+          "kind": "retriever",
+          "name": "null_retriever"
+        },
+        {
+          "kind": "reranker",
+          "name": "llm_reranker"
+        },
+        {
+          "kind": "fewshot",
+          "name": "topk_fewshot",
+          "k": 3
+        },
+        {
+          "kind": "formatter",
+          "name": "compressed_cot_formatter"
+        },
+        {
+          "kind": "predictor",
+          "name": "llm_predictor",
+          "n_samples": 1
+        },
+        {
+          "kind": "voter",
+          "name": "null_voter"
+        }
+      ]
+    },
+    {
+      "candidate_id": "cand_0002",
+      "label": "[RAG]",
+      "accuracy": 0.521,
+      "accuracy_spread": 0.0,
+      "tokens": 300.4,
+      "latency_ms": 845.9,
+      "components": [
+        {
+          "kind": "retriever",
+          "name": "bow_retriever",
+          "k": 3
+        },
+        {
+          "kind": "fewshot",
+          "name": "topk_fewshot",
+          "k": 2
+        },
+        {
+          "kind": "formatter",
+          "name": "simple_formatter"
+        },
+        {
+          "kind": "predictor",
+          "name": "llm_predictor",
+          "n_samples": 1
+        },
+        {
+          "kind": "voter",
+          "name": "null_voter"
+        }
+      ]
+    },
+    {
+      "candidate_id": "cand_0011",
+      "label": "discovered",
+      "accuracy": 0.5,
+      "accuracy_spread": 0.0,
+      "tokens": 91.0,
+      "latency_ms": 1009.3,
+      "components": [
+        {
+          "kind": "retriever",
+          "name": "null_retriever"
+        },
+        {
+          "kind": "reranker",
+          "name": "null_reranker"
+        },
+        {
+          "kind": "fewshot",
+          "name": "null_fewshot"
+        },
+        {
+          "kind": "formatter",
+          "name": "simple_formatter"
+        },
+        {
+          "kind": "predictor",
+          "name": "llm_predictor",
+          "n_samples": 1
+        },
+        {
+          "kind": "voter",
+          "name": "null_voter"
+        }
+      ]
+    },
+    {
+      "candidate_id": "cand_0001",
+      "label": "[BARE]",
+      "accuracy": 0.479,
+      "accuracy_spread": 0.0,
+      "tokens": 90.0,
+      "latency_ms": 877.7,
+      "components": [
+        {
+          "kind": "retriever",
+          "name": "null_retriever"
+        },
+        {
+          "kind": "fewshot",
+          "name": "null_fewshot"
+        },
+        {
+          "kind": "formatter",
+          "name": "simple_formatter"
+        },
+        {
+          "kind": "predictor",
+          "name": "llm_predictor",
+          "n_samples": 1
+        },
+        {
+          "kind": "voter",
+          "name": "null_voter"
+        }
+      ]
+    }
+  ],
+  "attribution": [
+    {
+      "kind": "reranker",
+      "mean_delta": 0.0,
+      "variance": 0.0,
+      "n": 12
+    },
+    {
+      "kind": "voter",
+      "mean_delta": -0.0,
+      "variance": 0.0,
+      "n": 14
+    },
+    {
+      "kind": "retriever",
+      "mean_delta": -0.009,
+      "variance": 0.001,
+      "n": 14
+    },
+    {
+      "kind": "fewshot",
+      "mean_delta": -0.012,
+      "variance": 0.001,
+      "n": 14
+    },
+    {
+      "kind": "formatter",
+      "mean_delta": -0.018,
+      "variance": 0.003,
+      "n": 14
+    }
+  ]
+}

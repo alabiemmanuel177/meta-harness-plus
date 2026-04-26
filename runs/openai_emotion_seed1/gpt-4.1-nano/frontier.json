@@ -1,0 +1,404 @@
+[
+  {
+    "candidate_id": "cand_0001",
+    "describe": [
+      {
+        "kind": "retriever",
+        "name": "null_retriever"
+      },
+      {
+        "kind": "fewshot",
+        "name": "null_fewshot"
+      },
+      {
+        "kind": "formatter",
+        "name": "simple_formatter",
+        "system_hint": "Classify the input."
+      },
+      {
+        "kind": "predictor",
+        "n_samples": 1,
+        "name": "llm_predictor",
+        "temperature": 0.0
+      },
+      {
+        "kind": "voter",
+        "name": "null_voter"
+      }
+    ],
+    "score": {
+      "accuracy": 0.5208333333333334,
+      "accuracy_spread": 0.0,
+      "latency_ms": 618.0884142083963,
+      "n_evaluated": 48,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "anger",
+          0.375
+        ],
+        [
+          "fear",
+          0.625
+        ],
+        [
+          "joy",
+          0.625
+        ],
+        [
+          "love",
+          0.375
+        ],
+        [
+          "sadness",
+          0.625
+        ],
+        [
+          "surprise",
+          0.5
+        ]
+      ],
+      "tokens": 98.29166666666667
+    }
+  },
+  {
+    "candidate_id": "cand_0003",
+    "describe": [
+      {
+        "b": 0.75,
+        "k": 10,
+        "k1": 1.5,
+        "kind": "retriever",
+        "name": "bm25_retriever"
+      },
+      {
+        "kind": "reranker",
+        "name": "null_reranker"
+      },
+      {
+        "k": 3,
+        "kind": "fewshot",
+        "name": "topk_fewshot"
+      },
+      {
+        "kind": "formatter",
+        "name": "cot_formatter",
+        "system_hint": "Classify the input into one of the given classes. Briefly analyze which key terms suggest each possibility, then output ONLY the class name, lowercase, on the final line. No other prose."
+      },
+      {
+        "kind": "predictor",
+        "n_samples": 1,
+        "name": "llm_predictor",
+        "temperature": 0.0
+      },
+      {
+        "kind": "voter",
+        "name": "majority_voter"
+      }
+    ],
+    "score": {
+      "accuracy": 0.5833333333333334,
+      "accuracy_spread": 0.0,
+      "latency_ms": 1005.8031969583948,
+      "n_evaluated": 48,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "anger",
+          0.625
+        ],
+        [
+          "fear",
+          0.5
+        ],
+        [
+          "joy",
+          0.625
+        ],
+        [
+          "love",
+          0.5
+        ],
+        [
+          "sadness",
+          0.875
+        ],
+        [
+          "surprise",
+          0.375
+        ]
+      ],
+      "tokens": 520.625
+    }
+  },
+  {
+    "candidate_id": "cand_0006",
+    "describe": [
+      {
+        "kind": "retriever",
+        "name": "null_retriever"
+      },
+      {
+        "kind": "reranker",
+        "name": "null_reranker"
+      },
+      {
+        "kind": "fewshot",
+        "name": "null_fewshot"
+      },
+      {
+        "kind": "formatter",
+        "name": "cot_formatter",
+        "system_hint": "Classify the input into one of the given classes. Briefly analyze which key terms suggest each possibility, then output ONLY the class name, lowercase, on the final line. No other prose."
+      },
+      {
+        "kind": "predictor",
+        "n_samples": 1,
+        "name": "llm_predictor",
+        "temperature": 0.0
+      },
+      {
+        "kind": "voter",
+        "name": "majority_voter"
+      }
+    ],
+    "score": {
+      "accuracy": 0.5625,
+      "accuracy_spread": 0.0,
+      "latency_ms": 1098.9228407292599,
+      "n_evaluated": 48,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "anger",
+          0.375
+        ],
+        [
+          "fear",
+          0.625
+        ],
+        [
+          "joy",
+          0.75
+        ],
+        [
+          "love",
+          0.375
+        ],
+        [
+          "sadness",
+          0.875
+        ],
+        [
+          "surprise",
+          0.375
+        ]
+      ],
+      "tokens": 238.95833333333334
+    }
+  },
+  {
+    "candidate_id": "cand_0020",
+    "describe": [
+      {
+        "k": 10,
+        "kind": "retriever",
+        "name": "bow_retriever"
+      },
+      {
+        "kind": "reranker",
+        "name": "diversity_reranker"
+      },
+      {
+        "k": 2,
+        "kind": "fewshot",
+        "name": "topk_fewshot"
+      },
+      {
+        "kind": "formatter",
+        "name": "simple_formatter",
+        "system_hint": "Classify the input."
+      },
+      {
+        "kind": "predictor",
+        "n_samples": 1,
+        "name": "llm_predictor",
+        "temperature": 0.5
+      },
+      {
+        "kind": "voter",
+        "name": "majority_voter"
+      }
+    ],
+    "score": {
+      "accuracy": 0.48958333333333337,
+      "accuracy_spread": 0.020833333333333315,
+      "latency_ms": 612.2264298541869,
+      "n_evaluated": 48,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "anger",
+          0.3125
+        ],
+        [
+          "fear",
+          0.375
+        ],
+        [
+          "joy",
+          0.5625
+        ],
+        [
+          "love",
+          0.3125
+        ],
+        [
+          "sadness",
+          0.875
+        ],
+        [
+          "surprise",
+          0.5
+        ]
+      ],
+      "tokens": 378.15625
+    }
+  },
+  {
+    "candidate_id": "cand_0028",
+    "describe": [
+      {
+        "k": 10,
+        "kind": "retriever",
+        "name": "tfidf_retriever"
+      },
+      {
+        "kind": "reranker",
+        "name": "null_reranker"
+      },
+      {
+        "k": 2,
+        "kind": "fewshot",
+        "name": "topk_fewshot"
+      },
+      {
+        "kind": "formatter",
+        "name": "simple_formatter",
+        "system_hint": "short answer"
+      },
+      {
+        "kind": "predictor",
+        "n_samples": 1,
+        "name": "llm_predictor",
+        "temperature": 0.0
+      },
+      {
+        "kind": "voter",
+        "name": "majority_voter"
+      }
+    ],
+    "score": {
+      "accuracy": 0.5625,
+      "accuracy_spread": 0.0,
+      "latency_ms": 783.7248552707629,
+      "n_evaluated": 48,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "anger",
+          0.375
+        ],
+        [
+          "fear",
+          0.625
+        ],
+        [
+          "joy",
+          0.75
+        ],
+        [
+          "love",
+          0.375
+        ],
+        [
+          "sadness",
+          0.625
+        ],
+        [
+          "surprise",
+          0.625
+        ]
+      ],
+      "tokens": 286.3541666666667
+    }
+  },
+  {
+    "candidate_id": "cand_0031",
+    "describe": [
+      {
+        "k": 10,
+        "kind": "retriever",
+        "name": "tfidf_retriever"
+      },
+      {
+        "kind": "reranker",
+        "name": "diversity_reranker"
+      },
+      {
+        "k": 2,
+        "kind": "fewshot",
+        "name": "topk_fewshot"
+      },
+      {
+        "kind": "formatter",
+        "name": "simple_formatter",
+        "system_hint": "concise"
+      },
+      {
+        "kind": "predictor",
+        "n_samples": 1,
+        "name": "llm_predictor",
+        "temperature": 0.1
+      },
+      {
+        "kind": "voter",
+        "name": "majority_voter"
+      }
+    ],
+    "score": {
+      "accuracy": 0.5833333333333333,
+      "accuracy_spread": 0.04166666666666663,
+      "latency_ms": 618.6048689062909,
+      "n_evaluated": 48,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "anger",
+          0.625
+        ],
+        [
+          "fear",
+          0.625
+        ],
+        [
+          "joy",
+          0.6875
+        ],
+        [
+          "love",
+          0.4375
+        ],
+        [
+          "sadness",
+          0.625
+        ],
+        [
+          "surprise",
+          0.5
+        ]
+      ],
+      "tokens": 287.15625
+    }
+  }
+]

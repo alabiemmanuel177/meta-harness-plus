@@ -1,0 +1,327 @@
+[
+  {
+    "ablated_score": {
+      "accuracy": 0.5,
+      "accuracy_spread": 0.0,
+      "latency_ms": 1249.3792480832594,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "anger",
+          0.0
+        ],
+        [
+          "fear",
+          0.3333333333333333
+        ],
+        [
+          "love",
+          0.5
+        ],
+        [
+          "sadness",
+          0.8
+        ],
+        [
+          "surprise",
+          0.0
+        ]
+      ],
+      "tokens": 207.33333333333334
+    },
+    "accuracy_delta": 0.08333333333333337,
+    "candidate_id": "cand_0029",
+    "full_score": {
+      "accuracy": 0.5833333333333334,
+      "accuracy_spread": 0.0,
+      "latency_ms": 1209.7612338333195,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "anger",
+          1.0
+        ],
+        [
+          "fear",
+          0.3333333333333333
+        ],
+        [
+          "love",
+          0.5
+        ],
+        [
+          "sadness",
+          0.8
+        ],
+        [
+          "surprise",
+          0.0
+        ]
+      ],
+      "tokens": 370.5
+    },
+    "kind": "retriever"
+  },
+  {
+    "ablated_score": {
+      "accuracy": 0.5833333333333334,
+      "accuracy_spread": 0.0,
+      "latency_ms": 1209.6612338333193,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "anger",
+          1.0
+        ],
+        [
+          "fear",
+          0.3333333333333333
+        ],
+        [
+          "love",
+          0.5
+        ],
+        [
+          "sadness",
+          0.8
+        ],
+        [
+          "surprise",
+          0.0
+        ]
+      ],
+      "tokens": 370.5
+    },
+    "accuracy_delta": 0.0,
+    "candidate_id": "cand_0029",
+    "full_score": {
+      "accuracy": 0.5833333333333334,
+      "accuracy_spread": 0.0,
+      "latency_ms": 1209.7612338333195,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "anger",
+          1.0
+        ],
+        [
+          "fear",
+          0.3333333333333333
+        ],
+        [
+          "love",
+          0.5
+        ],
+        [
+          "sadness",
+          0.8
+        ],
+        [
+          "surprise",
+          0.0
+        ]
+      ],
+      "tokens": 370.5
+    },
+    "kind": "reranker"
+  },
+  {
+    "ablated_score": {
+      "accuracy": 0.5,
+      "accuracy_spread": 0.0,
+      "latency_ms": 1253.9792480832596,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "anger",
+          0.0
+        ],
+        [
+          "fear",
+          0.3333333333333333
+        ],
+        [
+          "love",
+          0.5
+        ],
+        [
+          "sadness",
+          0.8
+        ],
+        [
+          "surprise",
+          0.0
+        ]
+      ],
+      "tokens": 237.33333333333334
+    },
+    "accuracy_delta": 0.08333333333333337,
+    "candidate_id": "cand_0029",
+    "full_score": {
+      "accuracy": 0.5833333333333334,
+      "accuracy_spread": 0.0,
+      "latency_ms": 1209.7612338333195,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "anger",
+          1.0
+        ],
+        [
+          "fear",
+          0.3333333333333333
+        ],
+        [
+          "love",
+          0.5
+        ],
+        [
+          "sadness",
+          0.8
+        ],
+        [
+          "surprise",
+          0.0
+        ]
+      ],
+      "tokens": 370.5
+    },
+    "kind": "fewshot"
+  },
+  {
+    "ablated_score": {
+      "accuracy": 0.3333333333333333,
+      "accuracy_spread": 0.0,
+      "latency_ms": 879.5216069167586,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "anger",
+          0.0
+        ],
+        [
+          "fear",
+          0.3333333333333333
+        ],
+        [
+          "love",
+          0.5
+        ],
+        [
+          "sadness",
+          0.4
+        ],
+        [
+          "surprise",
+          0.0
+        ]
+      ],
+      "tokens": 268.3333333333333
+    },
+    "accuracy_delta": 0.25000000000000006,
+    "candidate_id": "cand_0029",
+    "full_score": {
+      "accuracy": 0.5833333333333334,
+      "accuracy_spread": 0.0,
+      "latency_ms": 1209.7612338333195,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "anger",
+          1.0
+        ],
+        [
+          "fear",
+          0.3333333333333333
+        ],
+        [
+          "love",
+          0.5
+        ],
+        [
+          "sadness",
+          0.8
+        ],
+        [
+          "surprise",
+          0.0
+        ]
+      ],
+      "tokens": 370.5
+    },
+    "kind": "formatter"
+  },
+  {
+    "ablated_score": {
+      "accuracy": 0.5833333333333334,
+      "accuracy_spread": 0.0,
+      "latency_ms": 1209.6612338333193,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "anger",
+          1.0
+        ],
+        [
+          "fear",
+          0.3333333333333333
+        ],
+        [
+          "love",
+          0.5
+        ],
+        [
+          "sadness",
+          0.8
+        ],
+        [
+          "surprise",
+          0.0
+        ]
+      ],
+      "tokens": 370.5
+    },
+    "accuracy_delta": 0.0,
+    "candidate_id": "cand_0029",
+    "full_score": {
+      "accuracy": 0.5833333333333334,
+      "accuracy_spread": 0.0,
+      "latency_ms": 1209.7612338333195,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "anger",
+          1.0
+        ],
+        [
+          "fear",
+          0.3333333333333333
+        ],
+        [
+          "love",
+          0.5
+        ],
+        [
+          "sadness",
+          0.8
+        ],
+        [
+          "surprise",
+          0.0
+        ]
+      ],
+      "tokens": 370.5
+    },
+    "kind": "voter"
+  }
+]

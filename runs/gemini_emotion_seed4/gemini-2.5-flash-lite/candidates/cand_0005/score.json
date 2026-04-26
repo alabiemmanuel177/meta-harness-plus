@@ -1,0 +1,34 @@
+{
+  "accuracy": 0.5,
+  "accuracy_spread": 0.0,
+  "latency_ms": 902.4251069167223,
+  "n_evaluated": 48,
+  "n_repeats": 2,
+  "per_class_accuracy": [
+    [
+      "anger",
+      0.375
+    ],
+    [
+      "fear",
+      0.375
+    ],
+    [
+      "joy",
+      0.625
+    ],
+    [
+      "love",
+      0.375
+    ],
+    [
+      "sadness",
+      0.625
+    ],
+    [
+      "surprise",
+      0.625
+    ]
+  ],
+  "tokens": 408.7708333333333
+}

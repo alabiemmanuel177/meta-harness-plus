@@ -1,0 +1,82 @@
+{
+  "label": "Gemini gemini-2.5-flash-lite \u00d7 emotion (5 seeds)",
+  "n_seeds": 5,
+  "per_seed_bare_acc": [
+    0.479,
+    0.479,
+    0.479,
+    0.479,
+    0.479
+  ],
+  "per_seed_rag_acc": [
+    0.521,
+    0.521,
+    0.521,
+    0.521,
+    0.521
+  ],
+  "per_seed_mh_peak_acc": [
+    0.5,
+    0.583,
+    0.583,
+    0.583,
+    0.552
+  ],
+  "per_seed_rag_tokens": [
+    300.4,
+    300.4,
+    300.4,
+    300.4,
+    300.4
+  ],
+  "per_seed_mh_peak_tokens": [
+    182.6,
+    364.0,
+    191.2,
+    374.0,
+    333.1
+  ],
+  "per_seed_n_dominate": [
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "per_seed_n_match_cheaper": [
+    0,
+    1,
+    1,
+    0,
+    2
+  ],
+  "ci": {
+    "mh_minus_rag_acc": {
+      "mean": 0.03919999999999997,
+      "low": 0.005999999999999983,
+      "high": 0.061999999999999944,
+      "confidence": 0.95
+    },
+    "mh_peak_acc": {
+      "mean": 0.5602,
+      "low": 0.5269999999999999,
+      "high": 0.583,
+      "confidence": 0.95
+    },
+    "rag_acc": {
+      "mean": 0.521,
+      "low": 0.521,
+      "high": 0.521,
+      "confidence": 0.95
+    }
+  },
+  "paired_t_test": {
+    "n": 5,
+    "mean_diff": 0.03919999999999997,
+    "std_diff": 0.036231202022566106,
+    "t_statistic": 2.4192922074017225,
+    "p_value_two_sided": 0.07281877227918317,
+    "cohens_d": 1.081940366637154
+  },
+  "per_class_delta": {}
+}
