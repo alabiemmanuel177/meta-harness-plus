@@ -85,6 +85,10 @@ runs/*
 !runs/openai_lawbench_2_2_seed*_dspyboot/
 !runs/openai_lawbench_2_2_dspyboot_aggregate.json
 !runs/gsm8k_smoke_*.json
+!runs/gsm8k_gemini_*.json
+!runs/openai_lawbench_2_2_seed*_dspyboot/
+!runs/openai_agnews_seed*_oproboot/
+!runs/openai_agnews_oproboot_aggregate.json
 !runs/openai_lawbench_2_2_seed0/
 !runs/openai_lawbench_2_2_seed1/
 !runs/openai_lawbench_2_2_seed2/
