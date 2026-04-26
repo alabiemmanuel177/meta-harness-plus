@@ -34,7 +34,10 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 
 from meta_harness_plus.ablations import ScalarAccuracyFrontier
 from meta_harness_plus.attribution import AttributionTracker
-from meta_harness_plus.baselines import bare_baseline, rag_baseline
+from meta_harness_plus.baselines import (
+    bare_baseline, cot_baseline, diverse_rag_baseline, rag_baseline,
+    voting_rag_baseline,
+)
 from meta_harness_plus.components import baseline_for
 from meta_harness_plus.search.random_proposer import RandomProposer
 from meta_harness_plus.llm.cache import CachedLLMClient, PromptCache
@@ -165,6 +168,25 @@ def run_one_model(model: str, ollama_url: str, run_dir: Path, args) -> dict:
     bare = bare_baseline(task, predictor)
     rag  = rag_baseline(task, predictor, retriever_k=3, fewshot_k=2)
 
+    # Optional: seed additional hand-tuned baselines into the frontier so
+    # the search starts with a stronger floor. Practitioners typically do
+    # have hand-tuned baselines and would not want the search to throw
+    # them away.
+    extra_seeds: list = []
+    if args.seed_extra_baselines:
+        # Need a predictor with n_samples > 1 for voting-RAG to matter.
+        voting_pred = LLMPredictor(
+            client=client, classes=task.classes,
+            n_samples=3, temperature=0.4,
+            max_tokens=args.predictor_max_tokens,
+        )
+        extra_seeds = [
+            cot_baseline(task, predictor),
+            voting_rag_baseline(task, voting_pred),
+            diverse_rag_baseline(task, predictor),
+        ]
+        print(f"  seeding extra baselines: cot, voting-RAG, diverse-RAG", flush=True)
+
     # Apply ablation knobs.
     if args.ablation == "no-c2":
         # No halving: full-eval every candidate, keep them all through to
@@ -203,7 +225,7 @@ def run_one_model(model: str, ollama_url: str, run_dir: Path, args) -> dict:
         ),
         # Seed order: bare first, then RAG. Both get full-evaluated and
         # added to the Pareto frontier before the search starts.
-        seed_harnesses=[bare, rag],
+        seed_harnesses=[bare, rag] + extra_seeds,
         frontier_factory=frontier_factory,
     )
 
@@ -228,8 +250,16 @@ def run_one_model(model: str, ollama_url: str, run_dir: Path, args) -> dict:
     else:
         bare_score = bare_entry.score
 
+    # Build map of seeded candidate_ids → label so reporting & filtering
+    # works whether we seeded just BARE+RAG or also extras.
+    seed_labels: dict[str, str] = {"cand_0001": "[BARE]", "cand_0002": "[RAG]"}
+    if args.seed_extra_baselines:
+        seed_labels["cand_0003"] = "[CoT-RAG]"
+        seed_labels["cand_0004"] = "[voting-RAG]"
+        seed_labels["cand_0005"] = "[diverse-RAG]"
+
     # Compute: which discovered harnesses Pareto-dominate RAG?
-    discovered = [e for e in entries if e.candidate_id not in {"cand_0001", "cand_0002"}]
+    discovered = [e for e in entries if e.candidate_id not in seed_labels]
     dominates_rag = [e for e in discovered if dominates(e.score, rag_score)]
     ties_rag_on_acc_cheaper = [
         e for e in discovered
@@ -238,11 +268,7 @@ def run_one_model(model: str, ollama_url: str, run_dir: Path, args) -> dict:
 
     frontier_rows = []
     for e in sorted(entries, key=lambda x: -x.score.accuracy):
-        label = ""
-        if e.candidate_id == "cand_0001":
-            label = " [BARE]"
-        elif e.candidate_id == "cand_0002":
-            label = " [RAG]"
+        label = seed_labels.get(e.candidate_id, "")
         frontier_rows.append({
             "candidate_id": e.candidate_id,
             "label": label.strip() or "discovered",
@@ -367,6 +393,10 @@ def main():
     ap.add_argument("--screen-repeats", type=int, default=1)
     ap.add_argument("--attribution-repeats", type=int, default=2)
     ap.add_argument("--attribution-screen-size", type=int, default=10)
+    ap.add_argument("--seed-extra-baselines", action="store_true",
+                    help="Seed CoT-RAG, voting-RAG, diverse-RAG into the search "
+                         "frontier in addition to BARE and RAG. Use when the search "
+                         "should be guaranteed to retain strong hand-tuned baselines.")
     ap.add_argument("--ablation",
                     choices=("none", "no-c1", "no-c2", "no-c3"),
                     default="none",

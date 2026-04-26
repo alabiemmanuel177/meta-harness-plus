@@ -1,0 +1,98 @@
+[
+  {
+    "model": "gpt-4.1-nano",
+    "task": "news_hard_50",
+    "ablation": "no-c1",
+    "elapsed_s": 117.6,
+    "cache_stats": {
+      "hits": 1584,
+      "misses": 108,
+      "writes": 108,
+      "cached_keys": 1274,
+      "hit_rate": 0.936,
+      "path": "runs/cache/ablation_openai_news_hard_50.jsonl"
+    },
+    "bare_baseline": {
+      "accuracy": 0.72,
+      "tokens": 71.8,
+      "latency_ms": 686.6
+    },
+    "rag_baseline": {
+      "accuracy": 0.88,
+      "tokens": 181.6,
+      "latency_ms": 621.5
+    },
+    "n_discovered_dominates_rag": 0,
+    "n_discovered_ties_rag_acc_cheaper": 0,
+    "frontier": [
+      {
+        "candidate_id": "cand_0004",
+        "label": "discovered",
+        "accuracy": 0.91,
+        "accuracy_spread": 0.06,
+        "tokens": 291.1,
+        "latency_ms": 1076.8,
+        "components": [
+          {
+            "kind": "retriever",
+            "name": "bow_retriever",
+            "k": 15
+          },
+          {
+            "kind": "reranker",
+            "name": "diversity_reranker"
+          },
+          {
+            "kind": "fewshot",
+            "name": "null_fewshot"
+          },
+          {
+            "kind": "formatter",
+            "name": "cot_formatter"
+          },
+          {
+            "kind": "predictor",
+            "name": "llm_predictor",
+            "n_samples": 1
+          },
+          {
+            "kind": "voter",
+            "name": "majority_voter"
+          }
+        ]
+      }
+    ],
+    "attribution": [
+      {
+        "kind": "formatter",
+        "mean_delta": 0.062,
+        "variance": 0.01,
+        "n": 8
+      },
+      {
+        "kind": "fewshot",
+        "mean_delta": 0.021,
+        "variance": 0.005,
+        "n": 8
+      },
+      {
+        "kind": "retriever",
+        "mean_delta": 0.021,
+        "variance": 0.006,
+        "n": 8
+      },
+      {
+        "kind": "reranker",
+        "mean_delta": 0.007,
+        "variance": 0.0,
+        "n": 6
+      },
+      {
+        "kind": "voter",
+        "mean_delta": -0.005,
+        "variance": 0.001,
+        "n": 8
+      }
+    ]
+  }
+]

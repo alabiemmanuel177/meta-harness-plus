@@ -1,0 +1,97 @@
+{
+  "model": "gpt-4.1-nano",
+  "task": "news_hard_50",
+  "ablation": "no-c1",
+  "elapsed_s": 69.7,
+  "cache_stats": {
+    "hits": 1796,
+    "misses": 144,
+    "writes": 144,
+    "cached_keys": 1063,
+    "hit_rate": 0.926,
+    "path": "runs/cache/ablation_openai_news_hard_50.jsonl"
+  },
+  "bare_baseline": {
+    "accuracy": 0.72,
+    "tokens": 71.8,
+    "latency_ms": 686.6
+  },
+  "rag_baseline": {
+    "accuracy": 0.88,
+    "tokens": 181.6,
+    "latency_ms": 621.5
+  },
+  "n_discovered_dominates_rag": 0,
+  "n_discovered_ties_rag_acc_cheaper": 0,
+  "frontier": [
+    {
+      "candidate_id": "cand_0008",
+      "label": "discovered",
+      "accuracy": 0.91,
+      "accuracy_spread": 0.02,
+      "tokens": 196.1,
+      "latency_ms": 802.6,
+      "components": [
+        {
+          "kind": "retriever",
+          "name": "tfidf_retriever",
+          "k": 5
+        },
+        {
+          "kind": "reranker",
+          "name": "null_reranker"
+        },
+        {
+          "kind": "fewshot",
+          "name": "topk_fewshot",
+          "k": 2
+        },
+        {
+          "kind": "formatter",
+          "name": "simple_formatter"
+        },
+        {
+          "kind": "predictor",
+          "name": "llm_predictor",
+          "n_samples": 1
+        },
+        {
+          "kind": "voter",
+          "name": "majority_voter"
+        }
+      ]
+    }
+  ],
+  "attribution": [
+    {
+      "kind": "fewshot",
+      "mean_delta": 0.062,
+      "variance": 0.008,
+      "n": 8
+    },
+    {
+      "kind": "retriever",
+      "mean_delta": 0.057,
+      "variance": 0.007,
+      "n": 8
+    },
+    {
+      "kind": "formatter",
+      "mean_delta": 0.01,
+      "variance": 0.009,
+      "n": 8
+    },
+    {
+      "kind": "voter",
+      "mean_delta": 0.0,
+      "variance": 0.0,
+      "n": 8
+    },
+    {
+      "kind": "reranker",
+      "mean_delta": -0.007,
+      "variance": 0.001,
+      "n": 6
+    }
+  ]
+}

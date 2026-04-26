@@ -71,6 +71,12 @@ runs/*
 !runs/hand_tuned_baselines_*.json
 !runs/ablation_*_seed*/
 !runs/ablation_*_aggregate.json
+!runs/gemini_news_hard_50_seed0_beatcot/
+!runs/gemini_news_hard_50_seed1_beatcot/
+!runs/gemini_news_hard_50_seed2_beatcot/
+!runs/gemini_news_hard_50_seed3_beatcot/
+!runs/gemini_news_hard_50_seed4_beatcot/
+!runs/gemini_news_hard_50_beatcot_aggregate.json
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
