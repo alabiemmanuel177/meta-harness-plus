@@ -1,0 +1,22 @@
+{
+  "api": "gemini",
+  "model": "gemini-2.5-flash-lite",
+  "task": "gsm8k",
+  "n_train": 10,
+  "n_eval": 20,
+  "score": {
+    "accuracy": 0.4,
+    "tokens": 357.4,
+    "latency_ms": 1779.9829147000783,
+    "spread": 0.0
+  },
+  "elapsed_s": 9.7,
+  "cache_stats": {
+    "hits": 0,
+    "misses": 20,
+    "writes": 20,
+    "cached_keys": 20,
+    "hit_rate": 0.0,
+    "path": "runs/cache/gsm8k_smoke.jsonl"
+  }
+}
