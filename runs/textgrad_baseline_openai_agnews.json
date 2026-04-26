@@ -1,0 +1,25 @@
+{
+  "task": "agnews",
+  "model": "gpt-4.1-nano",
+  "api": "openai",
+  "epochs": 2,
+  "n_train_batch": 4,
+  "initial_prompt": "Classify the input.",
+  "final_prompt": "Classify the input into one of the following categories: *business*, *sci/tech*, *sports*, or *world*. Before classification, preprocess the input by converting all text to lowercase, removing extraneous whitespace, and handling delimiters such as slashes or hyphens to normalize formatting. Consider variations in category labels, such as \"sci/tech\" versus \"sci-tech\" or \"Sci Tech,\" and internally normalize these to ensure consistent classification. When analyzing the content, consider the broader industry context, thematic cues, and typical scope of each category. Recognize that categories like 'business' and 'sci/tech' can overlap, especially in discussions involving technological innovation, scientific research, or industry analysis\u2014prioritize the category that emphasizes scientific or technological content unless the primary focus is explicitly economic or financial. Pay attention to contextual clues such as references to technological advancements, scientific data, or industry reports, which should influence the classification toward 'sci/tech' even if the text contains business terminology. When in doubt, justify your classification by briefly explaining the key content features, entities, or themes supporting your decision, especially in ambiguous cases. Ensure that the input is preprocessed to match the expected format, such as lowercase and free of unnecessary symbols, before classification. Remember that 'sci/tech' includes not only pure scientific or technological content but also industry analyses and innovation discussions related to technology sectors. Provide only the class name in lowercase, and ensure your reasoning is transparent and content-based over superficial keyword matching.",
+  "score": {
+    "accuracy": 0.8125,
+    "tokens": 676.4583333333334,
+    "latency_ms": 559.1879216667147
+  },
+  "elapsed_s": 69.4,
+  "history": [
+    [
+      0,
+      "Classify the input into one of the following categories: *business*, *sci/tech*, *sports*, or *world*. First, normalize the input text by converting it to lowercase to ensure case-insensitive analysis"
+    ],
+    [
+      1,
+      "Classify the input into one of the following categories: *business*, *sci/tech*, *sports*, or *world*. Before classification, preprocess the input by converting all text to lowercase, removing extrane"
+    ]
+  ]
+}

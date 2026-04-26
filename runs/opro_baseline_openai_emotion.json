@@ -1,0 +1,82 @@
+{
+  "task": "emotion",
+  "model": "gpt-4.1-nano",
+  "api": "openai",
+  "iterations": 4,
+  "proposals": 4,
+  "n_candidates": 17,
+  "seed_acc": 0.5208333333333334,
+  "best_acc": 0.5833333333333334,
+  "best_instruction": "Carefully read the provided text and assign it to the most appropriate emotion category from anger, fear, joy, love, sadness, or surprise based on the predominant emotional tone expressed.",
+  "all_history": [
+    [
+      "Classify the input.",
+      0.5208333333333334
+    ],
+    [
+      "Analyze the input and determine whether it expresses anger, fear, joy, love, sadness, or surprise. Choose the class that best matches the overall emotional tone conveyed.",
+      0.5625
+    ],
+    [
+      "Analyze the input text and accurately assign it to one of these emotion categories: anger, fear, joy, love, sadness, or surprise.",
+      0.5208333333333334
+    ],
+    [
+      "Analyze the input text and determine which of these emotions it primarily expresses: anger, fear, joy, love, sadness, or surprise. Select the most appropriate emotion category based on the overall tone and content.",
+      0.5208333333333334
+    ],
+    [
+      "Analyze the emotional tone of the input and assign it to one of these categories: anger, fear, joy, love, sadness, or surprise.",
+      0.5625
+    ],
+    [
+      "Read the input text carefully and identify the primary emotion it conveys, choosing one from anger, fear, joy, love, sadness, or surprise. Provide only the selected emotion as your output.",
+      0.5625
+    ],
+    [
+      "Read the input text carefully and assign it to the most appropriate emotion category from anger, fear, joy, love, sadness, or surprise based on its primary emotional tone.",
+      0.5
+    ],
+    [
+      "Read the input text carefully and assign it to the most appropriate emotion category: anger, fear, joy, love, sadness, or surprise. Ensure your classification reflects the dominant emotional tone conveyed.",
+      0.5
+    ],
+    [
+      "Read the input text carefully and select the single emotion that best describes its primary emotional tone, choosing from anger, fear, joy, love, sadness, or surprise.",
+      0.5
+    ],
+    [
+      "Carefully analyze the input text to identify its dominant emotional tone, and assign it to the most appropriate category among anger, fear, joy, love, sadness, or surprise.",
+      0.5625
+    ],
+    [
+      "Carefully read the provided text and assign it to the most appropriate emotion category from anger, fear, joy, love, sadness, or surprise based on the predominant emotional tone expressed.",
+      0.5833333333333334
+    ],
+    [
+      "Carefully read the input text and determine the predominant emotion it expresses. Assign it to the most appropriate category: anger, fear, joy, love, sadness, or surprise. Choose only one emotion that best captures the primary emotional tone of the text.",
+      0.5
+    ],
+    [
+      "Carefully analyze the input text and assign it to the most accurate emotion category: anger, fear, joy, love, sadness, or surprise, based on the overall emotional tone conveyed.",
+      0.5625
+    ],
+    [
+      "Read the input text thoroughly and accurately identify the primary emotion it expresses, selecting the most appropriate category from anger, fear, joy, love, sadness, or surprise.",
+      0.5625
+    ],
+    [
+      "Analyze the input text thoroughly and accurately classify it into one of these emotion categories: anger, fear, joy, love, sadness, or surprise. Select the category that best reflects the primary emotional tone conveyed.",
+      0.5416666666666666
+    ],
+    [
+      "Analyze the input text thoroughly and accurately classify its dominant emotional tone into one of the following categories: anger, fear, joy, love, sadness, or surprise.",
+      0.5625
+    ],
+    [
+      "Analyze the given text and accurately classify its primary emotional expression into one of these categories: anger, fear, joy, love, sadness, or surprise.",
+      0.5625
+    ]
+  ],
+  "elapsed_s": 164.5
+}

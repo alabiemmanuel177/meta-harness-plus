@@ -1,0 +1,25 @@
+{
+  "task": "emotion",
+  "model": "gpt-4.1-nano",
+  "api": "openai",
+  "epochs": 2,
+  "n_train_batch": 4,
+  "initial_prompt": "Classify the input.",
+  "final_prompt": "Analyze the input text by systematically evaluating explicit emotional expressions, contextual clues, and emotional intensity indicators. Consider hierarchical relationships among emotions and recognize when multiple emotions are plausible or when the input is ambiguous. Prioritize explicit cues but also weigh subtle signals, and clearly justify your classification decisions, including any uncertainties or overlaps. When appropriate, identify primary and secondary emotions to reflect the complexity of the emotional state.",
+  "score": {
+    "accuracy": 0.4583333333333333,
+    "tokens": 395.0625,
+    "latency_ms": 1646.5001537916633
+  },
+  "elapsed_s": 79.3,
+  "history": [
+    [
+      0,
+      "Analyze the input text and assign it to one of the specified emotion classes: anger, fear, joy, love, sadness, or surprise. When interpreting the text, prioritize understanding the overall tone, impli"
+    ],
+    [
+      1,
+      "Analyze the input text by systematically evaluating explicit emotional expressions, contextual clues, and emotional intensity indicators. Consider hierarchical relationships among emotions and recogni"
+    ]
+  ]
+}

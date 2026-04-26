@@ -1,0 +1,25 @@
+{
+  "task": "lawbench_2_2",
+  "model": "gpt-4.1-nano",
+  "api": "openai",
+  "epochs": 2,
+  "n_train_batch": 4,
+  "initial_prompt": "Classify the input.",
+  "final_prompt": "System prompt for a text classifier:  \nClassify the input into one of the following categories: '\u8d23\u4efb\u8ba4\u5b9a' (responsibility establishment), '\u8d23\u4efb\u5212\u5206' (responsibility division), '\u5224\u51b3\u5408\u7406\u6027' (judgment reasonableness), '\u635f\u5931\u8ba4\u5b9a' (loss assessment), '\u8d23\u4efb\u627f\u62c5' (responsibility assumption), '\u9274\u5b9a\u7ed3\u8bba\u91c7\u4fe1\u95ee\u9898' (admissibility of appraisal conclusions), or '\u5176\u4ed6' (others).\n\n**Structured Hierarchical Reasoning:**  \nBegin by determining whether the input primarily concerns the *establishment of responsibility* (look for terms like '\u8ba4\u5b9a', '\u8d23\u4efb') or the *acceptance of forensic conclusions* (look for '\u9274\u5b9a', '\u7ed3\u8bba'). This initial step guides subsequent classification.\n\n**Semantic and Contextual Analysis:**  \nPrioritize understanding the overall context and intent over superficial keyword matching. For example, phrases like \"\u8ba4\u5b9a\" (establish) and \"\u8d23\u4efb\" (responsibility) suggest responsibility attribution, while \"\u9274\u5b9a\" (appraisal) and \"\u7ed3\u8bba\" (conclusion) relate to forensic findings. Weigh these cues accordingly.\n\n**Feature Extraction and Comparison:**  \nExtract key features such as responsibility indicators ('\u8d23\u4efb', '\u627f\u62c5') versus forensic assessment indicators ('\u9274\u5b9a', '\u7ed3\u8bba'). Compare their presence and prominence within the text to inform classification.\n\n**Explicit Justification and Transparency:**  \nFor each classification, generate a brief rationale referencing the key phrases and reasoning steps. This enhances transparency and trustworthiness.\n\n**Handling Ambiguity and Confidence:**  \nIf cues overlap or are ambiguous, assign a confidence level to the classification and flag uncertain cases for human review, preventing overconfidence in uncertain scenarios.\n\n**Example Guidance:**  \n- Text mentioning \"\u8ba4\u5b9a\" (establish) and \"\u8d23\u4efb\" (responsibility) likely indicates '\u8d23\u4efb\u8ba4\u5b9a'.  \n- Text referencing \"\u9274\u5b9a\" (appraisal) and \"\u7ed3\u8bba\" (conclusion) suggests '\u9274\u5b9a\u7ed3\u8bba\u91c7\u4fe1\u95ee\u9898'.  \n\n**Sample Decision Flow:**  \n1. Identify whether the focus is on responsibility establishment or forensic conclusion acceptance.  \n2. Extract and weigh key features and semantic cues.  \n3. Decide on the category based on hierarchical reasoning and feature prominence.  \n4. Provide a brief justification referencing the key cues and reasoning steps.  \n5. If uncertain, assign a confidence score and flag for review.\n\nThis approach ensures a systematic, transparent, and context-aware classification aligned with the objective of accurate and consistent decision-making.",
+  "score": {
+    "accuracy": 0.125,
+    "tokens": 1317.1666666666667,
+    "latency_ms": 686.3899167499975
+  },
+  "elapsed_s": 103.1,
+  "history": [
+    [
+      0,
+      "Classify the input into one of the following categories: '\u8d23\u4efb\u8ba4\u5b9a' (responsibility establishment), '\u8d23\u4efb\u5212\u5206' (responsibility division), '\u5224\u51b3\u5408\u7406\u6027' (judgment reasonableness), '\u635f\u5931\u8ba4\u5b9a' (loss assessment), '\u8d23\u4efb\u627f\u62c5' (r"
+    ],
+    [
+      1,
+      "System prompt for a text classifier:  \nClassify the input into one of the following categories: '\u8d23\u4efb\u8ba4\u5b9a' (responsibility establishment), '\u8d23\u4efb\u5212\u5206' (responsibility division), '\u5224\u51b3\u5408\u7406\u6027' (judgment reasonablenes"
+    ]
+  ]
+}

@@ -1,0 +1,82 @@
+{
+  "task": "agnews",
+  "model": "gpt-4.1-nano",
+  "api": "openai",
+  "iterations": 4,
+  "proposals": 4,
+  "n_candidates": 17,
+  "seed_acc": 0.7916666666666666,
+  "best_acc": 0.8958333333333334,
+  "best_instruction": "Read the provided text carefully and accurately categorize it into one of these classes: Business, Sci/Tech, Sports, or World. Base your classification solely on the content and main themes of the text.",
+  "all_history": [
+    [
+      "Classify the input.",
+      0.7916666666666666
+    ],
+    [
+      "Determine the topic category of the given text, selecting from Business, Sci/Tech, Sports, or World.",
+      0.8333333333333334
+    ],
+    [
+      "Analyze the content of the input and assign it to one of these categories: Business, Sci/Tech, Sports, or World. Focus on identifying key themes and terminology relevant to each class to improve classification accuracy.",
+      0.8333333333333334
+    ],
+    [
+      "Analyze the content of the text and assign it to one of these categories: Business, Science/Technology, Sports, or World, based on the primary topic and context.",
+      0.7083333333333334
+    ],
+    [
+      "Determine the category of the given text as one of the following: Business, Sci/Tech, Sports, or World. Focus on identifying key themes and terminology associated with each category to improve classification accuracy.",
+      0.8125
+    ],
+    [
+      "Read the provided text carefully and accurately categorize it into one of these classes: Business, Sci/Tech, Sports, or World. Base your classification solely on the content and main themes of the text.",
+      0.8958333333333334
+    ],
+    [
+      "Read the provided text carefully and assign it to one of these categories: Business, Sci/Tech, Sports, or World, based on its main topic and content.",
+      0.8541666666666666
+    ],
+    [
+      "Read the provided text carefully and accurately assign it to one of these categories: Business, Sci/Tech, Sports, or World, based on its main topic.",
+      0.8541666666666666
+    ],
+    [
+      "Read the provided text carefully and accurately classify it into one of these categories: Business, Sci/Tech, Sports, or World, based on its main topic and content.",
+      0.8125
+    ],
+    [
+      "Carefully read the given text and assign it to the correct category: Business, Sci/Tech, Sports, or World. Your classification should be based on the main topic and content of the text to ensure accuracy.",
+      0.8541666666666666
+    ],
+    [
+      "Analyze the given text thoroughly and accurately classify it into one of these categories: Business, Sci/Tech, Sports, or World. Focus on the main topic and key details to ensure correct categorization.",
+      0.8333333333333334
+    ],
+    [
+      "Carefully read the given text and determine whether it belongs to Business, Sci/Tech, Sports, or World, ensuring your classification is accurate and supported by the content.",
+      0.8125
+    ],
+    [
+      "Analyze the provided text thoroughly and assign it to the most appropriate category: Business, Sci/Tech, Sports, or World. Base your classification solely on the content and key themes present in the text.",
+      0.8125
+    ],
+    [
+      "Carefully analyze the provided text and determine the most appropriate category among Business, Sci/Tech, Sports, or World, ensuring your classification reflects the main topic and context of the content.",
+      0.8541666666666666
+    ],
+    [
+      "Carefully analyze the provided text and determine the most appropriate category\u2014Business, Sci/Tech, Sports, or World\u2014by identifying key themes and context to ensure accurate classification.",
+      0.8333333333333334
+    ],
+    [
+      "Carefully analyze the provided text and determine the most appropriate category among Business, Sci/Tech, Sports, or World, ensuring your classification is accurate and well-supported by the content.",
+      0.8333333333333334
+    ],
+    [
+      "Carefully analyze the provided text and determine the most appropriate category\u2014Business, Sci/Tech, Sports, or World\u2014by identifying key themes and context to ensure accurate classification.",
+      0.8333333333333334
+    ]
+  ],
+  "elapsed_s": 191.7
+}

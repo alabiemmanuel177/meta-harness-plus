@@ -1,0 +1,25 @@
+{
+  "task": "symptom_hard",
+  "model": "gpt-4.1-nano",
+  "api": "openai",
+  "epochs": 2,
+  "n_train_batch": 4,
+  "initial_prompt": "Classify the input.",
+  "final_prompt": "Analyze the input to determine whether it explicitly references a medical specialty, disease, condition, procedure, or broader clinical concept, based on the context provided. Evaluate whether the input contains enough clinical detail to confidently assign a category. If the input is vague, ambiguous, or lacks sufficient information, explicitly state this and consider requesting additional context or clarification. When classifying, analyze symptom patterns, anatomical references, and contextual clues to support your decision, and justify your classification with explicit, evidence-based reasoning emphasizing diagnostic logic and clarity. If the input could plausibly fit multiple categories, justify the chosen classification, mention any uncertainties or overlaps, and discuss potential pitfalls. Assess your confidence in the classification based on the input's clarity and detail; if confidence is low, suggest that further information is needed for a definitive classification. Focus on producing a comprehensive, transparent, and clinically nuanced classification that emphasizes diagnostic reasoning and clarity.",
+  "score": {
+    "accuracy": 0.9333333333333333,
+    "tokens": 658.8666666666667,
+    "latency_ms": 1933.9593319333155
+  },
+  "elapsed_s": 84.6,
+  "history": [
+    [
+      0,
+      "Analyze the input to identify whether it describes a medical specialty, disease category, procedure, or broader clinical concept, based on key features and context. When multiple potential diagnoses o"
+    ],
+    [
+      1,
+      "Analyze the input to determine whether it explicitly references a medical specialty, disease, condition, procedure, or broader clinical concept, based on the context provided. Evaluate whether the inp"
+    ]
+  ]
+}

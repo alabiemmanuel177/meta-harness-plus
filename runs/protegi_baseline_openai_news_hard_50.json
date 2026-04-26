@@ -1,0 +1,21 @@
+{
+  "task": "news_hard_50",
+  "model": "gpt-4.1-nano",
+  "api": "openai",
+  "rounds": 2,
+  "beam_size": 2,
+  "seed_acc": 0.76,
+  "best_acc": 0.8,
+  "best_prompt": "Classify the input into one of the following categories: world, tech, health, sports, entertainment, or business.",
+  "final_beam": [
+    [
+      "Classify the input into one of the following categories: world, tech, health, sports, entertainment, or business.",
+      0.8
+    ],
+    [
+      "Classify the input.",
+      0.76
+    ]
+  ],
+  "elapsed_s": 33.0
+}
