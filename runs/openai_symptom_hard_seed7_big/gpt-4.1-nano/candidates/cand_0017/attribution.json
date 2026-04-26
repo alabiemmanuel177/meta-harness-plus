@@ -1,0 +1,327 @@
+[
+  {
+    "ablated_score": {
+      "accuracy": 0.6333333333333333,
+      "accuracy_spread": 0.06666666666666665,
+      "latency_ms": 593.4981321005849,
+      "n_evaluated": 15,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "cardiology",
+          0.3333333333333333
+        ],
+        [
+          "dermatology",
+          1.0
+        ],
+        [
+          "gastroenterology",
+          1.0
+        ],
+        [
+          "neurology",
+          0.75
+        ],
+        [
+          "orthopedics",
+          0.16666666666666666
+        ]
+      ],
+      "tokens": 83.43333333333334
+    },
+    "accuracy_delta": 0.20000000000000007,
+    "candidate_id": "cand_0017",
+    "full_score": {
+      "accuracy": 0.8333333333333334,
+      "accuracy_spread": 0.06666666666666665,
+      "latency_ms": 1180.4184398989446,
+      "n_evaluated": 15,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "cardiology",
+          0.6666666666666666
+        ],
+        [
+          "dermatology",
+          1.0
+        ],
+        [
+          "gastroenterology",
+          1.0
+        ],
+        [
+          "neurology",
+          1.0
+        ],
+        [
+          "orthopedics",
+          0.5
+        ]
+      ],
+      "tokens": 350.1
+    },
+    "kind": "retriever"
+  },
+  {
+    "ablated_score": {
+      "accuracy": 0.7666666666666666,
+      "accuracy_spread": 0.06666666666666676,
+      "latency_ms": 561.7356742336551,
+      "n_evaluated": 15,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "cardiology",
+          0.6666666666666666
+        ],
+        [
+          "dermatology",
+          1.0
+        ],
+        [
+          "gastroenterology",
+          1.0
+        ],
+        [
+          "neurology",
+          1.0
+        ],
+        [
+          "orthopedics",
+          0.16666666666666666
+        ]
+      ],
+      "tokens": 210.06666666666666
+    },
+    "accuracy_delta": 0.06666666666666676,
+    "candidate_id": "cand_0017",
+    "full_score": {
+      "accuracy": 0.8333333333333334,
+      "accuracy_spread": 0.06666666666666665,
+      "latency_ms": 1180.4184398989446,
+      "n_evaluated": 15,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "cardiology",
+          0.6666666666666666
+        ],
+        [
+          "dermatology",
+          1.0
+        ],
+        [
+          "gastroenterology",
+          1.0
+        ],
+        [
+          "neurology",
+          1.0
+        ],
+        [
+          "orthopedics",
+          0.5
+        ]
+      ],
+      "tokens": 350.1
+    },
+    "kind": "reranker"
+  },
+  {
+    "ablated_score": {
+      "accuracy": 0.6,
+      "accuracy_spread": 0.0,
+      "latency_ms": 1428.6749398320526,
+      "n_evaluated": 15,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "cardiology",
+          0.3333333333333333
+        ],
+        [
+          "dermatology",
+          1.0
+        ],
+        [
+          "gastroenterology",
+          1.0
+        ],
+        [
+          "neurology",
+          0.75
+        ],
+        [
+          "orthopedics",
+          0.0
+        ]
+      ],
+      "tokens": 261.6
+    },
+    "accuracy_delta": 0.2333333333333334,
+    "candidate_id": "cand_0017",
+    "full_score": {
+      "accuracy": 0.8333333333333334,
+      "accuracy_spread": 0.06666666666666665,
+      "latency_ms": 1180.4184398989446,
+      "n_evaluated": 15,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "cardiology",
+          0.6666666666666666
+        ],
+        [
+          "dermatology",
+          1.0
+        ],
+        [
+          "gastroenterology",
+          1.0
+        ],
+        [
+          "neurology",
+          1.0
+        ],
+        [
+          "orthopedics",
+          0.5
+        ]
+      ],
+      "tokens": 350.1
+    },
+    "kind": "fewshot"
+  },
+  {
+    "ablated_score": {
+      "accuracy": 0.8,
+      "accuracy_spread": 0.0,
+      "latency_ms": 1189.5155653999866,
+      "n_evaluated": 15,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "cardiology",
+          0.6666666666666666
+        ],
+        [
+          "dermatology",
+          1.0
+        ],
+        [
+          "gastroenterology",
+          1.0
+        ],
+        [
+          "neurology",
+          1.0
+        ],
+        [
+          "orthopedics",
+          0.3333333333333333
+        ]
+      ],
+      "tokens": 349.9666666666667
+    },
+    "accuracy_delta": 0.033333333333333326,
+    "candidate_id": "cand_0017",
+    "full_score": {
+      "accuracy": 0.8333333333333334,
+      "accuracy_spread": 0.06666666666666665,
+      "latency_ms": 1180.4184398989446,
+      "n_evaluated": 15,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "cardiology",
+          0.6666666666666666
+        ],
+        [
+          "dermatology",
+          1.0
+        ],
+        [
+          "gastroenterology",
+          1.0
+        ],
+        [
+          "neurology",
+          1.0
+        ],
+        [
+          "orthopedics",
+          0.5
+        ]
+      ],
+      "tokens": 350.1
+    },
+    "kind": "formatter"
+  },
+  {
+    "ablated_score": {
+      "accuracy": 0.8333333333333334,
+      "accuracy_spread": 0.06666666666666665,
+      "latency_ms": 1181.9786994660876,
+      "n_evaluated": 15,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "cardiology",
+          0.6666666666666666
+        ],
+        [
+          "dermatology",
+          1.0
+        ],
+        [
+          "gastroenterology",
+          1.0
+        ],
+        [
+          "neurology",
+          1.0
+        ],
+        [
+          "orthopedics",
+          0.5
+        ]
+      ],
+      "tokens": 350.06666666666666
+    },
+    "accuracy_delta": 0.0,
+    "candidate_id": "cand_0017",
+    "full_score": {
+      "accuracy": 0.8333333333333334,
+      "accuracy_spread": 0.06666666666666665,
+      "latency_ms": 1180.4184398989446,
+      "n_evaluated": 15,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "cardiology",
+          0.6666666666666666
+        ],
+        [
+          "dermatology",
+          1.0
+        ],
+        [
+          "gastroenterology",
+          1.0
+        ],
+        [
+          "neurology",
+          1.0
+        ],
+        [
+          "orthopedics",
+          0.5
+        ]
+      ],
+      "tokens": 350.1
+    },
+    "kind": "voter"
+  }
+]

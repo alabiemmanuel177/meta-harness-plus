@@ -147,17 +147,23 @@ Bootstrap Evidence on Adversarial Classification Benchmarks.*
 
 | Task | Provider | RAG acc | MH++ peak (5-seed mean) | Δ 95% CI | Strict-dominant seeds |
 |---|---|---|---|---|---|
-| news_hard_50 (6×8) | gemini-2.5-flash-lite | 0.880 | 0.908 | [+0.020, +0.036] | **2 of 5** |
-| symptom_hard (6×8) | gemini-2.5-flash-lite | 1.000 | 1.000 | [0, 0] (saturated) | **5 of 5** |
-| news_hard_50 (6×8) | gpt-4.1-nano | 0.880 | 0.924 | [+0.040, +0.052] | 0 of 5 (4/5 match-cheaper) |
-| **symptom_hard (6×8)** | **gpt-4.1-nano** | **0.667** | **0.960** | **[+0.266, +0.320]** | **0 of 5 (+29.3pt at +tokens)** |
+| news_hard_50 (6×8) | gemini-2.5-flash-lite | 0.880 | 0.912 | [+0.023, +0.044] (n=10) | **3/10** (5/10 match-cheaper) |
+| symptom_hard (6×8) | gemini-2.5-flash-lite | 1.000 | 1.000 | [0, 0] (saturated, n=10) | **10/10** |
+| news_hard_50 (6×8) | gpt-4.1-nano | 0.880 | 0.928 | [+0.042, +0.054] (n=10) | 3/10 (8/10 match-cheaper) |
+| **symptom_hard (6×8)** | **gpt-4.1-nano** | **0.667** | **0.960** | **[+0.279, +0.310]** (n=10) | **1/10 (+29.3pt at +tokens, d=+11.06)** |
 | **lawbench_2_2** (3×4) | gpt-4.1-nano | 0.167 | 0.267 | [+0.050, +0.125] | 0 of 5 |
 | **lawbench_2_2** (3×4) | gemini-2.5-flash-lite | 0.500 | 0.417 | [-0.104, -0.042] | 0 of 5 (negative — small budget vs strong baseline) |
 
-**Headline:** 7 of 10 Gemini seeds across two adversarial English
-benchmarks achieved **strict Pareto dominance** over hand-tuned RAG —
-better-or-equal on accuracy AND strictly fewer tokens AND not-worse
-latency, simultaneously.
+**Headline:** Across the 4 6×8-budget × 10-seed cells = 40 per-seed
+trials, MH++-discovered shapes strictly Pareto-dominate hand-tuned
+RAG on **17 trials** — better-or-equal on accuracy AND strictly fewer
+tokens AND not-worse latency, simultaneously. **27 trials** show the
+weaker "match-cheaper" Pareto improvement. Strongest single cell:
+**Gemini × symptom_hard at 10/10 strict-dominance** — every seed
+finds a discovered shape that matches RAG's saturated 1.0 accuracy
+at strictly fewer tokens. Largest absolute Δ: **OpenAI ×
+symptom_hard at +29.3pt** with paired t=+34.99, p<10⁻⁵, Cohen's
+d=+11.06 (extraordinarily large).
 
 ### 4.5 Ablations
 
@@ -184,7 +190,11 @@ random at this small 3×4 budget — replicates the previously-noted
 |---|---|---|
 | 5-seed cross-provider news_hard_50 | $0.05 | 18 min |
 | 5-seed × 2-task × 2-provider 6×8 | $0.50 | ~70 min |
-| LawBench 5-seed cross-provider | $0.60 (est.) | ~45 min (est.) |
+| LawBench 5-seed cross-provider | $0.30 (3×4) + $0.30 (Gemini 6×8 followup) | ~30 min total |
+| 10-seed extension (4 cells, seeds 5..9, parallel pairs) | $0.40 | ~45 min |
+| Beat-CoT-RAG search experiment + alpha shape variants | $0.30 | ~50 min |
+| Full-scale ablation (4 conditions × 5 seeds) | $0.10 | ~60 min |
+| Hand-tuned baselines (5 baselines × 6 cells) | $0.10 | ~15 min |
 
 ## 5. Discussion
 

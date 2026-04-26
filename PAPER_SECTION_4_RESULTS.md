@@ -63,19 +63,24 @@ d=+2.56).
 
 | Provider | Task | RAG acc | MH++ acc | Δ acc 95% CI | Cohen's d | Strict-dom | Match-cheaper |
 |---|---|---|---|---|---|---|---|
-| Gemini | news_hard_50 | 0.880 | 0.908 | [+0.020, +0.036] | +2.56 | 2/5 | 4/5 |
-| Gemini | symptom_hard | 1.000 | 1.000 | [0, 0] (saturated) | n/a | 5/5 | 5/5 |
-| OpenAI | news_hard_50 | 0.880 | 0.924 | [+0.040, +0.052] | +4.92 | 0/5 | 4/5 |
-| OpenAI | symptom_hard | 0.667 | 0.960 | [+0.266, +0.320] | +7.98 | 0/5 | 0/5 |
+| Gemini | news_hard_50 | 0.880 | 0.912 | [+0.023, +0.044] | +1.71 | 3/10 | 5/10 |
+| Gemini | symptom_hard | 1.000 | 1.000 | [0, 0] (saturated) | n/a | 10/10 | 10/10 |
+| OpenAI | news_hard_50 | 0.880 | 0.928 | [+0.042, +0.054] | +4.65 | 3/10 | 8/10 |
+| OpenAI | symptom_hard | 0.667 | 0.960 | [+0.279, +0.310] | +11.06 | 1/10 | 4/10 |
 
-**Strict Pareto dominance summary.** On Gemini `gemini-2.5-flash-lite`,
-MH++-discovered harnesses achieve strict Pareto dominance over
-hand-tuned RAG on **7 of 10 seeds** across the two English
-benchmarks — same-or-higher accuracy, strictly fewer tokens, not-worse
-latency, on every axis simultaneously. On OpenAI `gpt-4.1-nano`,
-discovered tops trade tokens for accuracy: **0 of 10 seeds** achieve
-strict dominance, but **8 of 10** match RAG accuracy at fewer tokens
-or beat RAG accuracy with the only loss being latency-axis noise.
+(All headline cells now at 10 seeds for tighter CIs and stronger
+parametric power. Five-seed-only LawBench cells have separate scope —
+see Section 4.4.)
+
+**Strict Pareto dominance summary.** Across the 4 6×8-budget × 10-seed
+headline cells = 40 per-seed trials, MH++ achieves strict Pareto
+dominance on **17 trials** (same-or-higher accuracy AND strictly
+fewer tokens AND not-worse latency on at least one discovered
+candidate). On Gemini × `symptom_hard` (saturated at 1.0 accuracy),
+strict dominance occurs on **all 10 seeds** — the search consistently
+finds shapes matching RAG accuracy at substantially fewer tokens
+(123–332 vs RAG's 184). The weaker "match-cheaper" Pareto signal
+holds on **27 of 40 trials**.
 
 Across all 20 seeds in the four 6×8 cells, MH++ produced a higher
 mean accuracy than RAG on every seed; the four cells' aggregate is

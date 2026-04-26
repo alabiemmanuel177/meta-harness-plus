@@ -1,0 +1,124 @@
+[
+  {
+    "candidate_id": "cand_0001",
+    "describe": [
+      {
+        "kind": "retriever",
+        "name": "null_retriever"
+      },
+      {
+        "kind": "fewshot",
+        "name": "null_fewshot"
+      },
+      {
+        "kind": "formatter",
+        "name": "simple_formatter",
+        "system_hint": "Classify the input."
+      },
+      {
+        "kind": "predictor",
+        "n_samples": 1,
+        "name": "llm_predictor",
+        "temperature": 0.0
+      },
+      {
+        "kind": "voter",
+        "name": "null_voter"
+      }
+    ],
+    "score": {
+      "accuracy": 0.6666666666666666,
+      "accuracy_spread": 0.0,
+      "latency_ms": 982.4586207331644,
+      "n_evaluated": 15,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "cardiology",
+          0.6666666666666666
+        ],
+        [
+          "dermatology",
+          1.0
+        ],
+        [
+          "gastroenterology",
+          1.0
+        ],
+        [
+          "neurology",
+          0.75
+        ],
+        [
+          "orthopedics",
+          0.0
+        ]
+      ],
+      "tokens": 70.6
+    }
+  },
+  {
+    "candidate_id": "cand_0031",
+    "describe": [
+      {
+        "k": 1,
+        "kind": "retriever",
+        "name": "tfidf_retriever"
+      },
+      {
+        "kind": "reranker",
+        "name": "null_reranker"
+      },
+      {
+        "k": 1,
+        "kind": "fewshot",
+        "name": "topk_fewshot"
+      },
+      {
+        "kind": "formatter",
+        "name": "simple_formatter",
+        "system_hint": "Classify the input."
+      },
+      {
+        "kind": "predictor",
+        "n_samples": 1,
+        "name": "llm_predictor",
+        "temperature": 0.0
+      },
+      {
+        "kind": "voter",
+        "name": "null_voter"
+      }
+    ],
+    "score": {
+      "accuracy": 1.0,
+      "accuracy_spread": 0.0,
+      "latency_ms": 972.6676733999775,
+      "n_evaluated": 15,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "cardiology",
+          1.0
+        ],
+        [
+          "dermatology",
+          1.0
+        ],
+        [
+          "gastroenterology",
+          1.0
+        ],
+        [
+          "neurology",
+          1.0
+        ],
+        [
+          "orthopedics",
+          1.0
+        ]
+      ],
+      "tokens": 123.46666666666667
+    }
+  }
+]

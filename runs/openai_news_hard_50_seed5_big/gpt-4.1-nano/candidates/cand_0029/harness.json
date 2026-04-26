@@ -1,0 +1,32 @@
+[
+  {
+    "k": 3,
+    "kind": "retriever",
+    "name": "bow_retriever"
+  },
+  {
+    "kind": "reranker",
+    "name": "diversity_reranker"
+  },
+  {
+    "k": 2,
+    "kind": "fewshot",
+    "name": "topk_fewshot"
+  },
+  {
+    "kind": "formatter",
+    "max_reasoning_words": 40,
+    "name": "compressed_cot_formatter",
+    "system_hint": "Classify the input into one of the given classes. Reason in at most 40 words about which key terms point to which class. Then on the final line output ONLY the class name, lowercase. Be terse \u2014 every extra word costs."
+  },
+  {
+    "kind": "predictor",
+    "n_samples": 1,
+    "name": "llm_predictor",
+    "temperature": 0.1
+  },
+  {
+    "kind": "voter",
+    "name": "majority_voter"
+  }
+]

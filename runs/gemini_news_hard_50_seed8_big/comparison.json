@@ -1,0 +1,346 @@
+[
+  {
+    "model": "gemini-2.5-flash-lite",
+    "task": "news_hard_50",
+    "ablation": "none",
+    "elapsed_s": 124.7,
+    "cache_stats": {
+      "hits": 4421,
+      "misses": 98,
+      "writes": 98,
+      "cached_keys": 1564,
+      "hit_rate": 0.978,
+      "path": "runs/cache/gemini_news_hard_50_big.jsonl"
+    },
+    "bare_baseline": {
+      "accuracy": 0.84,
+      "tokens": 63.5,
+      "latency_ms": 1141.8
+    },
+    "rag_baseline": {
+      "accuracy": 0.88,
+      "tokens": 173.6,
+      "latency_ms": 1115.4
+    },
+    "n_discovered_dominates_rag": 0,
+    "n_discovered_ties_rag_acc_cheaper": 0,
+    "frontier": [
+      {
+        "candidate_id": "cand_0009",
+        "label": "discovered",
+        "accuracy": 0.96,
+        "accuracy_spread": 0.0,
+        "tokens": 405.1,
+        "latency_ms": 2374.8,
+        "components": [
+          {
+            "kind": "retriever",
+            "name": "bm25_retriever",
+            "k": 5
+          },
+          {
+            "kind": "reranker",
+            "name": "llm_reranker"
+          },
+          {
+            "kind": "fewshot",
+            "name": "topk_fewshot",
+            "k": 2
+          },
+          {
+            "kind": "formatter",
+            "name": "compressed_cot_formatter"
+          },
+          {
+            "kind": "predictor",
+            "name": "llm_predictor",
+            "n_samples": 1
+          },
+          {
+            "kind": "voter",
+            "name": "majority_voter"
+          }
+        ]
+      },
+      {
+        "candidate_id": "cand_0006",
+        "label": "discovered",
+        "accuracy": 0.9,
+        "accuracy_spread": 0.0,
+        "tokens": 189.5,
+        "latency_ms": 1114.3,
+        "components": [
+          {
+            "kind": "retriever",
+            "name": "bm25_retriever",
+            "k": 5
+          },
+          {
+            "kind": "reranker",
+            "name": "null_reranker"
+          },
+          {
+            "kind": "fewshot",
+            "name": "topk_fewshot",
+            "k": 2
+          },
+          {
+            "kind": "formatter",
+            "name": "simple_formatter"
+          },
+          {
+            "kind": "predictor",
+            "name": "llm_predictor",
+            "n_samples": 1
+          },
+          {
+            "kind": "voter",
+            "name": "majority_voter"
+          }
+        ]
+      },
+      {
+        "candidate_id": "cand_0041",
+        "label": "discovered",
+        "accuracy": 0.9,
+        "accuracy_spread": 0.0,
+        "tokens": 213.5,
+        "latency_ms": 1026.2,
+        "components": [
+          {
+            "kind": "retriever",
+            "name": "bm25_retriever",
+            "k": 1
+          },
+          {
+            "kind": "reranker",
+            "name": "llm_reranker"
+          },
+          {
+            "kind": "fewshot",
+            "name": "topk_fewshot",
+            "k": 1
+          },
+          {
+            "kind": "formatter",
+            "name": "compressed_cot_formatter"
+          },
+          {
+            "kind": "predictor",
+            "name": "llm_predictor",
+            "n_samples": 1
+          },
+          {
+            "kind": "voter",
+            "name": "null_voter"
+          }
+        ]
+      },
+      {
+        "candidate_id": "cand_0050",
+        "label": "discovered",
+        "accuracy": 0.9,
+        "accuracy_spread": 0.0,
+        "tokens": 189.1,
+        "latency_ms": 1128.7,
+        "components": [
+          {
+            "kind": "retriever",
+            "name": "bm25_retriever",
+            "k": 5
+          },
+          {
+            "kind": "reranker",
+            "name": "diversity_reranker"
+          },
+          {
+            "kind": "fewshot",
+            "name": "topk_fewshot",
+            "k": 2
+          },
+          {
+            "kind": "formatter",
+            "name": "simple_formatter"
+          },
+          {
+            "kind": "predictor",
+            "name": "llm_predictor",
+            "n_samples": 1
+          },
+          {
+            "kind": "voter",
+            "name": "null_voter"
+          }
+        ]
+      },
+      {
+        "candidate_id": "cand_0002",
+        "label": "[RAG]",
+        "accuracy": 0.88,
+        "accuracy_spread": 0.0,
+        "tokens": 173.6,
+        "latency_ms": 1115.4,
+        "components": [
+          {
+            "kind": "retriever",
+            "name": "bow_retriever",
+            "k": 3
+          },
+          {
+            "kind": "fewshot",
+            "name": "topk_fewshot",
+            "k": 2
+          },
+          {
+            "kind": "formatter",
+            "name": "simple_formatter"
+          },
+          {
+            "kind": "predictor",
+            "name": "llm_predictor",
+            "n_samples": 1
+          },
+          {
+            "kind": "voter",
+            "name": "null_voter"
+          }
+        ]
+      },
+      {
+        "candidate_id": "cand_0015",
+        "label": "discovered",
+        "accuracy": 0.86,
+        "accuracy_spread": 0.0,
+        "tokens": 165.7,
+        "latency_ms": 1089.5,
+        "components": [
+          {
+            "kind": "retriever",
+            "name": "null_retriever"
+          },
+          {
+            "kind": "reranker",
+            "name": "null_reranker"
+          },
+          {
+            "kind": "fewshot",
+            "name": "null_fewshot"
+          },
+          {
+            "kind": "formatter",
+            "name": "compressed_cot_formatter"
+          },
+          {
+            "kind": "predictor",
+            "name": "llm_predictor",
+            "n_samples": 1
+          },
+          {
+            "kind": "voter",
+            "name": "null_voter"
+          }
+        ]
+      },
+      {
+        "candidate_id": "cand_0001",
+        "label": "[BARE]",
+        "accuracy": 0.84,
+        "accuracy_spread": 0.0,
+        "tokens": 63.5,
+        "latency_ms": 1141.8,
+        "components": [
+          {
+            "kind": "retriever",
+            "name": "null_retriever"
+          },
+          {
+            "kind": "fewshot",
+            "name": "null_fewshot"
+          },
+          {
+            "kind": "formatter",
+            "name": "simple_formatter"
+          },
+          {
+            "kind": "predictor",
+            "name": "llm_predictor",
+            "n_samples": 1
+          },
+          {
+            "kind": "voter",
+            "name": "null_voter"
+          }
+        ]
+      },
+      {
+        "candidate_id": "cand_0049",
+        "label": "discovered",
+        "accuracy": 0.84,
+        "accuracy_spread": 0.0,
+        "tokens": 123.6,
+        "latency_ms": 889.5,
+        "components": [
+          {
+            "kind": "retriever",
+            "name": "bow_retriever",
+            "k": 2
+          },
+          {
+            "kind": "reranker",
+            "name": "null_reranker"
+          },
+          {
+            "kind": "fewshot",
+            "name": "topk_fewshot",
+            "k": 1
+          },
+          {
+            "kind": "formatter",
+            "name": "simple_formatter"
+          },
+          {
+            "kind": "predictor",
+            "name": "llm_predictor",
+            "n_samples": 1
+          },
+          {
+            "kind": "voter",
+            "name": "null_voter"
+          }
+        ]
+      }
+    ],
+    "attribution": [
+      {
+        "kind": "retriever",
+        "mean_delta": 0.019,
+        "variance": 0.002,
+        "n": 14
+      },
+      {
+        "kind": "fewshot",
+        "mean_delta": 0.019,
+        "variance": 0.002,
+        "n": 14
+      },
+      {
+        "kind": "formatter",
+        "mean_delta": 0.014,
+        "variance": 0.002,
+        "n": 14
+      },
+      {
+        "kind": "reranker",
+        "mean_delta": 0.011,
+        "variance": 0.001,
+        "n": 12
+      },
+      {
+        "kind": "voter",
+        "mean_delta": 0.0,
+        "variance": 0.0,
+        "n": 14
+      }
+    ]
+  }
+]

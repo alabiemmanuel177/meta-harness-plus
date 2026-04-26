@@ -1,0 +1,31 @@
+[
+  {
+    "k": 7,
+    "kind": "retriever",
+    "name": "tfidf_retriever"
+  },
+  {
+    "kind": "reranker",
+    "name": "diversity_reranker"
+  },
+  {
+    "k": 3,
+    "kind": "fewshot",
+    "name": "topk_fewshot"
+  },
+  {
+    "kind": "formatter",
+    "name": "simple_formatter",
+    "system_hint": "neurological assessment"
+  },
+  {
+    "kind": "predictor",
+    "n_samples": 2,
+    "name": "llm_predictor",
+    "temperature": 0.1
+  },
+  {
+    "kind": "voter",
+    "name": "majority_voter"
+  }
+]

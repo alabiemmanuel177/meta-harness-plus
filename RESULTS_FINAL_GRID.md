@@ -1,33 +1,45 @@
 # Final Result Grid — Meta-Harness++ Cross-Provider × Cross-Task
 
-**Date:** 2026-04-26
-**Branch:** `bigger-eval-news-hard` (current)
-**Frame:** the four-cell × five-seed × multi-objective Pareto experiment.
-**Cost summary:** all experiments below total under $1.50 in API spend
-and complete in under 90 minutes wall.
+**Date:** 2026-04-26 (10-seed update)
+**Branch:** `main` (post-merge)
+**Frame:** the four-cell × ten-seed × multi-objective Pareto experiment.
+**Cost summary:** all experiments below total under $2.50 in API spend.
 
 This document is the paper-ready consolidated grid. Each row is a
 `(provider × task × budget × seeds)` cell with the headline statistic.
+Headline cells are now at **10 seeds** for tighter CIs.
 
-## The grid
+## The grid (10 seeds on the headline cells)
 
-| Provider | Task | Budget | RAG acc | MH++ acc | Δ acc 95% CI | t (n=5) | p | Cohen's d | Strict-dom seeds | Match-cheaper seeds |
-|---|---|---|---|---|---|---|---|---|---|---|
-| Gemini | news_hard_50 | 6×8 | 0.880 | 0.908 | [+0.020, +0.036] | +5.7 | 0.005 | +2.56 | **2/5** | 4/5 |
-| Gemini | symptom_hard | 6×8 | 1.000 | 1.000 | [0, 0] (saturated) | 0 | 1.0 | 0 | **5/5** | 5/5 |
-| OpenAI | news_hard_50 | 6×8 | 0.880 | 0.924 | [+0.040, +0.052] | +11.0 | 0.0004 | +4.92 | 0/5 | **4/5** |
-| OpenAI | symptom_hard | 6×8 | 0.667 | 0.960 | **[+0.266, +0.320]** | **+17.8** | **0.00006** | **+7.98** | 0/5 | 0/5 |
-| OpenAI | lawbench_2_2 | 3×4 | 0.167 | 0.267 | [+0.050, +0.125] | +4.0 | 0.016 | +1.79 | 0/5 | 0/5 |
-| Gemini | lawbench_2_2 | 3×4 | 0.500 | 0.417 | [-0.104, -0.042] | -4.0 | 0.016 | -1.79 | 0/5 | 0/5 |
+| Provider | Task | Budget | n | RAG acc | MH++ acc | Δ acc 95% CI | t | p | Cohen's d | Strict-dom seeds | Match-cheaper seeds |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| Gemini | news_hard_50 | 6×8 | **10** | 0.880 | 0.912 | [+0.023, +0.044] | +5.40 | 0.0004 | +1.71 | **3/10** | 5/10 |
+| Gemini | symptom_hard | 6×8 | **10** | 1.000 | 1.000 | [0, 0] (saturated) | 0 | 1.0 | 0 | **10/10** | 10/10 |
+| OpenAI | news_hard_50 | 6×8 | **10** | 0.880 | 0.928 | [+0.042, +0.054] | +14.70 | <0.0001 | +4.65 | 3/10 | **8/10** |
+| OpenAI | symptom_hard | 6×8 | **10** | 0.667 | 0.960 | **[+0.279, +0.310]** | **+34.99** | <0.0001 | **+11.06** | 1/10 | 4/10 |
+| OpenAI | lawbench_2_2 | 3×4 | 5 | 0.167 | 0.267 | [+0.050, +0.125] | +4.00 | 0.016 | +1.79 | 0/5 | 0/5 |
+| Gemini | lawbench_2_2 | 6×8 | 5 | 0.500 | 0.483 | [-0.029, -0.004] | -2.14 | 0.099 | -0.96 | 2/5 | 0/5 |
+| Gemini | lawbench_2_2 | 3×4 | 5 | 0.500 | 0.417 | [-0.104, -0.042] | -4.00 | 0.016 | -1.79 | 0/5 | 0/5 |
+
+**Strict-Pareto-dominance summary across the 4 6×8-budget × 10-seed
+cells = 40 per-seed trials**: discovered shapes strictly dominated
+RAG on **17 seed-trials** (3 Gemini news + 10 Gemini symptom + 3
+OpenAI news + 1 OpenAI symptom). Match-cheaper Pareto signals on
+**27 seed-trials**.
+
+**Largest single effect**: OpenAI × symptom_hard at +29.3pt accuracy,
+Cohen's d = +11.06 (extraordinarily large), p < 10⁻⁵. The 10-seed
+re-aggregation tightened the CI from 5-seed [+0.266, +0.320] to
+10-seed [+0.279, +0.310] — the effect is robust.
 
 ## How to read the grid
 
 - **Δ acc 95% CI** — paired bootstrap on (MH++ peak − RAG) accuracy.
   CI excluding zero ⇒ statistically significant difference at the seed
   count.
-- **Strict-dom seeds** — count of seeds where MH++ found a discovered
-  candidate that strictly Pareto-dominated RAG (better-or-equal on
-  every axis, strictly better on at least one).
+- **Strict-dom seeds** — count of seeds where MH++ found at least
+  one discovered candidate that strictly Pareto-dominated RAG
+  (better-or-equal on every axis, strictly better on at least one).
 - **Match-cheaper seeds** — count of seeds where MH++ tied RAG
   accuracy at strictly fewer tokens — a weaker but still useful Pareto
   signal.

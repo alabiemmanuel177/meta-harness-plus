@@ -1,0 +1,204 @@
+[
+  {
+    "model": "gpt-4.1-nano",
+    "task": "news_hard_50",
+    "ablation": "none",
+    "elapsed_s": 252.5,
+    "cache_stats": {
+      "hits": 3200,
+      "misses": 256,
+      "writes": 256,
+      "cached_keys": 2810,
+      "hit_rate": 0.926,
+      "path": "runs/cache/openai_news_hard_50_big.jsonl"
+    },
+    "bare_baseline": {
+      "accuracy": 0.72,
+      "tokens": 71.8,
+      "latency_ms": 696.5
+    },
+    "rag_baseline": {
+      "accuracy": 0.88,
+      "tokens": 181.6,
+      "latency_ms": 634.5
+    },
+    "n_discovered_dominates_rag": 3,
+    "n_discovered_ties_rag_acc_cheaper": 3,
+    "frontier": [
+      {
+        "candidate_id": "cand_0033",
+        "label": "discovered",
+        "accuracy": 0.94,
+        "accuracy_spread": 0.0,
+        "tokens": 181.1,
+        "latency_ms": 623.4,
+        "components": [
+          {
+            "kind": "retriever",
+            "name": "bm25_retriever",
+            "k": 3
+          },
+          {
+            "kind": "reranker",
+            "name": "null_reranker"
+          },
+          {
+            "kind": "fewshot",
+            "name": "topk_fewshot",
+            "k": 2
+          },
+          {
+            "kind": "formatter",
+            "name": "simple_formatter"
+          },
+          {
+            "kind": "predictor",
+            "name": "llm_predictor",
+            "n_samples": 1
+          },
+          {
+            "kind": "voter",
+            "name": "majority_voter"
+          }
+        ]
+      },
+      {
+        "candidate_id": "cand_0014",
+        "label": "discovered",
+        "accuracy": 0.92,
+        "accuracy_spread": 0.0,
+        "tokens": 180.1,
+        "latency_ms": 582.6,
+        "components": [
+          {
+            "kind": "retriever",
+            "name": "bm25_retriever",
+            "k": 3
+          },
+          {
+            "kind": "reranker",
+            "name": "llm_reranker"
+          },
+          {
+            "kind": "fewshot",
+            "name": "topk_fewshot",
+            "k": 2
+          },
+          {
+            "kind": "formatter",
+            "name": "simple_formatter"
+          },
+          {
+            "kind": "predictor",
+            "name": "llm_predictor",
+            "n_samples": 1
+          },
+          {
+            "kind": "voter",
+            "name": "majority_voter"
+          }
+        ]
+      },
+      {
+        "candidate_id": "cand_0031",
+        "label": "discovered",
+        "accuracy": 0.9,
+        "accuracy_spread": 0.0,
+        "tokens": 178.8,
+        "latency_ms": 621.5,
+        "components": [
+          {
+            "kind": "retriever",
+            "name": "tfidf_retriever",
+            "k": 3
+          },
+          {
+            "kind": "reranker",
+            "name": "diversity_reranker"
+          },
+          {
+            "kind": "fewshot",
+            "name": "topk_fewshot",
+            "k": 2
+          },
+          {
+            "kind": "formatter",
+            "name": "simple_formatter"
+          },
+          {
+            "kind": "predictor",
+            "name": "llm_predictor",
+            "n_samples": 1
+          },
+          {
+            "kind": "voter",
+            "name": "majority_voter"
+          }
+        ]
+      },
+      {
+        "candidate_id": "cand_0001",
+        "label": "[BARE]",
+        "accuracy": 0.72,
+        "accuracy_spread": 0.0,
+        "tokens": 71.8,
+        "latency_ms": 696.5,
+        "components": [
+          {
+            "kind": "retriever",
+            "name": "null_retriever"
+          },
+          {
+            "kind": "fewshot",
+            "name": "null_fewshot"
+          },
+          {
+            "kind": "formatter",
+            "name": "simple_formatter"
+          },
+          {
+            "kind": "predictor",
+            "name": "llm_predictor",
+            "n_samples": 1
+          },
+          {
+            "kind": "voter",
+            "name": "null_voter"
+          }
+        ]
+      }
+    ],
+    "attribution": [
+      {
+        "kind": "fewshot",
+        "mean_delta": 0.157,
+        "variance": 0.013,
+        "n": 14
+      },
+      {
+        "kind": "retriever",
+        "mean_delta": 0.152,
+        "variance": 0.015,
+        "n": 14
+      },
+      {
+        "kind": "reranker",
+        "mean_delta": -0.003,
+        "variance": 0.0,
+        "n": 12
+      },
+      {
+        "kind": "voter",
+        "mean_delta": -0.01,
+        "variance": 0.001,
+        "n": 14
+      },
+      {
+        "kind": "formatter",
+        "mean_delta": -0.031,
+        "variance": 0.003,
+        "n": 14
+      }
+    ]
+  }
+]
