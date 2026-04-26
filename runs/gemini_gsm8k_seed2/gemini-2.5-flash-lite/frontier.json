@@ -1,0 +1,736 @@
+[
+  {
+    "candidate_id": "cand_0001",
+    "describe": [
+      {
+        "kind": "retriever",
+        "name": "null_retriever"
+      },
+      {
+        "kind": "fewshot",
+        "name": "null_fewshot"
+      },
+      {
+        "kind": "formatter",
+        "name": "simple_formatter",
+        "system_hint": "Classify the input."
+      },
+      {
+        "kind": "predictor",
+        "n_samples": 1,
+        "name": "math_llm_predictor",
+        "temperature": 0.0
+      },
+      {
+        "kind": "voter",
+        "name": "null_voter"
+      }
+    ],
+    "score": {
+      "accuracy": 0.4791666666666667,
+      "accuracy_spread": 0.0,
+      "latency_ms": 1844.7806821458337,
+      "n_evaluated": 48,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "100",
+          0.0
+        ],
+        [
+          "11",
+          0.0
+        ],
+        [
+          "12",
+          0.5
+        ],
+        [
+          "14",
+          1.0
+        ],
+        [
+          "142",
+          0.0
+        ],
+        [
+          "15",
+          0.6666666666666666
+        ],
+        [
+          "157",
+          1.0
+        ],
+        [
+          "1596",
+          0.0
+        ],
+        [
+          "16",
+          0.75
+        ],
+        [
+          "1800",
+          0.0
+        ],
+        [
+          "2",
+          0.6666666666666666
+        ],
+        [
+          "205",
+          1.0
+        ],
+        [
+          "250",
+          1.0
+        ],
+        [
+          "260",
+          1.0
+        ],
+        [
+          "27",
+          1.0
+        ],
+        [
+          "270",
+          0.0
+        ],
+        [
+          "291",
+          0.0
+        ],
+        [
+          "30",
+          0.5
+        ],
+        [
+          "3000",
+          1.0
+        ],
+        [
+          "320",
+          0.0
+        ],
+        [
+          "3200",
+          0.0
+        ],
+        [
+          "38",
+          0.0
+        ],
+        [
+          "4",
+          1.0
+        ],
+        [
+          "44",
+          0.0
+        ],
+        [
+          "5",
+          0.0
+        ],
+        [
+          "6",
+          1.0
+        ],
+        [
+          "60",
+          0.0
+        ],
+        [
+          "75",
+          0.0
+        ],
+        [
+          "77",
+          1.0
+        ],
+        [
+          "8000",
+          1.0
+        ],
+        [
+          "85",
+          1.0
+        ],
+        [
+          "88",
+          0.0
+        ],
+        [
+          "9",
+          0.0
+        ],
+        [
+          "90",
+          1.0
+        ],
+        [
+          "94",
+          0.0
+        ]
+      ],
+      "tokens": 393.5208333333333
+    }
+  },
+  {
+    "candidate_id": "cand_0007",
+    "describe": [
+      {
+        "b": 0.75,
+        "k": 5,
+        "k1": 1.5,
+        "kind": "retriever",
+        "name": "bm25_retriever"
+      },
+      {
+        "kind": "reranker",
+        "name": "null_reranker"
+      },
+      {
+        "k": 3,
+        "kind": "fewshot",
+        "name": "topk_fewshot"
+      },
+      {
+        "kind": "formatter",
+        "name": "cot_formatter",
+        "system_hint": "Classify the input into one of the given classes. Briefly analyze which key terms suggest each possibility, then output ONLY the class name, lowercase, on the final line. No other prose."
+      },
+      {
+        "kind": "predictor",
+        "n_samples": 1,
+        "name": "math_llm_predictor",
+        "temperature": 0.0
+      },
+      {
+        "kind": "voter",
+        "name": "majority_voter"
+      }
+    ],
+    "score": {
+      "accuracy": 0.75,
+      "accuracy_spread": 0.0,
+      "latency_ms": 1694.526518249462,
+      "n_evaluated": 48,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "100",
+          1.0
+        ],
+        [
+          "11",
+          1.0
+        ],
+        [
+          "12",
+          1.0
+        ],
+        [
+          "14",
+          1.0
+        ],
+        [
+          "142",
+          0.0
+        ],
+        [
+          "15",
+          1.0
+        ],
+        [
+          "157",
+          0.0
+        ],
+        [
+          "1596",
+          1.0
+        ],
+        [
+          "16",
+          0.25
+        ],
+        [
+          "1800",
+          1.0
+        ],
+        [
+          "2",
+          0.6666666666666666
+        ],
+        [
+          "205",
+          1.0
+        ],
+        [
+          "250",
+          1.0
+        ],
+        [
+          "260",
+          1.0
+        ],
+        [
+          "27",
+          0.0
+        ],
+        [
+          "270",
+          1.0
+        ],
+        [
+          "291",
+          1.0
+        ],
+        [
+          "30",
+          1.0
+        ],
+        [
+          "3000",
+          1.0
+        ],
+        [
+          "320",
+          0.0
+        ],
+        [
+          "3200",
+          0.0
+        ],
+        [
+          "38",
+          1.0
+        ],
+        [
+          "4",
+          1.0
+        ],
+        [
+          "44",
+          1.0
+        ],
+        [
+          "5",
+          1.0
+        ],
+        [
+          "6",
+          1.0
+        ],
+        [
+          "60",
+          0.5
+        ],
+        [
+          "75",
+          1.0
+        ],
+        [
+          "77",
+          1.0
+        ],
+        [
+          "8000",
+          1.0
+        ],
+        [
+          "85",
+          1.0
+        ],
+        [
+          "88",
+          1.0
+        ],
+        [
+          "9",
+          1.0
+        ],
+        [
+          "90",
+          0.0
+        ],
+        [
+          "94",
+          0.0
+        ]
+      ],
+      "tokens": 916.9791666666666
+    }
+  },
+  {
+    "candidate_id": "cand_0018",
+    "describe": [
+      {
+        "k": 5,
+        "kind": "retriever",
+        "name": "tfidf_retriever"
+      },
+      {
+        "kind": "reranker",
+        "name": "null_reranker"
+      },
+      {
+        "k": 3,
+        "kind": "fewshot",
+        "name": "topk_fewshot"
+      },
+      {
+        "kind": "formatter",
+        "max_reasoning_words": 15,
+        "name": "compressed_cot_formatter",
+        "system_hint": "Classify the input into one of the given classes. Reason in at most 15 words about which key terms point to which class. Then on the final line output ONLY the class name, lowercase. Be terse \u2014 every extra word costs."
+      },
+      {
+        "kind": "predictor",
+        "n_samples": 1,
+        "name": "math_llm_predictor",
+        "temperature": 0.0
+      },
+      {
+        "kind": "voter",
+        "name": "majority_voter"
+      }
+    ],
+    "score": {
+      "accuracy": 0.25,
+      "accuracy_spread": 0.0,
+      "latency_ms": 1353.4361806667343,
+      "n_evaluated": 48,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "100",
+          1.0
+        ],
+        [
+          "11",
+          1.0
+        ],
+        [
+          "12",
+          0.0
+        ],
+        [
+          "14",
+          0.0
+        ],
+        [
+          "142",
+          0.0
+        ],
+        [
+          "15",
+          0.3333333333333333
+        ],
+        [
+          "157",
+          0.0
+        ],
+        [
+          "1596",
+          0.0
+        ],
+        [
+          "16",
+          0.0
+        ],
+        [
+          "1800",
+          0.0
+        ],
+        [
+          "2",
+          0.3333333333333333
+        ],
+        [
+          "205",
+          0.0
+        ],
+        [
+          "250",
+          0.0
+        ],
+        [
+          "260",
+          0.0
+        ],
+        [
+          "27",
+          0.0
+        ],
+        [
+          "270",
+          1.0
+        ],
+        [
+          "291",
+          0.0
+        ],
+        [
+          "30",
+          1.0
+        ],
+        [
+          "3000",
+          1.0
+        ],
+        [
+          "320",
+          0.0
+        ],
+        [
+          "3200",
+          1.0
+        ],
+        [
+          "38",
+          0.0
+        ],
+        [
+          "4",
+          0.0
+        ],
+        [
+          "44",
+          0.5
+        ],
+        [
+          "5",
+          0.0
+        ],
+        [
+          "6",
+          0.0
+        ],
+        [
+          "60",
+          0.0
+        ],
+        [
+          "75",
+          0.0
+        ],
+        [
+          "77",
+          0.0
+        ],
+        [
+          "8000",
+          1.0
+        ],
+        [
+          "85",
+          0.0
+        ],
+        [
+          "88",
+          1.0
+        ],
+        [
+          "9",
+          0.0
+        ],
+        [
+          "90",
+          0.0
+        ],
+        [
+          "94",
+          0.0
+        ]
+      ],
+      "tokens": 678.2916666666666
+    }
+  },
+  {
+    "candidate_id": "cand_0020",
+    "describe": [
+      {
+        "k": 3,
+        "kind": "retriever",
+        "name": "tfidf_retriever"
+      },
+      {
+        "kind": "reranker",
+        "name": "null_reranker"
+      },
+      {
+        "demos_pool_size": 0,
+        "k": 2,
+        "kind": "fewshot",
+        "name": "bootstrap_fewshot"
+      },
+      {
+        "kind": "formatter",
+        "name": "simple_formatter",
+        "system_hint": "Classify the input."
+      },
+      {
+        "kind": "predictor",
+        "n_samples": 1,
+        "name": "math_llm_predictor",
+        "temperature": 0.0
+      },
+      {
+        "kind": "voter",
+        "name": "null_voter"
+      }
+    ],
+    "score": {
+      "accuracy": 0.9583333333333334,
+      "accuracy_spread": 0.0,
+      "latency_ms": 1714.0786108334275,
+      "n_evaluated": 48,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "100",
+          1.0
+        ],
+        [
+          "11",
+          1.0
+        ],
+        [
+          "12",
+          1.0
+        ],
+        [
+          "14",
+          1.0
+        ],
+        [
+          "142",
+          1.0
+        ],
+        [
+          "15",
+          1.0
+        ],
+        [
+          "157",
+          1.0
+        ],
+        [
+          "1596",
+          1.0
+        ],
+        [
+          "16",
+          1.0
+        ],
+        [
+          "1800",
+          1.0
+        ],
+        [
+          "2",
+          0.3333333333333333
+        ],
+        [
+          "205",
+          1.0
+        ],
+        [
+          "250",
+          1.0
+        ],
+        [
+          "260",
+          1.0
+        ],
+        [
+          "27",
+          1.0
+        ],
+        [
+          "270",
+          1.0
+        ],
+        [
+          "291",
+          1.0
+        ],
+        [
+          "30",
+          1.0
+        ],
+        [
+          "3000",
+          1.0
+        ],
+        [
+          "320",
+          1.0
+        ],
+        [
+          "3200",
+          1.0
+        ],
+        [
+          "38",
+          1.0
+        ],
+        [
+          "4",
+          1.0
+        ],
+        [
+          "44",
+          1.0
+        ],
+        [
+          "5",
+          1.0
+        ],
+        [
+          "6",
+          1.0
+        ],
+        [
+          "60",
+          1.0
+        ],
+        [
+          "75",
+          1.0
+        ],
+        [
+          "77",
+          1.0
+        ],
+        [
+          "8000",
+          1.0
+        ],
+        [
+          "85",
+          1.0
+        ],
+        [
+          "88",
+          1.0
+        ],
+        [
+          "9",
+          1.0
+        ],
+        [
+          "90",
+          1.0
+        ],
+        [
+          "94",
+          1.0
+        ]
+      ],
+      "tokens": 712.875
+    }
+  }
+]

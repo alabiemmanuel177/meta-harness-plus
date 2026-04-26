@@ -1,0 +1,25 @@
+[
+  {
+    "kind": "retriever",
+    "name": "null_retriever"
+  },
+  {
+    "kind": "fewshot",
+    "name": "null_fewshot"
+  },
+  {
+    "kind": "formatter",
+    "name": "simple_formatter",
+    "system_hint": "Classify the input."
+  },
+  {
+    "kind": "predictor",
+    "n_samples": 1,
+    "name": "math_llm_predictor",
+    "temperature": 0.0
+  },
+  {
+    "kind": "voter",
+    "name": "null_voter"
+  }
+]
