@@ -24,6 +24,8 @@ multi-seed (5 or 10) Pareto frontier.
 | agnews (5s, 6×8)    | 0.792 | n/a     | n/a        | n/a         | 0.812 | **0.896** | 0.812    | 0.833   | n/a    | 0.852  |
 | emotion (5s, 6×8)   | 0.521 | n/a     | n/a        | n/a         | 0.542 | 0.583 | 0.458    | 0.562   | n/a    | **0.592** |
 | lawbench_2_2 (5s, 6×8 + ext) | 0.167 | 0.208 | 0.167  | 0.167       | **0.333** | 0.292 | 0.125    | 0.188   | 0.180¹ | 0.296 |
+| newsgroups20 (5s, 6×8) | 0.646 | n/a  | n/a        | n/a         | n/a  | n/a  | n/a      | n/a     | n/a    | **0.737** |
+| symptom2disease (5s, 6×8) | 0.792 | n/a | n/a     | n/a         | n/a  | n/a  | n/a      | n/a     | n/a    | **0.806** |
 
 ¹ "random" = no-c3 ablation: same MH++ search but with RandomProposer
 substituted for the LLMProposer (approximates random sampling over
@@ -33,6 +35,8 @@ harness shapes). Cell-specific result on news_hard_50.
 
 - **news_hard_50**: MH++ 0.928, best baseline voting-RAG 0.900. **+2.8pt**
 - **symptom_hard**: MH++ 0.960, best baseline TextGrad 0.933. **+2.7pt**
+- **newsgroups20** (new): MH++ 0.737 vs RAG 0.646. **+9.1pt**, paired t=+10.88, p=0.0004, d=+4.87. (Other baselines not run on this cell yet.)
+- **symptom2disease** (new): MH++ 0.806 vs RAG 0.792. **+1.4pt**, paired t=+1.61, p=0.18 — *not significant at p<0.05*. CI lower bound = 0.000. Honest borderline result.
 
 ### MH++ ties or loses (margin ≤ 0)
 
