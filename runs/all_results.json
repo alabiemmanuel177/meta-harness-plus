@@ -847,6 +847,32 @@
   {
     "method": "MH++",
     "api": "gemini",
+    "task": "patents",
+    "model": null,
+    "accuracy": 0.354,
+    "tokens": 1301.3,
+    "latency_ms": null,
+    "n": 5,
+    "ci_low": 0.3414,
+    "ci_high": 0.3666,
+    "source": "patents_gemini_aggregate.json"
+  },
+  {
+    "method": "MH++",
+    "api": "openai",
+    "task": "patents",
+    "model": null,
+    "accuracy": 0.2834,
+    "tokens": 907.8,
+    "latency_ms": null,
+    "n": 5,
+    "ci_low": 0.271,
+    "ci_high": 0.2998,
+    "source": "patents_openai_aggregate.json"
+  },
+  {
+    "method": "MH++",
+    "api": "gemini",
     "task": "symptom2disease",
     "model": null,
     "accuracy": 1.0,

@@ -1,0 +1,379 @@
+[
+  {
+    "candidate_id": "cand_0001",
+    "describe": [
+      {
+        "kind": "retriever",
+        "name": "null_retriever"
+      },
+      {
+        "kind": "fewshot",
+        "name": "null_fewshot"
+      },
+      {
+        "kind": "formatter",
+        "name": "simple_formatter",
+        "system_hint": "Classify the input."
+      },
+      {
+        "kind": "predictor",
+        "n_samples": 1,
+        "name": "llm_predictor",
+        "temperature": 0.0
+      },
+      {
+        "kind": "voter",
+        "name": "null_voter"
+      }
+    ],
+    "score": {
+      "accuracy": 0.20833333333333334,
+      "accuracy_spread": 0.0,
+      "latency_ms": 700.583771437446,
+      "n_evaluated": 48,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "Chemistry; Metallurgy",
+          0.8333333333333334
+        ],
+        [
+          "Electricity",
+          0.3333333333333333
+        ],
+        [
+          "Fixed Constructions",
+          0.16666666666666666
+        ],
+        [
+          "General tagging of new or cross-sectional technology",
+          0.0
+        ],
+        [
+          "Human Necessities",
+          0.0
+        ],
+        [
+          "Mechanical Engineering; Lightning; Heating; Weapons; Blasting",
+          0.0
+        ],
+        [
+          "Performing Operations; Transporting",
+          0.3333333333333333
+        ],
+        [
+          "Physics",
+          0.0
+        ]
+      ],
+      "tokens": 331.5625
+    }
+  },
+  {
+    "candidate_id": "cand_0002",
+    "describe": [
+      {
+        "k": 3,
+        "kind": "retriever",
+        "name": "bow_retriever"
+      },
+      {
+        "k": 2,
+        "kind": "fewshot",
+        "name": "topk_fewshot"
+      },
+      {
+        "kind": "formatter",
+        "name": "simple_formatter",
+        "system_hint": "Classify the input."
+      },
+      {
+        "kind": "predictor",
+        "n_samples": 1,
+        "name": "llm_predictor",
+        "temperature": 0.0
+      },
+      {
+        "kind": "voter",
+        "name": "null_voter"
+      }
+    ],
+    "score": {
+      "accuracy": 0.2708333333333333,
+      "accuracy_spread": 0.0,
+      "latency_ms": 653.9635158957535,
+      "n_evaluated": 48,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "Chemistry; Metallurgy",
+          0.6666666666666666
+        ],
+        [
+          "Electricity",
+          0.16666666666666666
+        ],
+        [
+          "Fixed Constructions",
+          0.5
+        ],
+        [
+          "General tagging of new or cross-sectional technology",
+          0.0
+        ],
+        [
+          "Human Necessities",
+          0.3333333333333333
+        ],
+        [
+          "Mechanical Engineering; Lightning; Heating; Weapons; Blasting",
+          0.0
+        ],
+        [
+          "Performing Operations; Transporting",
+          0.16666666666666666
+        ],
+        [
+          "Physics",
+          0.3333333333333333
+        ]
+      ],
+      "tokens": 905.8125
+    }
+  },
+  {
+    "candidate_id": "cand_0022",
+    "describe": [
+      {
+        "k": 2,
+        "kind": "retriever",
+        "name": "bow_retriever"
+      },
+      {
+        "kind": "reranker",
+        "name": "null_reranker"
+      },
+      {
+        "demos_pool_size": 0,
+        "k": 1,
+        "kind": "fewshot",
+        "name": "bootstrap_fewshot"
+      },
+      {
+        "kind": "formatter",
+        "max_reasoning_words": 30,
+        "name": "compressed_cot_formatter",
+        "system_hint": "Classify the input into one of the given classes. Reason in at most 30 words about which key terms point to which class. Then on the final line output ONLY the class name, lowercase. Be terse \u2014 every extra word costs."
+      },
+      {
+        "kind": "predictor",
+        "n_samples": 1,
+        "name": "llm_predictor",
+        "temperature": 0.0
+      },
+      {
+        "kind": "voter",
+        "name": "null_voter"
+      }
+    ],
+    "score": {
+      "accuracy": 0.3125,
+      "accuracy_spread": 0.0,
+      "latency_ms": 1291.7483218542736,
+      "n_evaluated": 48,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "Chemistry; Metallurgy",
+          0.6666666666666666
+        ],
+        [
+          "Electricity",
+          0.6666666666666666
+        ],
+        [
+          "Fixed Constructions",
+          0.3333333333333333
+        ],
+        [
+          "General tagging of new or cross-sectional technology",
+          0.0
+        ],
+        [
+          "Human Necessities",
+          0.3333333333333333
+        ],
+        [
+          "Mechanical Engineering; Lightning; Heating; Weapons; Blasting",
+          0.0
+        ],
+        [
+          "Performing Operations; Transporting",
+          0.16666666666666666
+        ],
+        [
+          "Physics",
+          0.3333333333333333
+        ]
+      ],
+      "tokens": 766.2291666666666
+    }
+  },
+  {
+    "candidate_id": "cand_0027",
+    "describe": [
+      {
+        "b": 0.75,
+        "k": 2,
+        "k1": 1.5,
+        "kind": "retriever",
+        "name": "bm25_retriever"
+      },
+      {
+        "kind": "reranker",
+        "name": "null_reranker"
+      },
+      {
+        "demos_pool_size": 0,
+        "k": 1,
+        "kind": "fewshot",
+        "name": "bootstrap_fewshot"
+      },
+      {
+        "kind": "formatter",
+        "name": "cot_formatter",
+        "system_hint": "Classify the input into one of the given classes. Briefly analyze which key terms suggest each possibility, then output ONLY the class name, lowercase, on the final line. No other prose."
+      },
+      {
+        "kind": "predictor",
+        "n_samples": 1,
+        "name": "llm_predictor",
+        "temperature": 0.2
+      },
+      {
+        "kind": "voter",
+        "name": "majority_voter"
+      }
+    ],
+    "score": {
+      "accuracy": 0.30208333333333337,
+      "accuracy_spread": 0.020833333333333315,
+      "latency_ms": 1178.8580385314199,
+      "n_evaluated": 48,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "Chemistry; Metallurgy",
+          0.5833333333333334
+        ],
+        [
+          "Electricity",
+          0.5833333333333334
+        ],
+        [
+          "Fixed Constructions",
+          0.5
+        ],
+        [
+          "General tagging of new or cross-sectional technology",
+          0.0
+        ],
+        [
+          "Human Necessities",
+          0.5
+        ],
+        [
+          "Mechanical Engineering; Lightning; Heating; Weapons; Blasting",
+          0.0
+        ],
+        [
+          "Performing Operations; Transporting",
+          0.0
+        ],
+        [
+          "Physics",
+          0.25
+        ]
+      ],
+      "tokens": 746.5104166666667
+    }
+  },
+  {
+    "candidate_id": "cand_0029",
+    "describe": [
+      {
+        "k": 3,
+        "kind": "retriever",
+        "name": "tfidf_retriever"
+      },
+      {
+        "kind": "reranker",
+        "name": "diversity_reranker"
+      },
+      {
+        "demos_pool_size": 0,
+        "k": 1,
+        "kind": "fewshot",
+        "name": "bootstrap_fewshot"
+      },
+      {
+        "kind": "formatter",
+        "max_reasoning_words": 15,
+        "name": "compressed_cot_formatter",
+        "system_hint": "Classify the input into one of the given classes. Reason in at most 15 words about which key terms point to which class. Then on the final line output ONLY the class name, lowercase. Be terse \u2014 every extra word costs."
+      },
+      {
+        "kind": "predictor",
+        "n_samples": 1,
+        "name": "llm_predictor",
+        "temperature": 0.0
+      },
+      {
+        "kind": "voter",
+        "name": "null_voter"
+      }
+    ],
+    "score": {
+      "accuracy": 0.2708333333333333,
+      "accuracy_spread": 0.0,
+      "latency_ms": 1070.2705518749945,
+      "n_evaluated": 48,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "Chemistry; Metallurgy",
+          0.6666666666666666
+        ],
+        [
+          "Electricity",
+          0.5
+        ],
+        [
+          "Fixed Constructions",
+          0.3333333333333333
+        ],
+        [
+          "General tagging of new or cross-sectional technology",
+          0.0
+        ],
+        [
+          "Human Necessities",
+          0.16666666666666666
+        ],
+        [
+          "Mechanical Engineering; Lightning; Heating; Weapons; Blasting",
+          0.0
+        ],
+        [
+          "Performing Operations; Transporting",
+          0.5
+        ],
+        [
+          "Physics",
+          0.0
+        ]
+      ],
+      "tokens": 787.2291666666666
+    }
+  }
+]

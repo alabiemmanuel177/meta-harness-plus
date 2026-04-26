@@ -1,0 +1,407 @@
+[
+  {
+    "ablated_score": {
+      "accuracy": 0.5416666666666667,
+      "accuracy_spread": 0.08333333333333337,
+      "latency_ms": 1348.2020216664619,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "Electricity",
+          1.0
+        ],
+        [
+          "Fixed Constructions",
+          0.5
+        ],
+        [
+          "General tagging of new or cross-sectional technology",
+          0.0
+        ],
+        [
+          "Human Necessities",
+          1.0
+        ],
+        [
+          "Mechanical Engineering; Lightning; Heating; Weapons; Blasting",
+          0.0
+        ],
+        [
+          "Performing Operations; Transporting",
+          0.0
+        ],
+        [
+          "Physics",
+          0.5
+        ]
+      ],
+      "tokens": 483.4583333333333
+    },
+    "accuracy_delta": -0.41666666666666674,
+    "candidate_id": "cand_0025",
+    "full_score": {
+      "accuracy": 0.125,
+      "accuracy_spread": 0.08333333333333333,
+      "latency_ms": 720.5701463751795,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "Electricity",
+          0.5
+        ],
+        [
+          "Fixed Constructions",
+          0.0
+        ],
+        [
+          "General tagging of new or cross-sectional technology",
+          0.0
+        ],
+        [
+          "Human Necessities",
+          0.0
+        ],
+        [
+          "Mechanical Engineering; Lightning; Heating; Weapons; Blasting",
+          0.0
+        ],
+        [
+          "Performing Operations; Transporting",
+          0.0
+        ],
+        [
+          "Physics",
+          0.0
+        ]
+      ],
+      "tokens": 965.9583333333333
+    },
+    "kind": "retriever"
+  },
+  {
+    "ablated_score": {
+      "accuracy": 0.20833333333333331,
+      "accuracy_spread": 0.08333333333333334,
+      "latency_ms": 733.9693781250268,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "Electricity",
+          0.6666666666666666
+        ],
+        [
+          "Fixed Constructions",
+          0.25
+        ],
+        [
+          "General tagging of new or cross-sectional technology",
+          0.0
+        ],
+        [
+          "Human Necessities",
+          0.0
+        ],
+        [
+          "Mechanical Engineering; Lightning; Heating; Weapons; Blasting",
+          0.0
+        ],
+        [
+          "Performing Operations; Transporting",
+          0.0
+        ],
+        [
+          "Physics",
+          0.0
+        ]
+      ],
+      "tokens": 966.25
+    },
+    "accuracy_delta": -0.08333333333333331,
+    "candidate_id": "cand_0025",
+    "full_score": {
+      "accuracy": 0.125,
+      "accuracy_spread": 0.08333333333333333,
+      "latency_ms": 720.5701463751795,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "Electricity",
+          0.5
+        ],
+        [
+          "Fixed Constructions",
+          0.0
+        ],
+        [
+          "General tagging of new or cross-sectional technology",
+          0.0
+        ],
+        [
+          "Human Necessities",
+          0.0
+        ],
+        [
+          "Mechanical Engineering; Lightning; Heating; Weapons; Blasting",
+          0.0
+        ],
+        [
+          "Performing Operations; Transporting",
+          0.0
+        ],
+        [
+          "Physics",
+          0.0
+        ]
+      ],
+      "tokens": 965.9583333333333
+    },
+    "kind": "reranker"
+  },
+  {
+    "ablated_score": {
+      "accuracy": 0.5416666666666667,
+      "accuracy_spread": 0.08333333333333337,
+      "latency_ms": 1544.8449521249936,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "Electricity",
+          0.8333333333333334
+        ],
+        [
+          "Fixed Constructions",
+          0.5
+        ],
+        [
+          "General tagging of new or cross-sectional technology",
+          0.0
+        ],
+        [
+          "Human Necessities",
+          1.0
+        ],
+        [
+          "Mechanical Engineering; Lightning; Heating; Weapons; Blasting",
+          0.0
+        ],
+        [
+          "Performing Operations; Transporting",
+          0.25
+        ],
+        [
+          "Physics",
+          0.5
+        ]
+      ],
+      "tokens": 510.125
+    },
+    "accuracy_delta": -0.41666666666666674,
+    "candidate_id": "cand_0025",
+    "full_score": {
+      "accuracy": 0.125,
+      "accuracy_spread": 0.08333333333333333,
+      "latency_ms": 720.5701463751795,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "Electricity",
+          0.5
+        ],
+        [
+          "Fixed Constructions",
+          0.0
+        ],
+        [
+          "General tagging of new or cross-sectional technology",
+          0.0
+        ],
+        [
+          "Human Necessities",
+          0.0
+        ],
+        [
+          "Mechanical Engineering; Lightning; Heating; Weapons; Blasting",
+          0.0
+        ],
+        [
+          "Performing Operations; Transporting",
+          0.0
+        ],
+        [
+          "Physics",
+          0.0
+        ]
+      ],
+      "tokens": 965.9583333333333
+    },
+    "kind": "fewshot"
+  },
+  {
+    "ablated_score": {
+      "accuracy": 0.20833333333333331,
+      "accuracy_spread": 0.08333333333333334,
+      "latency_ms": 751.5675544167889,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "Electricity",
+          0.3333333333333333
+        ],
+        [
+          "Fixed Constructions",
+          0.25
+        ],
+        [
+          "General tagging of new or cross-sectional technology",
+          0.0
+        ],
+        [
+          "Human Necessities",
+          0.5
+        ],
+        [
+          "Mechanical Engineering; Lightning; Heating; Weapons; Blasting",
+          0.0
+        ],
+        [
+          "Performing Operations; Transporting",
+          0.0
+        ],
+        [
+          "Physics",
+          0.0
+        ]
+      ],
+      "tokens": 894.6666666666667
+    },
+    "accuracy_delta": -0.08333333333333331,
+    "candidate_id": "cand_0025",
+    "full_score": {
+      "accuracy": 0.125,
+      "accuracy_spread": 0.08333333333333333,
+      "latency_ms": 720.5701463751795,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "Electricity",
+          0.5
+        ],
+        [
+          "Fixed Constructions",
+          0.0
+        ],
+        [
+          "General tagging of new or cross-sectional technology",
+          0.0
+        ],
+        [
+          "Human Necessities",
+          0.0
+        ],
+        [
+          "Mechanical Engineering; Lightning; Heating; Weapons; Blasting",
+          0.0
+        ],
+        [
+          "Performing Operations; Transporting",
+          0.0
+        ],
+        [
+          "Physics",
+          0.0
+        ]
+      ],
+      "tokens": 965.9583333333333
+    },
+    "kind": "formatter"
+  },
+  {
+    "ablated_score": {
+      "accuracy": 0.125,
+      "accuracy_spread": 0.08333333333333333,
+      "latency_ms": 812.005461750169,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "Electricity",
+          0.5
+        ],
+        [
+          "Fixed Constructions",
+          0.0
+        ],
+        [
+          "General tagging of new or cross-sectional technology",
+          0.0
+        ],
+        [
+          "Human Necessities",
+          0.0
+        ],
+        [
+          "Mechanical Engineering; Lightning; Heating; Weapons; Blasting",
+          0.0
+        ],
+        [
+          "Performing Operations; Transporting",
+          0.0
+        ],
+        [
+          "Physics",
+          0.0
+        ]
+      ],
+      "tokens": 968.75
+    },
+    "accuracy_delta": 0.0,
+    "candidate_id": "cand_0025",
+    "full_score": {
+      "accuracy": 0.125,
+      "accuracy_spread": 0.08333333333333333,
+      "latency_ms": 720.5701463751795,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "Electricity",
+          0.5
+        ],
+        [
+          "Fixed Constructions",
+          0.0
+        ],
+        [
+          "General tagging of new or cross-sectional technology",
+          0.0
+        ],
+        [
+          "Human Necessities",
+          0.0
+        ],
+        [
+          "Mechanical Engineering; Lightning; Heating; Weapons; Blasting",
+          0.0
+        ],
+        [
+          "Performing Operations; Transporting",
+          0.0
+        ],
+        [
+          "Physics",
+          0.0
+        ]
+      ],
+      "tokens": 965.9583333333333
+    },
+    "kind": "voter"
+  }
+]

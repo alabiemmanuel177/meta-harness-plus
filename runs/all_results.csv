@@ -72,5 +72,7 @@ accuracy,api,ci_high,ci_low,latency_ms,method,model,n,source,task,tokens
 0.928,openai,0.934,0.922,,MH++_10seed,,10,openai_news_hard_50_big_aggregate_10seed.json,news_hard_50,212.7
 0.9598,openai,0.9866,0.933,,MH++_6x8,,5,openai_symptom_hard_big_aggregate.json,symptom_hard,454.5
 0.96,openai,0.9767,0.9465,,MH++_10seed,,10,openai_symptom_hard_big_aggregate_10seed.json,symptom_hard,499.3
+0.354,gemini,0.3666,0.3414,,MH++,,5,patents_gemini_aggregate.json,patents,1301.3
+0.2834,openai,0.2998,0.271,,MH++,,5,patents_openai_aggregate.json,patents,907.8
 1.0,gemini,1.0,1.0,,MH++,,5,symptom2disease_gemini_aggregate.json,symptom2disease,394.0
 0.8064,openai,0.8228,0.792,,MH++,,5,symptom2disease_openai_aggregate.json,symptom2disease,581.8

@@ -1,0 +1,82 @@
+{
+  "label": "gemini \u00d7 patents (5 seeds, 6\u00d78)",
+  "n_seeds": 5,
+  "per_seed_bare_acc": [
+    0.25,
+    0.25,
+    0.25,
+    0.25,
+    0.25
+  ],
+  "per_seed_rag_acc": [
+    0.292,
+    0.292,
+    0.292,
+    0.292,
+    0.292
+  ],
+  "per_seed_mh_peak_acc": [
+    0.375,
+    0.354,
+    0.354,
+    0.333,
+    0.354
+  ],
+  "per_seed_rag_tokens": [
+    907.7,
+    907.7,
+    907.7,
+    907.7,
+    907.7
+  ],
+  "per_seed_mh_peak_tokens": [
+    1037.3,
+    1206.0,
+    1062.8,
+    1814.1,
+    1386.5
+  ],
+  "per_seed_n_dominate": [
+    1,
+    1,
+    1,
+    1,
+    1
+  ],
+  "per_seed_n_match_cheaper": [
+    2,
+    1,
+    1,
+    1,
+    1
+  ],
+  "ci": {
+    "mh_minus_rag_acc": {
+      "mean": 0.06200000000000001,
+      "low": 0.04940000000000002,
+      "high": 0.07460000000000001,
+      "confidence": 0.95
+    },
+    "mh_peak_acc": {
+      "mean": 0.354,
+      "low": 0.34140000000000004,
+      "high": 0.3666,
+      "confidence": 0.95
+    },
+    "rag_acc": {
+      "mean": 0.292,
+      "low": 0.292,
+      "high": 0.292,
+      "confidence": 0.95
+    }
+  },
+  "paired_t_test": {
+    "n": 5,
+    "mean_diff": 0.06200000000000001,
+    "std_diff": 0.014849242404917492,
+    "t_statistic": 9.336248330020936,
+    "p_value_two_sided": 0.0007327482311745739,
+    "cohens_d": 4.17529718414914
+  },
+  "per_class_delta": {}
+}

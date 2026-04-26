@@ -146,7 +146,8 @@ def collect() -> list[dict]:
         # Try to find which task this is.
         task = None
         for cand_task in ("news_hard_50", "symptom_hard", "lawbench_2_2",
-                          "agnews", "emotion", "newsgroups20", "symptom2disease"):
+                          "agnews", "emotion", "newsgroups20",
+                          "symptom2disease", "patents", "gsm8k"):
             if cand_task in label or cand_task in f.name:
                 task = cand_task
                 break

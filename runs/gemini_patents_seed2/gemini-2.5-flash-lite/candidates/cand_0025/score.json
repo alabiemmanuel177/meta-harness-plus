@@ -1,0 +1,42 @@
+{
+  "accuracy": 0.3541666666666667,
+  "accuracy_spread": 0.0,
+  "latency_ms": 993.2891121249268,
+  "n_evaluated": 48,
+  "n_repeats": 2,
+  "per_class_accuracy": [
+    [
+      "Chemistry; Metallurgy",
+      0.6666666666666666
+    ],
+    [
+      "Electricity",
+      0.8333333333333334
+    ],
+    [
+      "Fixed Constructions",
+      0.5
+    ],
+    [
+      "General tagging of new or cross-sectional technology",
+      0.0
+    ],
+    [
+      "Human Necessities",
+      0.6666666666666666
+    ],
+    [
+      "Mechanical Engineering; Lightning; Heating; Weapons; Blasting",
+      0.0
+    ],
+    [
+      "Performing Operations; Transporting",
+      0.16666666666666666
+    ],
+    [
+      "Physics",
+      0.0
+    ]
+  ],
+  "tokens": 1062.75
+}

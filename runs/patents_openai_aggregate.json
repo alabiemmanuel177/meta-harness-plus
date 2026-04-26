@@ -1,0 +1,82 @@
+{
+  "label": "openai \u00d7 patents (5 seeds, 6\u00d78)",
+  "n_seeds": 5,
+  "per_seed_bare_acc": [
+    0.208,
+    0.208,
+    0.208,
+    0.208,
+    0.208
+  ],
+  "per_seed_rag_acc": [
+    0.271,
+    0.271,
+    0.271,
+    0.271,
+    0.271
+  ],
+  "per_seed_mh_peak_acc": [
+    0.292,
+    0.271,
+    0.271,
+    0.312,
+    0.271
+  ],
+  "per_seed_rag_tokens": [
+    905.8,
+    905.8,
+    905.8,
+    905.8,
+    905.8
+  ],
+  "per_seed_mh_peak_tokens": [
+    1055.4,
+    905.8,
+    905.8,
+    766.2,
+    905.6
+  ],
+  "per_seed_n_dominate": [
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "per_seed_n_match_cheaper": [
+    0,
+    0,
+    0,
+    3,
+    1
+  ],
+  "ci": {
+    "mh_minus_rag_acc": {
+      "mean": 0.01239999999999999,
+      "low": 0.0,
+      "high": 0.028799999999999982,
+      "confidence": 0.95
+    },
+    "mh_peak_acc": {
+      "mean": 0.2834,
+      "low": 0.271,
+      "high": 0.2998,
+      "confidence": 0.95
+    },
+    "rag_acc": {
+      "mean": 0.271,
+      "low": 0.271,
+      "high": 0.271,
+      "confidence": 0.95
+    }
+  },
+  "paired_t_test": {
+    "n": 5,
+    "mean_diff": 0.01239999999999999,
+    "std_diff": 0.018392933425639305,
+    "t_statistic": 1.5074943337937745,
+    "p_value_two_sided": 0.20616644597768086,
+    "cohens_d": 0.6741719612117276
+  },
+  "per_class_delta": {}
+}
