@@ -18,11 +18,14 @@ Design principles:
   multi-objective improvement CI excludes zero on the cost axes too.
   No accuracy-only promotions; production should not silently get more
   expensive.
-- **No background search loop yet.** This module is deliberately
-  passive: it tracks what arrives and computes the right statistics
-  for a human (or a separate scheduler) to make the promotion call.
-  A search-loop extension (proposing new candidates from production
-  data) is a future-work concern — its safety story is more involved.
+- **Optional active search.** The base ``OnlineHarnessImprover`` is
+  passive — it ingests, rescores, and emits PromoteReports for a human
+  scheduler to act on. The extension class
+  ``ContinualHarnessImprover`` adds an active search loop that
+  periodically proposes new candidate shapes from the accumulated
+  production data and admits non-dominated survivors to the candidate
+  pool. Promotion still uses the same paired-CI conservative gate, so
+  the safety story is preserved.
 - **Simple data structures.** New examples are appended to a deque
   with a max history; old examples roll off. The frontier is
   re-evaluated on the most recent N examples.
@@ -228,3 +231,106 @@ class OnlineHarnessImprover:
     @property
     def history_size(self) -> int:
         return len(self._examples)
+
+
+# ---------------- ContinualHarnessImprover ----------------
+
+class ContinualHarnessImprover(OnlineHarnessImprover):
+    """Active continual-search variant of OnlineHarnessImprover.
+
+    Adds a ``propose_and_admit`` step that runs a small MH++ search on
+    the accumulated production data and admits non-dominated survivors
+    to the candidate pool. Subsequent ``maybe_promote`` calls then
+    consider the newly-discovered candidates alongside the original
+    ones.
+
+    The active loop is intentionally bounded — it runs at most
+    ``max_candidates_per_search`` proposals per call and uses the same
+    Scorer the rest of the framework uses. It is NOT a long-lived
+    daemon; the caller decides when to invoke ``propose_and_admit``
+    (typically every N ingestions, or on a wall-clock cadence).
+
+    Promotion still goes through the parent class's paired-bootstrap CI
+    gate — proposed-and-admitted candidates aren't auto-deployed.
+
+    Usage::
+
+        improver = ContinualHarnessImprover(
+            scorer=scorer,
+            production_harness=prod,
+            candidate_harnesses={"alpha": alpha_shape},
+            propose_fn=my_proposer.propose,  # any callable
+            min_examples=50,
+            max_candidates_per_search=4,
+        )
+        for ex in production_stream:
+            improver.ingest(ex)
+            if improver.history_size % 100 == 0:
+                improver.propose_and_admit()  # active step
+            report = improver.maybe_promote()
+            if report.should_promote:
+                deploy_new_shape(report.winner_label, report.winner_harness)
+    """
+
+    def __init__(
+        self,
+        *args,
+        propose_fn: Callable[[Sequence[TaskExample], int], list[Harness]] | None = None,
+        max_candidates_per_search: int = 4,
+        **kwargs,
+    ):
+        super().__init__(*args, **kwargs)
+        self.propose_fn = propose_fn
+        self.max_candidates_per_search = max_candidates_per_search
+        self.search_count = 0
+        self.admitted_count = 0
+
+    def propose_and_admit(self, n_repeats: int = 1) -> int:
+        """Run a propose-and-admit cycle: propose new candidates from
+        accumulated production data, score them, admit non-dominated.
+
+        Returns the number of candidates admitted to the pool.
+        Returns 0 if there's no proposer or insufficient data.
+        """
+        if self.propose_fn is None:
+            return 0
+        if len(self._examples) < self.min_examples:
+            return 0
+
+        examples = list(self._examples)
+        try:
+            new_harnesses = self.propose_fn(examples, self.max_candidates_per_search)
+        except Exception:
+            return 0
+        if not new_harnesses:
+            return 0
+
+        self.search_count += 1
+        admitted = 0
+
+        # Score current production for dominance comparison.
+        prod_score = self.scorer.score(
+            self.production_harness, examples,
+            n_repeats=n_repeats, max_workers=self.max_workers,
+        )
+
+        for i, h in enumerate(new_harnesses):
+            try:
+                score = self.scorer.score(
+                    h, examples, n_repeats=n_repeats, max_workers=self.max_workers,
+                )
+            except Exception:
+                continue
+            # Check non-dominance vs prod and existing candidates.
+            from .pareto import dominates
+            existing_scores = list(self._last_scores.values())
+            is_dominated = any(dominates(s, score) for s in existing_scores
+                               if s is not None)
+            if is_dominated:
+                continue
+            label = f"discovered_{self.search_count}_{i}"
+            self.candidate_harnesses[label] = h
+            self._last_scores[label] = score
+            self.admitted_count += 1
+            admitted += 1
+        return admitted
