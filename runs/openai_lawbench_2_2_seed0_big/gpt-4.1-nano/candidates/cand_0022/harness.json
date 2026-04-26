@@ -6,12 +6,12 @@
   },
   {
     "kind": "reranker",
-    "m": 5,
+    "m": 3,
     "name": "llm_reranker",
     "temperature": 0.2
   },
   {
-    "k": 2,
+    "k": 3,
     "kind": "fewshot",
     "name": "topk_fewshot"
   },
@@ -24,7 +24,7 @@
     "kind": "predictor",
     "n_samples": 1,
     "name": "llm_predictor",
-    "temperature": 0.1
+    "temperature": 0.0
   },
   {
     "kind": "voter",

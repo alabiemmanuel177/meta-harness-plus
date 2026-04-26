@@ -1,15 +1,15 @@
 [
   {
     "ablated_score": {
-      "accuracy": 0.4666666666666667,
+      "accuracy": 0.13333333333333333,
       "accuracy_spread": 0.0,
-      "latency_ms": 953.833297733305,
+      "latency_ms": 1257.530443466624,
       "n_evaluated": 15,
       "n_repeats": 2,
       "per_class_accuracy": [
         [
           "\u539f\u5ba1\u5224\u51b3\u662f\u5426\u9002\u5f53",
-          0.75
+          0.25
         ],
         [
           "\u635f\u5931\u8ba4\u5b9a\u53ca\u5904\u7406",
@@ -17,7 +17,7 @@
         ],
         [
           "\u672c\u91d1\u4e89\u8bae",
-          0.5
+          0.0
         ],
         [
           "\u79df\u91d1\u60c5\u51b5",
@@ -25,7 +25,7 @@
         ],
         [
           "\u8d23\u4efb\u5212\u5206",
-          1.0
+          0.5
         ],
         [
           "\u8d23\u4efb\u627f\u62c5",
@@ -37,23 +37,23 @@
         ],
         [
           "\u9274\u5b9a\u7ed3\u8bba\u91c7\u4fe1\u95ee\u9898",
-          1.0
+          0.0
         ]
       ],
-      "tokens": 706.5333333333333
+      "tokens": 657.1333333333333
     },
     "accuracy_delta": 0.0,
     "candidate_id": "cand_0036",
     "full_score": {
-      "accuracy": 0.4666666666666667,
+      "accuracy": 0.13333333333333333,
       "accuracy_spread": 0.0,
-      "latency_ms": 953.833297733305,
+      "latency_ms": 1257.530443466624,
       "n_evaluated": 15,
       "n_repeats": 2,
       "per_class_accuracy": [
         [
           "\u539f\u5ba1\u5224\u51b3\u662f\u5426\u9002\u5f53",
-          0.75
+          0.25
         ],
         [
           "\u635f\u5931\u8ba4\u5b9a\u53ca\u5904\u7406",
@@ -61,7 +61,7 @@
         ],
         [
           "\u672c\u91d1\u4e89\u8bae",
-          0.5
+          0.0
         ],
         [
           "\u79df\u91d1\u60c5\u51b5",
@@ -69,7 +69,7 @@
         ],
         [
           "\u8d23\u4efb\u5212\u5206",
-          1.0
+          0.5
         ],
         [
           "\u8d23\u4efb\u627f\u62c5",
@@ -81,24 +81,24 @@
         ],
         [
           "\u9274\u5b9a\u7ed3\u8bba\u91c7\u4fe1\u95ee\u9898",
-          1.0
+          0.0
         ]
       ],
-      "tokens": 706.5333333333333
+      "tokens": 657.1333333333333
     },
     "kind": "retriever"
   },
   {
     "ablated_score": {
-      "accuracy": 0.4666666666666667,
+      "accuracy": 0.13333333333333333,
       "accuracy_spread": 0.0,
-      "latency_ms": 953.833297733305,
+      "latency_ms": 1257.530443466624,
       "n_evaluated": 15,
       "n_repeats": 2,
       "per_class_accuracy": [
         [
           "\u539f\u5ba1\u5224\u51b3\u662f\u5426\u9002\u5f53",
-          0.75
+          0.25
         ],
         [
           "\u635f\u5931\u8ba4\u5b9a\u53ca\u5904\u7406",
@@ -106,7 +106,7 @@
         ],
         [
           "\u672c\u91d1\u4e89\u8bae",
-          0.5
+          0.0
         ],
         [
           "\u79df\u91d1\u60c5\u51b5",
@@ -114,7 +114,7 @@
         ],
         [
           "\u8d23\u4efb\u5212\u5206",
-          1.0
+          0.5
         ],
         [
           "\u8d23\u4efb\u627f\u62c5",
@@ -126,23 +126,23 @@
         ],
         [
           "\u9274\u5b9a\u7ed3\u8bba\u91c7\u4fe1\u95ee\u9898",
-          1.0
+          0.0
         ]
       ],
-      "tokens": 706.5333333333333
+      "tokens": 657.1333333333333
     },
     "accuracy_delta": 0.0,
     "candidate_id": "cand_0036",
     "full_score": {
-      "accuracy": 0.4666666666666667,
+      "accuracy": 0.13333333333333333,
       "accuracy_spread": 0.0,
-      "latency_ms": 953.833297733305,
+      "latency_ms": 1257.530443466624,
       "n_evaluated": 15,
       "n_repeats": 2,
       "per_class_accuracy": [
         [
           "\u539f\u5ba1\u5224\u51b3\u662f\u5426\u9002\u5f53",
-          0.75
+          0.25
         ],
         [
           "\u635f\u5931\u8ba4\u5b9a\u53ca\u5904\u7406",
@@ -150,7 +150,7 @@
         ],
         [
           "\u672c\u91d1\u4e89\u8bae",
-          0.5
+          0.0
         ],
         [
           "\u79df\u91d1\u60c5\u51b5",
@@ -158,7 +158,7 @@
         ],
         [
           "\u8d23\u4efb\u5212\u5206",
-          1.0
+          0.5
         ],
         [
           "\u8d23\u4efb\u627f\u62c5",
@@ -170,24 +170,24 @@
         ],
         [
           "\u9274\u5b9a\u7ed3\u8bba\u91c7\u4fe1\u95ee\u9898",
-          1.0
+          0.0
         ]
       ],
-      "tokens": 706.5333333333333
+      "tokens": 657.1333333333333
     },
     "kind": "reranker"
   },
   {
     "ablated_score": {
-      "accuracy": 0.4666666666666667,
+      "accuracy": 0.13333333333333333,
       "accuracy_spread": 0.0,
-      "latency_ms": 953.833297733305,
+      "latency_ms": 1257.530443466624,
       "n_evaluated": 15,
       "n_repeats": 2,
       "per_class_accuracy": [
         [
           "\u539f\u5ba1\u5224\u51b3\u662f\u5426\u9002\u5f53",
-          0.75
+          0.25
         ],
         [
           "\u635f\u5931\u8ba4\u5b9a\u53ca\u5904\u7406",
@@ -195,7 +195,7 @@
         ],
         [
           "\u672c\u91d1\u4e89\u8bae",
-          0.5
+          0.0
         ],
         [
           "\u79df\u91d1\u60c5\u51b5",
@@ -203,7 +203,7 @@
         ],
         [
           "\u8d23\u4efb\u5212\u5206",
-          1.0
+          0.5
         ],
         [
           "\u8d23\u4efb\u627f\u62c5",
@@ -215,23 +215,23 @@
         ],
         [
           "\u9274\u5b9a\u7ed3\u8bba\u91c7\u4fe1\u95ee\u9898",
-          1.0
+          0.0
         ]
       ],
-      "tokens": 706.5333333333333
+      "tokens": 657.1333333333333
     },
     "accuracy_delta": 0.0,
     "candidate_id": "cand_0036",
     "full_score": {
-      "accuracy": 0.4666666666666667,
+      "accuracy": 0.13333333333333333,
       "accuracy_spread": 0.0,
-      "latency_ms": 953.833297733305,
+      "latency_ms": 1257.530443466624,
       "n_evaluated": 15,
       "n_repeats": 2,
       "per_class_accuracy": [
         [
           "\u539f\u5ba1\u5224\u51b3\u662f\u5426\u9002\u5f53",
-          0.75
+          0.25
         ],
         [
           "\u635f\u5931\u8ba4\u5b9a\u53ca\u5904\u7406",
@@ -239,7 +239,7 @@
         ],
         [
           "\u672c\u91d1\u4e89\u8bae",
-          0.5
+          0.0
         ],
         [
           "\u79df\u91d1\u60c5\u51b5",
@@ -247,7 +247,7 @@
         ],
         [
           "\u8d23\u4efb\u5212\u5206",
-          1.0
+          0.5
         ],
         [
           "\u8d23\u4efb\u627f\u62c5",
@@ -259,10 +259,10 @@
         ],
         [
           "\u9274\u5b9a\u7ed3\u8bba\u91c7\u4fe1\u95ee\u9898",
-          1.0
+          0.0
         ]
       ],
-      "tokens": 706.5333333333333
+      "tokens": 657.1333333333333
     },
     "kind": "fewshot"
   },
@@ -309,18 +309,18 @@
       ],
       "tokens": 550.4666666666667
     },
-    "accuracy_delta": 0.26666666666666666,
+    "accuracy_delta": -0.06666666666666668,
     "candidate_id": "cand_0036",
     "full_score": {
-      "accuracy": 0.4666666666666667,
+      "accuracy": 0.13333333333333333,
       "accuracy_spread": 0.0,
-      "latency_ms": 953.833297733305,
+      "latency_ms": 1257.530443466624,
       "n_evaluated": 15,
       "n_repeats": 2,
       "per_class_accuracy": [
         [
           "\u539f\u5ba1\u5224\u51b3\u662f\u5426\u9002\u5f53",
-          0.75
+          0.25
         ],
         [
           "\u635f\u5931\u8ba4\u5b9a\u53ca\u5904\u7406",
@@ -328,7 +328,7 @@
         ],
         [
           "\u672c\u91d1\u4e89\u8bae",
-          0.5
+          0.0
         ],
         [
           "\u79df\u91d1\u60c5\u51b5",
@@ -336,7 +336,7 @@
         ],
         [
           "\u8d23\u4efb\u5212\u5206",
-          1.0
+          0.5
         ],
         [
           "\u8d23\u4efb\u627f\u62c5",
@@ -348,24 +348,24 @@
         ],
         [
           "\u9274\u5b9a\u7ed3\u8bba\u91c7\u4fe1\u95ee\u9898",
-          1.0
+          0.0
         ]
       ],
-      "tokens": 706.5333333333333
+      "tokens": 657.1333333333333
     },
     "kind": "formatter"
   },
   {
     "ablated_score": {
-      "accuracy": 0.4666666666666667,
+      "accuracy": 0.13333333333333333,
       "accuracy_spread": 0.0,
-      "latency_ms": 953.733297733305,
+      "latency_ms": 1257.430443466624,
       "n_evaluated": 15,
       "n_repeats": 2,
       "per_class_accuracy": [
         [
           "\u539f\u5ba1\u5224\u51b3\u662f\u5426\u9002\u5f53",
-          0.75
+          0.25
         ],
         [
           "\u635f\u5931\u8ba4\u5b9a\u53ca\u5904\u7406",
@@ -373,7 +373,7 @@
         ],
         [
           "\u672c\u91d1\u4e89\u8bae",
-          0.5
+          0.0
         ],
         [
           "\u79df\u91d1\u60c5\u51b5",
@@ -381,7 +381,7 @@
         ],
         [
           "\u8d23\u4efb\u5212\u5206",
-          1.0
+          0.5
         ],
         [
           "\u8d23\u4efb\u627f\u62c5",
@@ -393,23 +393,23 @@
         ],
         [
           "\u9274\u5b9a\u7ed3\u8bba\u91c7\u4fe1\u95ee\u9898",
-          1.0
+          0.0
         ]
       ],
-      "tokens": 706.5333333333333
+      "tokens": 657.1333333333333
     },
     "accuracy_delta": 0.0,
     "candidate_id": "cand_0036",
     "full_score": {
-      "accuracy": 0.4666666666666667,
+      "accuracy": 0.13333333333333333,
       "accuracy_spread": 0.0,
-      "latency_ms": 953.833297733305,
+      "latency_ms": 1257.530443466624,
       "n_evaluated": 15,
       "n_repeats": 2,
       "per_class_accuracy": [
         [
           "\u539f\u5ba1\u5224\u51b3\u662f\u5426\u9002\u5f53",
-          0.75
+          0.25
         ],
         [
           "\u635f\u5931\u8ba4\u5b9a\u53ca\u5904\u7406",
@@ -417,7 +417,7 @@
         ],
         [
           "\u672c\u91d1\u4e89\u8bae",
-          0.5
+          0.0
         ],
         [
           "\u79df\u91d1\u60c5\u51b5",
@@ -425,7 +425,7 @@
         ],
         [
           "\u8d23\u4efb\u5212\u5206",
-          1.0
+          0.5
         ],
         [
           "\u8d23\u4efb\u627f\u62c5",
@@ -437,10 +437,10 @@
         ],
         [
           "\u9274\u5b9a\u7ed3\u8bba\u91c7\u4fe1\u95ee\u9898",
-          1.0
+          0.0
         ]
       ],
-      "tokens": 706.5333333333333
+      "tokens": 657.1333333333333
     },
     "kind": "voter"
   }

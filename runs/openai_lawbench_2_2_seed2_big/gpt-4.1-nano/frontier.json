@@ -1,0 +1,768 @@
+[
+  {
+    "candidate_id": "cand_0001",
+    "describe": [
+      {
+        "kind": "retriever",
+        "name": "null_retriever"
+      },
+      {
+        "kind": "fewshot",
+        "name": "null_fewshot"
+      },
+      {
+        "kind": "formatter",
+        "name": "simple_formatter",
+        "system_hint": "Classify the input."
+      },
+      {
+        "kind": "predictor",
+        "n_samples": 1,
+        "name": "llm_predictor",
+        "temperature": 0.0
+      },
+      {
+        "kind": "voter",
+        "name": "null_voter"
+      }
+    ],
+    "score": {
+      "accuracy": 0.14583333333333334,
+      "accuracy_spread": 0.0,
+      "latency_ms": 996.4500872708204,
+      "n_evaluated": 48,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "\u539f\u5ba1\u5224\u51b3\u662f\u5426\u9002\u5f53",
+          0.0
+        ],
+        [
+          "\u635f\u5931\u8ba4\u5b9a\u53ca\u5904\u7406",
+          0.0
+        ],
+        [
+          "\u672c\u91d1\u4e89\u8bae",
+          0.3333333333333333
+        ],
+        [
+          "\u79df\u91d1\u60c5\u51b5",
+          0.0
+        ],
+        [
+          "\u8d23\u4efb\u5212\u5206",
+          0.16666666666666666
+        ],
+        [
+          "\u8d23\u4efb\u627f\u62c5",
+          0.0
+        ],
+        [
+          "\u8d23\u4efb\u8ba4\u5b9a",
+          0.6666666666666666
+        ],
+        [
+          "\u9274\u5b9a\u7ed3\u8bba\u91c7\u4fe1\u95ee\u9898",
+          0.0
+        ]
+      ],
+      "tokens": 517.3125
+    }
+  },
+  {
+    "candidate_id": "cand_0003",
+    "describe": [
+      {
+        "k": 3,
+        "kind": "retriever",
+        "name": "bow_retriever"
+      },
+      {
+        "k": 2,
+        "kind": "fewshot",
+        "name": "topk_fewshot"
+      },
+      {
+        "kind": "formatter",
+        "name": "cot_formatter",
+        "system_hint": "Classify the input into one of the given classes. Briefly analyze which key terms suggest each possibility, then output ONLY the class name, lowercase, on the final line. No other prose."
+      },
+      {
+        "kind": "predictor",
+        "n_samples": 1,
+        "name": "llm_predictor",
+        "temperature": 0.0
+      },
+      {
+        "kind": "voter",
+        "name": "null_voter"
+      }
+    ],
+    "score": {
+      "accuracy": 0.1875,
+      "accuracy_spread": 0.0,
+      "latency_ms": 1265.416993458315,
+      "n_evaluated": 48,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "\u539f\u5ba1\u5224\u51b3\u662f\u5426\u9002\u5f53",
+          0.16666666666666666
+        ],
+        [
+          "\u635f\u5931\u8ba4\u5b9a\u53ca\u5904\u7406",
+          0.3333333333333333
+        ],
+        [
+          "\u672c\u91d1\u4e89\u8bae",
+          0.3333333333333333
+        ],
+        [
+          "\u79df\u91d1\u60c5\u51b5",
+          0.0
+        ],
+        [
+          "\u8d23\u4efb\u5212\u5206",
+          0.3333333333333333
+        ],
+        [
+          "\u8d23\u4efb\u627f\u62c5",
+          0.0
+        ],
+        [
+          "\u8d23\u4efb\u8ba4\u5b9a",
+          0.16666666666666666
+        ],
+        [
+          "\u9274\u5b9a\u7ed3\u8bba\u91c7\u4fe1\u95ee\u9898",
+          0.16666666666666666
+        ]
+      ],
+      "tokens": 633.5208333333334
+    }
+  },
+  {
+    "candidate_id": "cand_0016",
+    "describe": [
+      {
+        "k": 4,
+        "kind": "retriever",
+        "name": "bow_retriever"
+      },
+      {
+        "kind": "reranker",
+        "name": "null_reranker"
+      },
+      {
+        "k": 2,
+        "kind": "fewshot",
+        "name": "topk_fewshot"
+      },
+      {
+        "kind": "formatter",
+        "name": "simple_formatter",
+        "system_hint": "Classify the input."
+      },
+      {
+        "kind": "predictor",
+        "n_samples": 1,
+        "name": "llm_predictor",
+        "temperature": 0.3
+      },
+      {
+        "kind": "voter",
+        "name": "null_voter"
+      }
+    ],
+    "score": {
+      "accuracy": 0.17708333333333331,
+      "accuracy_spread": 0.020833333333333343,
+      "latency_ms": 693.3173706459221,
+      "n_evaluated": 48,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "\u539f\u5ba1\u5224\u51b3\u662f\u5426\u9002\u5f53",
+          0.16666666666666666
+        ],
+        [
+          "\u635f\u5931\u8ba4\u5b9a\u53ca\u5904\u7406",
+          0.08333333333333333
+        ],
+        [
+          "\u672c\u91d1\u4e89\u8bae",
+          0.4166666666666667
+        ],
+        [
+          "\u79df\u91d1\u60c5\u51b5",
+          0.0
+        ],
+        [
+          "\u8d23\u4efb\u5212\u5206",
+          0.16666666666666666
+        ],
+        [
+          "\u8d23\u4efb\u627f\u62c5",
+          0.0
+        ],
+        [
+          "\u8d23\u4efb\u8ba4\u5b9a",
+          0.5833333333333334
+        ],
+        [
+          "\u9274\u5b9a\u7ed3\u8bba\u91c7\u4fe1\u95ee\u9898",
+          0.0
+        ]
+      ],
+      "tokens": 524.3333333333333
+    }
+  },
+  {
+    "candidate_id": "cand_0020",
+    "describe": [
+      {
+        "b": 0.75,
+        "k": 5,
+        "k1": 1.5,
+        "kind": "retriever",
+        "name": "bm25_retriever"
+      },
+      {
+        "kind": "reranker",
+        "name": "diversity_reranker"
+      },
+      {
+        "k": 3,
+        "kind": "fewshot",
+        "name": "topk_fewshot"
+      },
+      {
+        "kind": "formatter",
+        "name": "simple_formatter",
+        "system_hint": "Classify the input."
+      },
+      {
+        "kind": "predictor",
+        "n_samples": 1,
+        "name": "llm_predictor",
+        "temperature": 0.15
+      },
+      {
+        "kind": "voter",
+        "name": "majority_voter"
+      }
+    ],
+    "score": {
+      "accuracy": 0.16666666666666666,
+      "accuracy_spread": 0.0,
+      "latency_ms": 653.840256895765,
+      "n_evaluated": 48,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "\u539f\u5ba1\u5224\u51b3\u662f\u5426\u9002\u5f53",
+          0.16666666666666666
+        ],
+        [
+          "\u635f\u5931\u8ba4\u5b9a\u53ca\u5904\u7406",
+          0.0
+        ],
+        [
+          "\u672c\u91d1\u4e89\u8bae",
+          0.3333333333333333
+        ],
+        [
+          "\u79df\u91d1\u60c5\u51b5",
+          0.0
+        ],
+        [
+          "\u8d23\u4efb\u5212\u5206",
+          0.16666666666666666
+        ],
+        [
+          "\u8d23\u4efb\u627f\u62c5",
+          0.0
+        ],
+        [
+          "\u8d23\u4efb\u8ba4\u5b9a",
+          0.6666666666666666
+        ],
+        [
+          "\u9274\u5b9a\u7ed3\u8bba\u91c7\u4fe1\u95ee\u9898",
+          0.0
+        ]
+      ],
+      "tokens": 524.3333333333333
+    }
+  },
+  {
+    "candidate_id": "cand_0014",
+    "describe": [
+      {
+        "b": 0.75,
+        "k": 3,
+        "k1": 1.5,
+        "kind": "retriever",
+        "name": "bm25_retriever"
+      },
+      {
+        "kind": "reranker",
+        "name": "diversity_reranker"
+      },
+      {
+        "k": 2,
+        "kind": "fewshot",
+        "name": "topk_fewshot"
+      },
+      {
+        "kind": "formatter",
+        "max_reasoning_words": 15,
+        "name": "compressed_cot_formatter",
+        "system_hint": "Classify the input into one of the given classes. Reason in at most 15 words about which key terms point to which class. Then on the final line output ONLY the class name, lowercase. Be terse \u2014 every extra word costs."
+      },
+      {
+        "kind": "predictor",
+        "n_samples": 1,
+        "name": "llm_predictor",
+        "temperature": 0.0
+      },
+      {
+        "kind": "voter",
+        "name": "majority_voter"
+      }
+    ],
+    "score": {
+      "accuracy": 0.2916666666666667,
+      "accuracy_spread": 0.0,
+      "latency_ms": 970.3400981875376,
+      "n_evaluated": 48,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "\u539f\u5ba1\u5224\u51b3\u662f\u5426\u9002\u5f53",
+          0.3333333333333333
+        ],
+        [
+          "\u635f\u5931\u8ba4\u5b9a\u53ca\u5904\u7406",
+          0.5
+        ],
+        [
+          "\u672c\u91d1\u4e89\u8bae",
+          0.5
+        ],
+        [
+          "\u79df\u91d1\u60c5\u51b5",
+          0.0
+        ],
+        [
+          "\u8d23\u4efb\u5212\u5206",
+          0.5
+        ],
+        [
+          "\u8d23\u4efb\u627f\u62c5",
+          0.0
+        ],
+        [
+          "\u8d23\u4efb\u8ba4\u5b9a",
+          0.3333333333333333
+        ],
+        [
+          "\u9274\u5b9a\u7ed3\u8bba\u91c7\u4fe1\u95ee\u9898",
+          0.16666666666666666
+        ]
+      ],
+      "tokens": 647.6875
+    }
+  },
+  {
+    "candidate_id": "cand_0023",
+    "describe": [
+      {
+        "b": 0.75,
+        "k": 4,
+        "k1": 1.5,
+        "kind": "retriever",
+        "name": "bm25_retriever"
+      },
+      {
+        "kind": "reranker",
+        "name": "null_reranker"
+      },
+      {
+        "k": 2,
+        "kind": "fewshot",
+        "name": "topk_fewshot"
+      },
+      {
+        "kind": "formatter",
+        "name": "simple_formatter",
+        "system_hint": "Classify the input."
+      },
+      {
+        "kind": "predictor",
+        "n_samples": 1,
+        "name": "llm_predictor",
+        "temperature": 0.2
+      },
+      {
+        "kind": "voter",
+        "name": "majority_voter"
+      }
+    ],
+    "score": {
+      "accuracy": 0.17708333333333331,
+      "accuracy_spread": 0.020833333333333343,
+      "latency_ms": 640.420670614643,
+      "n_evaluated": 48,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "\u539f\u5ba1\u5224\u51b3\u662f\u5426\u9002\u5f53",
+          0.16666666666666666
+        ],
+        [
+          "\u635f\u5931\u8ba4\u5b9a\u53ca\u5904\u7406",
+          0.0
+        ],
+        [
+          "\u672c\u91d1\u4e89\u8bae",
+          0.3333333333333333
+        ],
+        [
+          "\u79df\u91d1\u60c5\u51b5",
+          0.0
+        ],
+        [
+          "\u8d23\u4efb\u5212\u5206",
+          0.25
+        ],
+        [
+          "\u8d23\u4efb\u627f\u62c5",
+          0.0
+        ],
+        [
+          "\u8d23\u4efb\u8ba4\u5b9a",
+          0.6666666666666666
+        ],
+        [
+          "\u9274\u5b9a\u7ed3\u8bba\u91c7\u4fe1\u95ee\u9898",
+          0.0
+        ]
+      ],
+      "tokens": 524.40625
+    }
+  },
+  {
+    "candidate_id": "cand_0026",
+    "describe": [
+      {
+        "k": 3,
+        "kind": "retriever",
+        "name": "tfidf_retriever"
+      },
+      {
+        "kind": "reranker",
+        "name": "null_reranker"
+      },
+      {
+        "k": 2,
+        "kind": "fewshot",
+        "name": "topk_fewshot"
+      },
+      {
+        "kind": "formatter",
+        "name": "simple_formatter",
+        "system_hint": "Classify the input."
+      },
+      {
+        "kind": "predictor",
+        "n_samples": 1,
+        "name": "llm_predictor",
+        "temperature": 0.3
+      },
+      {
+        "kind": "voter",
+        "name": "null_voter"
+      }
+    ],
+    "score": {
+      "accuracy": 0.17708333333333331,
+      "accuracy_spread": 0.020833333333333343,
+      "latency_ms": 640.3359587915445,
+      "n_evaluated": 48,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "\u539f\u5ba1\u5224\u51b3\u662f\u5426\u9002\u5f53",
+          0.16666666666666666
+        ],
+        [
+          "\u635f\u5931\u8ba4\u5b9a\u53ca\u5904\u7406",
+          0.0
+        ],
+        [
+          "\u672c\u91d1\u4e89\u8bae",
+          0.3333333333333333
+        ],
+        [
+          "\u79df\u91d1\u60c5\u51b5",
+          0.0
+        ],
+        [
+          "\u8d23\u4efb\u5212\u5206",
+          0.16666666666666666
+        ],
+        [
+          "\u8d23\u4efb\u627f\u62c5",
+          0.0
+        ],
+        [
+          "\u8d23\u4efb\u8ba4\u5b9a",
+          0.75
+        ],
+        [
+          "\u9274\u5b9a\u7ed3\u8bba\u91c7\u4fe1\u95ee\u9898",
+          0.0
+        ]
+      ],
+      "tokens": 524.4375
+    }
+  },
+  {
+    "candidate_id": "cand_0032",
+    "describe": [
+      {
+        "b": 0.75,
+        "k": 5,
+        "k1": 1.5,
+        "kind": "retriever",
+        "name": "bm25_retriever"
+      },
+      {
+        "kind": "reranker",
+        "name": "null_reranker"
+      },
+      {
+        "k": 2,
+        "kind": "fewshot",
+        "name": "topk_fewshot"
+      },
+      {
+        "kind": "formatter",
+        "name": "simple_formatter",
+        "system_hint": "Classify the input."
+      },
+      {
+        "kind": "predictor",
+        "n_samples": 1,
+        "name": "llm_predictor",
+        "temperature": 0.2
+      },
+      {
+        "kind": "voter",
+        "name": "null_voter"
+      }
+    ],
+    "score": {
+      "accuracy": 0.16666666666666666,
+      "accuracy_spread": 0.0,
+      "latency_ms": 630.3826561042845,
+      "n_evaluated": 48,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "\u539f\u5ba1\u5224\u51b3\u662f\u5426\u9002\u5f53",
+          0.16666666666666666
+        ],
+        [
+          "\u635f\u5931\u8ba4\u5b9a\u53ca\u5904\u7406",
+          0.0
+        ],
+        [
+          "\u672c\u91d1\u4e89\u8bae",
+          0.3333333333333333
+        ],
+        [
+          "\u79df\u91d1\u60c5\u51b5",
+          0.0
+        ],
+        [
+          "\u8d23\u4efb\u5212\u5206",
+          0.16666666666666666
+        ],
+        [
+          "\u8d23\u4efb\u627f\u62c5",
+          0.0
+        ],
+        [
+          "\u8d23\u4efb\u8ba4\u5b9a",
+          0.6666666666666666
+        ],
+        [
+          "\u9274\u5b9a\u7ed3\u8bba\u91c7\u4fe1\u95ee\u9898",
+          0.0
+        ]
+      ],
+      "tokens": 524.34375
+    }
+  },
+  {
+    "candidate_id": "cand_0034",
+    "describe": [
+      {
+        "k": 4,
+        "kind": "retriever",
+        "name": "bow_retriever"
+      },
+      {
+        "kind": "reranker",
+        "m": 4,
+        "name": "llm_reranker",
+        "temperature": 0.4
+      },
+      {
+        "k": 2,
+        "kind": "fewshot",
+        "name": "topk_fewshot"
+      },
+      {
+        "kind": "formatter",
+        "name": "simple_formatter",
+        "system_hint": "Classify the input."
+      },
+      {
+        "kind": "predictor",
+        "n_samples": 1,
+        "name": "llm_predictor",
+        "temperature": 0.3
+      },
+      {
+        "kind": "voter",
+        "name": "majority_voter"
+      }
+    ],
+    "score": {
+      "accuracy": 0.14583333333333331,
+      "accuracy_spread": 0.04166666666666666,
+      "latency_ms": 683.7653993437411,
+      "n_evaluated": 48,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "\u539f\u5ba1\u5224\u51b3\u662f\u5426\u9002\u5f53",
+          0.16666666666666666
+        ],
+        [
+          "\u635f\u5931\u8ba4\u5b9a\u53ca\u5904\u7406",
+          0.0
+        ],
+        [
+          "\u672c\u91d1\u4e89\u8bae",
+          0.3333333333333333
+        ],
+        [
+          "\u79df\u91d1\u60c5\u51b5",
+          0.0
+        ],
+        [
+          "\u8d23\u4efb\u5212\u5206",
+          0.08333333333333333
+        ],
+        [
+          "\u8d23\u4efb\u627f\u62c5",
+          0.0
+        ],
+        [
+          "\u8d23\u4efb\u8ba4\u5b9a",
+          0.5833333333333334
+        ],
+        [
+          "\u9274\u5b9a\u7ed3\u8bba\u91c7\u4fe1\u95ee\u9898",
+          0.0
+        ]
+      ],
+      "tokens": 524.3020833333333
+    }
+  },
+  {
+    "candidate_id": "cand_0033",
+    "describe": [
+      {
+        "b": 0.75,
+        "k": 3,
+        "k1": 1.5,
+        "kind": "retriever",
+        "name": "bm25_retriever"
+      },
+      {
+        "kind": "reranker",
+        "m": 5,
+        "name": "llm_reranker",
+        "temperature": 0.3
+      },
+      {
+        "k": 2,
+        "kind": "fewshot",
+        "name": "topk_fewshot"
+      },
+      {
+        "kind": "formatter",
+        "max_reasoning_words": 50,
+        "name": "compressed_cot_formatter",
+        "system_hint": "Classify the input into one of the given classes. Reason in at most 50 words about which key terms point to which class. Then on the final line output ONLY the class name, lowercase. Be terse \u2014 every extra word costs."
+      },
+      {
+        "kind": "predictor",
+        "n_samples": 1,
+        "name": "llm_predictor",
+        "temperature": 0.0
+      },
+      {
+        "kind": "voter",
+        "name": "majority_voter"
+      }
+    ],
+    "score": {
+      "accuracy": 0.2708333333333333,
+      "accuracy_spread": 0.0,
+      "latency_ms": 881.2810973958254,
+      "n_evaluated": 48,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "\u539f\u5ba1\u5224\u51b3\u662f\u5426\u9002\u5f53",
+          0.6666666666666666
+        ],
+        [
+          "\u635f\u5931\u8ba4\u5b9a\u53ca\u5904\u7406",
+          0.16666666666666666
+        ],
+        [
+          "\u672c\u91d1\u4e89\u8bae",
+          0.5
+        ],
+        [
+          "\u79df\u91d1\u60c5\u51b5",
+          0.0
+        ],
+        [
+          "\u8d23\u4efb\u5212\u5206",
+          0.6666666666666666
+        ],
+        [
+          "\u8d23\u4efb\u627f\u62c5",
+          0.0
+        ],
+        [
+          "\u8d23\u4efb\u8ba4\u5b9a",
+          0.0
+        ],
+        [
+          "\u9274\u5b9a\u7ed3\u8bba\u91c7\u4fe1\u95ee\u9898",
+          0.16666666666666666
+        ]
+      ],
+      "tokens": 669.4375
+    }
+  }
+]
