@@ -1,0 +1,53 @@
+{
+  "model": "gemini-2.5-flash-lite",
+  "task": "news_hard_50",
+  "repeats": 3,
+  "cot_rag_baseline": {
+    "accuracy": 0.94,
+    "tokens": 290
+  },
+  "variants": {
+    "alpha": {
+      "accuracy": 0.96,
+      "tokens": 405.12000000000006,
+      "latency_ms": 2313.037296006963,
+      "spread": 0.020000000000000018,
+      "elapsed_s": 33.6
+    },
+    "V1_alpha+voting": {
+      "accuracy": 0.94,
+      "tokens": 687.0866666666667,
+      "latency_ms": 5277.306381646939,
+      "spread": 0.039999999999999925,
+      "elapsed_s": 112.2
+    },
+    "V2_alpha_wider": {
+      "accuracy": 0.84,
+      "tokens": 525.32,
+      "latency_ms": 2176.0987846800267,
+      "spread": 0.0,
+      "elapsed_s": 33.2
+    },
+    "V3_alpha+more_reasoning": {
+      "accuracy": 0.9,
+      "tokens": 422.75333333333333,
+      "latency_ms": 2017.981753446814,
+      "spread": 0.020000000000000018,
+      "elapsed_s": 28.9
+    },
+    "V4_alpha+voting+wider": {
+      "accuracy": 0.84,
+      "tokens": 857.7266666666666,
+      "latency_ms": 3751.0416297936013,
+      "spread": 0.05999999999999994,
+      "elapsed_s": 79.8
+    },
+    "V5_alpha+voting+reasoning": {
+      "accuracy": 0.88,
+      "tokens": 727.2199999999999,
+      "latency_ms": 3842.6977957732656,
+      "spread": 0.040000000000000036,
+      "elapsed_s": 82.4
+    }
+  }
+}

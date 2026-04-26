@@ -1,0 +1,58 @@
+{
+  "model": "gpt-4.1-nano",
+  "task": "news_hard_50",
+  "repeats": 5,
+  "alpha_shape": {
+    "components": [
+      {
+        "kind": "retriever",
+        "name": "bm25_retriever",
+        "k": 5,
+        "k1": 1.5,
+        "b": 0.75
+      },
+      {
+        "kind": "reranker",
+        "name": "llm_reranker",
+        "m": 3,
+        "temperature": 0.2
+      },
+      {
+        "kind": "fewshot",
+        "name": "topk_fewshot",
+        "k": 2
+      },
+      {
+        "kind": "formatter",
+        "name": "compressed_cot_formatter",
+        "system_hint": "Classify the input into one of the given classes. Reason in at most 15 words about which key terms point to which class. Then on the final line output ONLY the class name, lowercase. Be terse \u2014 every extra word costs.",
+        "max_reasoning_words": 15
+      },
+      {
+        "kind": "predictor",
+        "name": "llm_predictor",
+        "n_samples": 1,
+        "temperature": 0.0
+      },
+      {
+        "kind": "voter",
+        "name": "null_voter"
+      }
+    ]
+  },
+  "score": {
+    "accuracy": 0.8,
+    "tokens": 422.296,
+    "latency_ms": 1480.9181176521356,
+    "spread": 0.0
+  },
+  "cache_stats": {
+    "hits": 190,
+    "misses": 60,
+    "writes": 60,
+    "cached_keys": 60,
+    "hit_rate": 0.76,
+    "path": "runs/cache/alpha_shape_openai_news_hard_50.jsonl"
+  },
+  "elapsed_s": 27.8
+}

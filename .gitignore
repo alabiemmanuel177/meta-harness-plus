@@ -77,6 +77,8 @@ runs/*
 !runs/gemini_news_hard_50_seed3_beatcot/
 !runs/gemini_news_hard_50_seed4_beatcot/
 !runs/gemini_news_hard_50_beatcot_aggregate.json
+!runs/alpha_shape_*.json
+!runs/alpha_variants_*.json
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
