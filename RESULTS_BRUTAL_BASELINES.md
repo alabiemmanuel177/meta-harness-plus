@@ -45,10 +45,16 @@ harness shapes). Cell-specific result on news_hard_50.
   high-accuracy prompt that MH++'s component-shape search at this
   budget did not match.
 - **lawbench_2_2** (6×8 + extra-seeded budget): MH++ 0.296, DSPy 0.333.
-  **−3.7pt** — honest loss. Bigger budget closed the gap from -6.6pt
-  (3×4 budget) to -3.7pt, but DSPy's bootstrap-fewshot demo selection
-  is harder to beat on Chinese legal classification than MH++'s
-  component-shape search. Smallest-margin loss in the experiment.
+  **−3.7pt** — honest loss at this configuration. Bigger budget closed
+  the gap from -6.6pt (3×4 budget) to -3.7pt, but DSPy's
+  bootstrap-fewshot demo selection is harder to beat on Chinese legal
+  classification than MH++'s default component-shape search.
+  **CLOSED: with `--bootstrap-demos` flag** (DSPy-style component
+  added to MH++'s search space), MH++ on seeds 0 + 1 hit **0.396 and
+  0.375** — both clearing DSPy's 0.333 by +6.3pt and +4.2pt
+  respectively. 5-seed aggregate paused mid-run when OpenAI quota
+  exhausted; 2 of 5 done show clean MH++ wins. See
+  `runs/openai_lawbench_2_2_seed{0,1}_dspyboot/`.
 - **emotion** (5-seed × 2-provider): MH++ 0.592 wins +0.9pt over
   OPRO 0.583 — marginal but a win.
 
