@@ -15,7 +15,7 @@ After user-audit on 2026-04-26:
 | 1 | Beat MH directly | **Partial** | LawBench classification covered (+10pt). GSM8K math now wired and won (5-seed Gemini Δ +0.047, p=0.004, d=+2.69, 3/5 seeds strict-Pareto). TerminalBench-style agent runtime explicitly not implemented — needs sandboxed shell + multi-turn loop our classification-only architecture cannot provide. |
 | 2 | Public benchmarks | **Partial** | 6 of 6 listed datasets wired and run (AG News, emotion, LawBench 2-2, 20 Newsgroups, Symptom2Disease, USPTO-substitute patent-classification top-8). MASSIVE not done. Full LawBench (15 more subtasks beyond 2-2) not done. Most cells at 5 seeds, 4 cells at 10 seeds. |
 | 3 | Strict Pareto headline | **Met** | RESULTS_FINAL_GRID.md leads with 17/40 strict-dominance trials. |
-| 4 | Brutal baselines | **Partial** | All 9 baselines implemented and reported. lawbench loss CLOSED (`--bootstrap-demos` lifts MH++ to 0.358 vs DSPy 0.333, +2.5pt mean, paired t=+10.71, p=0.0004, 4/5 seeds beat DSPy individually). agnews retry with `--bootstrap-instructions` running now. Current standing: **4 wins / 1 loss-or-pending on OpenAI cells** (was 3/2). |
+| 4 | Brutal baselines | **Partial** | All 9 baselines implemented and reported. lawbench loss CLOSED (`--bootstrap-demos` lifts MH++ to 0.358 vs DSPy 0.333, +2.5pt mean, paired t=+10.71, p=0.0004, 4/5 seeds beat DSPy individually). agnews loss NARROWED (`--bootstrap-instructions` lifts MH++ to 0.881 vs OPRO 0.896, -1.5pt residual loss vs -4.4pt original; 2/5 seeds match OPRO). Current standing: **4 wins / 1 narrow residual loss on OpenAI cells**. |
 | 5 | Killer demo | **Met** | examples/demo.py + examples/demo_notebook.ipynb + HTML dashboard. |
 | 6 | Synergy discovery | **Met** | meta_harness_plus/synergy.py drop-pair attribution + 3 unit tests. |
 | 7 | Online/continual | **Partial** | meta_harness_plus/online.py exists but is **passive** by design — it ingests + rescores + emits PromoteReport. There is no background search loop that proposes new candidates from production data. The online module's docstring explicitly says: "No background search loop yet." Real continual improvement (auto-tuning layer for all LLM apps) requires the active search loop, which is implemented in this commit but not battle-tested. |
@@ -23,7 +23,7 @@ After user-audit on 2026-04-26:
 
 **Current: 4 fully met (3, 5, 6, 8), 4 partial (1, 2, 4, 7) — but Tasks 1 and 4 substantially closed this iteration:**
 - Task 1: math half (GSM8K) now wins; only agent half remains genuinely out of scope.
-- Task 4: lawbench loss closed; agnews retry in flight.
+- Task 4: lawbench loss CLOSED; agnews loss NARROWED from -4.4pt to -1.5pt residual (2/5 seeds match OPRO exactly).
 
 ## What partial means for each
 
@@ -82,7 +82,7 @@ cells at 5 seeds.
 | OpenAI × symptom_hard | TextGrad (0.933)   | 0.960 | **+2.7pt MH++** |
 | OpenAI × emotion      | OPRO (0.583)       | 0.592 | **+0.9pt MH++** |
 | OpenAI × lawbench_2_2 | DSPy (0.333)       | 0.358 | **+2.5pt MH++ (closed via `--bootstrap-demos`)** |
-| OpenAI × agnews       | OPRO (0.896)       | 0.852 | **-4.4pt — retry in flight via `--bootstrap-instructions`** |
+| OpenAI × agnews       | OPRO (0.896)       | 0.881 | **-1.5pt narrowed (was -4.4pt) — 2/5 seeds match OPRO** |
 
 We win **4 of 5 OpenAI cells**. We chose option 1 from the original
 list (absorb each baseline's specialty into MH++'s search space):
@@ -91,9 +91,12 @@ list (absorb each baseline's specialty into MH++'s search space):
   and beat DSPy 0.333 by +2.5pt mean (paired t=+10.71, p=0.0004,
   d=+4.79).
 - OPRO's instruction-string optimization is now a first-class
-  preprocessing step (`--bootstrap-instructions N`). agnews retry
-  using this is running now; if it lands above OPRO's 0.896, this
-  task is fully closed.
+  preprocessing step (`--bootstrap-instructions N`). On agnews
+  this lifted MH++ from 0.852 → 0.881 (mean over 5 seeds). vs
+  OPRO 0.896 the residual gap is **-1.5pt** (down from -4.4pt);
+  2 of 5 seeds match OPRO's 0.896 exactly. Honest narrow residual
+  loss — at instruction-pool size 8 OPRO's pure-instruction
+  optimization still has a slim edge on this clean-topic dataset.
 
 The pattern — *absorb the narrow baseline's specialty into the broader
 search, exceed it* — is itself a paper-level finding: extensible
@@ -124,7 +127,7 @@ it is not yet stress-tested in production.
 |---|---|---|
 | 1 | Beat MH agent | 2-4 weeks: agent runtime (sandboxed shell + multi-turn loop). Math half done. |
 | 2 | Public benchmarks | <1 day: full LawBench + MASSIVE multilingual + 10-seed extensions on remaining cells |
-| 4 | Brutal baselines | <1 day if agnews-bootstrap-instr retry lands above 0.896; else add another search-space ingredient. lawbench done. |
+| 4 | Brutal baselines | <1 day to fully close: bigger instruction-pool budget (16+ vs 8) on agnews, or pair `--bootstrap-instructions` with another component the seeds 1+3 found. lawbench done. agnews narrowed -4.4pt → -1.5pt. |
 | 7 | Online/continual | 1-2 days: production-grade search loop + safety harness |
 
 Totals: ~2-4 weeks of focused work to convert all 4 partials to met
@@ -144,9 +147,11 @@ We claim:
 - ✅ Public benchmarks (Task 2: 6 of 6 listed datasets wired and run,
   USPTO substituted by patent-classification; mostly 5-seed not
   10-seed; full LawBench + MASSIVE not done).
-- ✅ All 9 brutal baselines compared (Task 4: 4 wins, 1 loss-or-pending
-  agnews retry; lawbench loss closed via DSPy-style component
-  absorption).
+- ✅ All 9 brutal baselines compared (Task 4: 4 wins; 1 narrow residual
+  loss on agnews vs OPRO at -1.5pt, narrowed from -4.4pt by absorbing
+  OPRO's instruction-string specialty into MH++'s search space; 2 of 5
+  agnews seeds match OPRO 0.896 exactly. lawbench loss fully closed
+  via DSPy-style component absorption).
 - ⚠️ Passive online/continual mechanism (Task 7 partial — no active
   search loop yet, though `propose_and_admit` prototype lands here).
 
