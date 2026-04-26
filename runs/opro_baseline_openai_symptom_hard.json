@@ -1,0 +1,82 @@
+{
+  "task": "symptom_hard",
+  "model": "gpt-4.1-nano",
+  "api": "openai",
+  "iterations": 4,
+  "proposals": 4,
+  "n_candidates": 17,
+  "seed_acc": 0.6,
+  "best_acc": 0.6666666666666666,
+  "best_instruction": "Carefully read the medical text and determine which of the following specialties it pertains to: cardiology, dermatology, gastroenterology, neurology, or orthopedics. Choose the most appropriate category based on the primary focus of the content.",
+  "all_history": [
+    [
+      "Classify the input.",
+      0.6
+    ],
+    [
+      "Analyze the input text and assign it to one of the following categories based on the main medical specialty discussed: cardiology, dermatology, gastroenterology, neurology, or orthopedics. Use relevant keywords, context, and medical terminology to determine the most appropriate class.",
+      0.6
+    ],
+    [
+      "Carefully read the medical text and determine which of the following specialties it pertains to: cardiology, dermatology, gastroenterology, neurology, or orthopedics. Choose the most appropriate category based on the primary focus of the content.",
+      0.6666666666666666
+    ],
+    [
+      "Analyze the input text and determine the most appropriate medical specialty from cardiology, dermatology, gastroenterology, neurology, or orthopedics based on the key clinical information provided.",
+      0.6666666666666666
+    ],
+    [
+      "Analyze the provided medical text and determine the most relevant specialty from cardiology, dermatology, gastroenterology, neurology, or orthopedics based on the primary focus and context of the content.",
+      0.6
+    ],
+    [
+      "Read the provided medical text carefully and select the most relevant specialty from cardiology, dermatology, gastroenterology, neurology, or orthopedics, based on the primary focus and key terminology used.",
+      0.6666666666666666
+    ],
+    [
+      "Read the provided medical text carefully and select the correct specialty from cardiology, dermatology, gastroenterology, neurology, or orthopedics that best matches the primary focus of the content.",
+      0.6666666666666666
+    ],
+    [
+      "Read the provided medical text carefully and assign it to the correct specialty from cardiology, dermatology, gastroenterology, neurology, or orthopedics, based on the primary focus and key terminology used in the content.",
+      0.6666666666666666
+    ],
+    [
+      "Read the provided medical text carefully and assign it to the correct specialty category from cardiology, dermatology, gastroenterology, neurology, or orthopedics based on the primary focus and context of the content.",
+      0.6
+    ],
+    [
+      "Carefully analyze the given medical text and determine the primary specialty it pertains to from the following options: cardiology, dermatology, gastroenterology, neurology, orthopedics. Focus on identifying key medical terms and context to select the most accurate category.",
+      0.6
+    ],
+    [
+      "Carefully analyze the given medical text to identify the primary specialty it relates to\u2014cardiology, dermatology, gastroenterology, neurology, or orthopedics\u2014by focusing on key terminology, symptoms, and context relevant to each field.",
+      0.6
+    ],
+    [
+      "Carefully analyze the given medical text to identify and assign the primary specialty category from cardiology, dermatology, gastroenterology, neurology, or orthopedics, based on the main topic and clinical focus described.",
+      0.6
+    ],
+    [
+      "Carefully analyze the given medical text and determine the most relevant specialty category from cardiology, dermatology, gastroenterology, neurology, or orthopedics, based on the primary focus and key medical terminology discussed.",
+      0.6
+    ],
+    [
+      "Analyze the provided medical text carefully and determine the primary specialty it pertains to among cardiology, dermatology, gastroenterology, neurology, and orthopedics, choosing the most accurate category based on the content.",
+      0.6
+    ],
+    [
+      "Carefully examine the given medical text to accurately determine its primary specialty category among cardiology, dermatology, gastroenterology, neurology, and orthopedics, ensuring your choice reflects the main focus of the content.",
+      0.6
+    ],
+    [
+      "Analyze the given medical text thoroughly and determine the single most relevant specialty category it pertains to: cardiology, dermatology, gastroenterology, neurology, or orthopedics.",
+      0.6666666666666666
+    ],
+    [
+      "Carefully review the provided medical text and accurately determine the primary specialty among cardiology, dermatology, gastroenterology, neurology, and orthopedics, ensuring your choice reflects the main focus of the content.",
+      0.6
+    ]
+  ],
+  "elapsed_s": 84.8
+}

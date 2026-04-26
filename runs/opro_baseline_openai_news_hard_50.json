@@ -1,0 +1,34 @@
+{
+  "task": "news_hard_50",
+  "model": "gpt-4.1-nano",
+  "api": "openai",
+  "iterations": 2,
+  "proposals": 2,
+  "n_candidates": 5,
+  "seed_acc": 0.72,
+  "best_acc": 0.8,
+  "best_instruction": "Analyze the input text and assign it to one of these categories: business, sports, tech, or world, based on its main topic and context.",
+  "all_history": [
+    [
+      "Classify the input.",
+      0.72
+    ],
+    [
+      "Analyze the input text and assign it to one of these categories: business, sports, tech, or world, based on its main topic and context.",
+      0.8
+    ],
+    [
+      "Analyze the input text and assign it to one of the following categories: business, sports, tech, or world, based on its primary topic and context.",
+      0.78
+    ],
+    [
+      "Read the input text carefully and determine whether it pertains to business, sports, tech, or world news, then assign it to the most appropriate category.",
+      0.74
+    ],
+    [
+      "Read the given text carefully and determine whether it pertains to business, sports, tech, or world news, then assign it to the most appropriate category.",
+      0.74
+    ]
+  ],
+  "elapsed_s": 31.3
+}

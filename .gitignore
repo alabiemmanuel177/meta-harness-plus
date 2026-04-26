@@ -100,6 +100,10 @@ runs/*
 !runs/gemini_news_hard_50_beatcot_aggregate.json
 !runs/alpha_shape_*.json
 !runs/alpha_variants_*.json
+!runs/dspy_baseline_*.json
+!runs/opro_baseline_*.json
+!runs/textgrad_baseline_*.json
+!runs/protegi_baseline_*.json
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/

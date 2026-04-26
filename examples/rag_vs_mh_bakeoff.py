@@ -52,6 +52,8 @@ from meta_harness_plus.search.ensemble_proposer import EnsembleProposer
 from meta_harness_plus.tasks import (
     build_agnews_task,
     build_emotion_task,
+    build_newsgroups20_task,
+    build_symptom2disease_task,
     build_news_hard_50_task,
     build_news_hard_task,
     build_news_task,
@@ -68,6 +70,8 @@ TASK_FACTORIES = {
     "lawbench_2_2": lambda: build_lawbench_task("2-2"),
     "agnews": build_agnews_task,
     "emotion": build_emotion_task,
+    "newsgroups20": build_newsgroups20_task,
+    "symptom2disease": build_symptom2disease_task,
 }
 
 

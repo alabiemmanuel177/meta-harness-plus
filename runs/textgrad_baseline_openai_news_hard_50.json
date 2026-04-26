@@ -1,0 +1,25 @@
+{
+  "task": "news_hard_50",
+  "model": "gpt-4.1-nano",
+  "api": "openai",
+  "epochs": 2,
+  "n_train_batch": 4,
+  "initial_prompt": "Classify the input.",
+  "final_prompt": "Analyze the input systematically by extracting key indicators\u2014such as specific keywords, named entities, and contextual clues\u2014and evaluating their relevance to each category. Use a step-by-step reasoning process: first identify clear indicators, then map them to category characteristics, and finally weigh their relevance to make a classification. Incorporate explicit criteria and examples for each category\u2014e.g., 'world' includes international diplomatic or geopolitical events; 'business' involves economic or corporate news. Address potential overlaps by assessing the primary focus and confidence level, especially in ambiguous cases. Reflect on your reasoning to enhance transparency and consider requesting additional context if uncertainty remains.",
+  "score": {
+    "accuracy": 0.84,
+    "tokens": 463.48,
+    "latency_ms": 1625.4109756999987
+  },
+  "elapsed_s": 78.0,
+  "history": [
+    [
+      0,
+      "Analyze the input and assign it to one of the following categories: business, sports, tech, or world. To ensure accurate classification, follow these steps:\n\n1. Identify key phrases or keywords that i"
+    ],
+    [
+      1,
+      "Analyze the input systematically by extracting key indicators\u2014such as specific keywords, named entities, and contextual clues\u2014and evaluating their relevance to each category. Use a step-by-step reason"
+    ]
+  ]
+}

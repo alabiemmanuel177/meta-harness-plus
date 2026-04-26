@@ -1,0 +1,10 @@
+{
+  "task": "lawbench_2_2",
+  "model": "gpt-4.1-nano",
+  "api": "openai",
+  "n_eval": 48,
+  "bare_dspy_acc": 0.125,
+  "optimized_dspy_acc": 0.3333333333333333,
+  "compile_time_s": 9.3,
+  "max_demos": 4
+}

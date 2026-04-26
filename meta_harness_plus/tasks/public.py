@@ -45,3 +45,29 @@ def build_emotion_task() -> Task:
         train_path=d / "emotion_train.jsonl",
         eval_path=d / "emotion_test.jsonl",
     )
+
+
+def build_newsgroups20_task() -> Task:
+    """20 Newsgroups, top-8 most-common classes (rec.sport.hockey,
+    soc.religion.christian, rec.motorcycles, rec.sport.baseball, sci.crypt,
+    rec.autos, sci.med, sci.space). Posts truncated to 600 chars for
+    retrieval-friendliness."""
+    d = _DATA_DIR / "newsgroups20"
+    return build_task_from_jsonl(
+        name="newsgroups20",
+        train_path=d / "newsgroups20_train.jsonl",
+        eval_path=d / "newsgroups20_test.jsonl",
+    )
+
+
+def build_symptom2disease_task() -> Task:
+    """Symptom2Disease (gretelai/symptom_to_diagnosis), top-8 most-common
+    disease classes from 22 (cervical spondylosis, impetigo, arthritis,
+    dengue, drug reaction, malaria, allergy, bronchial asthma).
+    Public-dataset analogue of our hand-curated symptom_hard."""
+    d = _DATA_DIR / "symptom2disease"
+    return build_task_from_jsonl(
+        name="symptom2disease",
+        train_path=d / "symptom2disease_train.jsonl",
+        eval_path=d / "symptom2disease_test.jsonl",
+    )

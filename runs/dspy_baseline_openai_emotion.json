@@ -1,0 +1,10 @@
+{
+  "task": "emotion",
+  "model": "gpt-4.1-nano",
+  "api": "openai",
+  "n_eval": 48,
+  "bare_dspy_acc": 0.5,
+  "optimized_dspy_acc": 0.5416666666666666,
+  "compile_time_s": 5.6,
+  "max_demos": 4
+}

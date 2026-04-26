@@ -1,0 +1,80 @@
+{"input": "I've been having back pain, a persistent cough, and weakness in my limbs. I also have problems with vertigo and losing my balance, and my neck hurts.", "label": "cervical spondylosis"}
+{"input": "I've been feeling really weak and my neck has been stiff. My joints are swollen and it's hard to move around. Walking is really painful.", "label": "arthritis"}
+{"input": "I've been having a hard time breathing lately. I feel like I can't get enough air, and I'm always coughing. I've also been really tired, and I've been coughing up a lot of mucus. I'm not sure what's wrong with me, but I'm really worried.", "label": "bronchial asthma"}
+{"input": "I've been having chills, nausea, a high temperature, and a headache. I've also been sweating a lot and feeling muscle aches.", "label": "malaria"}
+{"input": "I've been having back pain, a hacking cough, and numbness in my arms and legs. My neck hurts too, and I've been having trouble staying balanced and without getting lightheaded.", "label": "cervical spondylosis"}
+{"input": "I have been feeling nauseous and have a constant urge to vomit, which is accompanied with mild fever and headache. I also feel very weak and tired.", "label": "dengue"}
+{"input": "I've been coughing a lot and I'm really tired. I've been coughing up a lot of thick mucus and my fever is pretty high.", "label": "bronchial asthma"}
+{"input": "I have a cough that has been going on for a few days, and I feel really weak and tired. I have a high fever, and my breathing is getting harder. I also cough up a lot of mucus.", "label": "bronchial asthma"}
+{"input": "I have been having trouble with my muscles and joints. My neck is really tight and my muscles feel weak. I have swollen joints and it is hard to move around without becoming stiff. It is also really uncomfortable to walk.", "label": "arthritis"}
+{"input": "I've been having trouble swallowing, and my throat is sore. My nose has been running, and I've been sneezing a lot.", "label": "allergy"}
+{"input": "I have a fever, vomiting, chills, and severe itching. I've also been sweating a lot and have a headache. I've also been feeling nauseous and my muscles ache.", "label": "malaria"}
+{"input": "I'm dizzy, nauseated, and shaky. My throat is swollen, so I'm having trouble breathing. Sometimes, throughout the night, my chest hurts and I feel sick.", "label": "allergy"}
+{"input": "I have rashes that sometimes cause my skin to flake off. I'm more likely to get sick because of this. My hands sometimes shake and I feel shaky.", "label": "drug reaction"}
+{"input": "I've been having a lot of pain in my joints lately. My neck has been really stiff and it's hard for me to move it around. My joints have been swelling up and it's hard for me to move around without feeling stiff. Walking has been really painful too.", "label": "arthritis"}
+{"input": "I have a runny nose, sneezing, watery eyes, and a cough. My head hurts too.", "label": "allergy"}
+{"input": "I've had a high fever, vomiting, chills, and intense itching. I also have a headache and am sweating a lot. I'm feeling nauseous, and my muscles hurt a lot.", "label": "malaria"}
+{"input": "I have a lot of pain in my neck and back. I also feel weak and lightheaded. I've been coughing up mucus.", "label": "cervical spondylosis"}
+{"input": "I've been feeling really sick. I have a high fever, chills, and a headache. I've also been vomiting and sweating a lot. I'm also really itchy and my muscles hurt.", "label": "malaria"}
+{"input": "I have trouble focusing and remembering things. I feel like I have brain fog.", "label": "drug reaction"}
+{"input": "I have been feeling very sick for the past few days. I have severe joint pain, I feel like vomiting all the time, and I have a mild headache.", "label": "dengue"}
+{"input": "I have a rash on my face and sores near my nose. The sores are red, painful, and have a yellow ooze.", "label": "impetigo"}
+{"input": "I have trouble breathing and my face and chest are swollen. My eyes are itchy and I have a dry cough.", "label": "allergy"}
+{"input": "My skin is itchy and red. Sometimes, it can peel. My lips and cheeks swell, and it is really annoying. I sometimes get headaches and watery eyes because of the swelling.", "label": "allergy"}
+{"input": "I've been having a lot of pain in my joints, especially my knees and hips. I've also been feeling really stiff and it's hard to move around.", "label": "arthritis"}
+{"input": "I have sores on my face. They are red and crusty. They are mostly around my nose and lips. They are painful and there is a yellow or rust-colored fluid coming out of them.", "label": "impetigo"}
+{"input": "I've been having trouble breathing, coughing a lot, and running a fever. I've also been coughing up a lot of thick, mucusy stuff, and I'm feeling really tired. I'm not sure what's going on, but I'm not feeling well.", "label": "bronchial asthma"}
+{"input": "I have a really high fever, and I've been perspiring a lot. I've also been experiencing chills, vomiting, and severe body itchiness. I feel queasy and have a headache. My muscles are in excruciating discomfort.", "label": "malaria"}
+{"input": "I've been having a lot of pain in my neck and back, and my arms and legs are numb. I've also been having problems with my balance and vertigo.", "label": "cervical spondylosis"}
+{"input": "I have been feeling nauseous, and I have lost my appetite. I also feel uneasy and have a pain in my back and muscles.", "label": "dengue"}
+{"input": "I've been having trouble breathing for a few weeks now. It's especially bad when I try to exercise or when I'm around smoke or other irritants. I also have a persistent cough and I'm always tired.", "label": "bronchial asthma"}
+{"input": "I have a fever and my nose is sore. There are red sores on my nose that are painful and have yellow stuff coming out of them.", "label": "impetigo"}
+{"input": "I have been having back pain, a cough that won't go away, and weakness in my arms and legs. My neck hurts and I have been dizzy and have trouble keeping my balance.", "label": "cervical spondylosis"}
+{"input": "I have been experiencing muscle pain and headache. The muscle pain is like a constant ache that is worse when I try to use the affected muscles. I also have small red spots developing on my face, neck and arms.", "label": "dengue"}
+{"input": "I've been feeling really hot and cold lately. I've also been itching a lot and have a headache. I've been sweating a lot and feel nauseous. My muscles are also aching.", "label": "malaria"}
+{"input": "I've been feeling really weak in my muscles lately and my neck has been really stiff. It's been hard for me to move around because my joints are swollen and it hurts to walk.", "label": "arthritis"}
+{"input": "I have a bad cough and I'm really tired. I have a high fever and my breathing is shallow. When I cough, a lot of saliva comes out.", "label": "bronchial asthma"}
+{"input": "I've been feeling really sick for the past few days. I've had a high fever, chills, and intense itching. I've also been vomiting and sweating a lot. I have a headache and my muscles are sore.", "label": "malaria"}
+{"input": "I've been having chills, nausea, a high temperature, and severe muscle pain. I also have a headache and I'm sweating a lot.", "label": "malaria"}
+{"input": "I have a sore on my nose that has crusted over and is hard to touch. It used to leak a yellow-rust colored fluid and it is taking a lot longer to deal with using medication.", "label": "impetigo"}
+{"input": "I'm losing my hair, and it's getting really dry and itchy. My dandruff is getting worse, and my skin is also really dry.", "label": "drug reaction"}
+{"input": "I have a metallic taste in my mouth and my sense of taste and smell have changed. I also have joint and muscle pain.", "label": "drug reaction"}
+{"input": "I've been coughing a lot, and it's hard to breathe. I'm also really tired and exhausted. I've been coughing up a lot of thick, mucusy stuff. I have a fever, too.", "label": "bronchial asthma"}
+{"input": "I have a headache and my eyes hurt. I have red spots on my neck and face and rashes on my arms. My arms and legs hurt a lot. The spots are itchy and uncomfortable.", "label": "dengue"}
+{"input": "I have rashes on my skin that flake off and make me prone to infection. My fingers twitch and I sometimes shake.", "label": "drug reaction"}
+{"input": "I've been feeling sick for a few days. I have a sore throat and my nose is running. I've also been having trouble swallowing.", "label": "allergy"}
+{"input": "I have a rash on my back and chest, and my entire body itches. My skin may be dry and flaky at times, which frequently leaves marks on my body.", "label": "drug reaction"}
+{"input": "I have asthma like symptoms like wheezing and difficulty breathing. I often get fever and have headaches. I feel tired all the time. I have a runny nose and itchy eyes.", "label": "allergy"}
+{"input": "I have a lot of pain in my chest and I feel really sick to my stomach. My chest has been hurting a lot lately and I've been really shaky and anxious.", "label": "drug reaction"}
+{"input": "I have a stiff neck and muscle weakness. I have trouble moving around because of the swelling in my joints. Walking is painful.", "label": "arthritis"}
+{"input": "I've been having a dry cough for a week, and I'm having trouble breathing. I feel weak and tired.", "label": "bronchial asthma"}
+{"input": "I have been having a lot of pain in my neck and back. I also have a dry cough and I feel weak and dizzy.", "label": "cervical spondylosis"}
+{"input": "I have been having a lot of pain in my back and neck. I also have a cough that won't go away and I feel weak and dizzy.", "label": "cervical spondylosis"}
+{"input": "I've been having a lot of pain in my neck and back. I've also been having trouble with my balance and coordination. I've been coughing a lot and my limbs feel weak.", "label": "cervical spondylosis"}
+{"input": "I have a rash on my face that is getting worse. It is very painful and has started to ooze yellow fluid.", "label": "impetigo"}
+{"input": "I've been feeling really tired and weak, and I can't seem to get enough sleep. I've also noticed some small red spots on my arms and legs.", "label": "dengue"}
+{"input": "My muscles have been weak, and my neck has been stiff. My joints are swollen and it's hard to move around. Walking is really painful.", "label": "arthritis"}
+{"input": "I have a rash on my skin that is made up of blisters. The blisters are painful and they are filled with fluid. I also have a fever.", "label": "impetigo"}
+{"input": "I have a fever and feel weak. I have sores on my face that are itchy and painful. They leak a yellow ooze.", "label": "impetigo"}
+{"input": "I have been having a really bad headache that is behind my eyes. I also have no appetite and feel really cold at night.", "label": "dengue"}
+{"input": "I've been feeling really sick lately. I've been having a high fever, chills, and severe itching. I've also been vomiting and sweating a lot. I have a headache and nausea, and my muscles are sore.", "label": "malaria"}
+{"input": "My neck is weak and stiff. My joints are enlarged and it is hard for me to walk without feeling stiff. Walking is also excruciatingly uncomfortable.", "label": "arthritis"}
+{"input": "I've been feeling weak and achy lately, and my joints are swollen and stiff. It's hard to move around, and walking is especially painful.", "label": "arthritis"}
+{"input": "I feel sick to my stomach, lightheaded, and dizzy. My throat is swollen and I can't breathe well. I sometimes feel pain in my chest and nausea at night.", "label": "allergy"}
+{"input": "I've been having a fever for a few days now, and it's been getting worse. I'm also really itchy, and I've been throwing up. I feel really weak and tired, and my head hurts. My muscles are also really sore.", "label": "malaria"}
+{"input": "I feel tired all the time, and my throat feels tingly. I also have dry, flaky skin. Sometimes my eyes get puffy, and my face swells up too.", "label": "allergy"}
+{"input": "I have been coughing a lot lately, and it is hard for me to breathe. I also have a fever, and I feel weak and tired.", "label": "bronchial asthma"}
+{"input": "I have been experiencing changes in my menstrual cycle and unexpected vaginal discharge. I also have been feeling agitated and moody.", "label": "drug reaction"}
+{"input": "I have a fever and I feel really lightheaded and woozy. My heart is pounding and my head is really foggy. I can't think straight and everything looks blurry.", "label": "drug reaction"}
+{"input": "I have been feeling sick to my stomach and have been throwing up. My head hurts really bad and I have some red spots on my arms.", "label": "dengue"}
+{"input": "My neck has been very tight and my muscles have felt quite weak recently. It's tough for me to move around without getting stiff because of my swollen joints. Walking has also been very uncomfortable.", "label": "arthritis"}
+{"input": "I've had this cough for days, and it's really hard to breathe. I'm also really tired and weak, and I have a fever. I've been coughing up a lot of mucus, and it's just been really hard to deal with all of this.", "label": "bronchial asthma"}
+{"input": "I've been having coughing fits, back pain, and weakness in my arms and legs. I've also been having neck pain and dizziness.", "label": "cervical spondylosis"}
+{"input": "I have been having back pain, a productive cough, and muscle weakness. I also have dizziness and uneven balance, and my neck hurts.", "label": "cervical spondylosis"}
+{"input": "I have a high fever and a headache. My body hurts and I feel cold. I'm worried about my health.", "label": "dengue"}
+{"input": "I have a fever, headache, and a rash on my arms and face. I'm also worried about the red sores around my nose and lips.", "label": "impetigo"}
+{"input": "I have a rash on my face, neck, and arms. It's red and burning. I'm worried about it.", "label": "impetigo"}
+{"input": "I have difficulty concentrating and I forget things a lot. I have low mental clarity and I have trouble remembering things.", "label": "drug reaction"}
+{"input": "I have a stuffy nose and nasal congestion. I sometimes have chest discomfort during the night. I can't smell or taste anything.", "label": "allergy"}
+{"input": "I have a rash on my face and it's really painful. There are little blisters around my nose and they're oozing yellow liquid.", "label": "impetigo"}
+{"input": "I have developed rashes all over my body that are itchy and I have lost my appetite. I feel very tired all day and I feel like something is wrong with my body.", "label": "dengue"}

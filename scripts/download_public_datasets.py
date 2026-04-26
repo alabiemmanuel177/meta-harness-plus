@@ -100,6 +100,55 @@ def main():
     print(f"  wrote emotion: {len(train_items)} train, {len(test_items)} eval, "
           f"classes={em_classes}")
 
+    # === 20 Newsgroups (top-8 most-common classes for tractable search budget) ===
+    print("Downloading 20 Newsgroups (top-8 classes)...")
+    ng_train = load_dataset("SetFit/20_newsgroups", split="train")
+    ng_test = load_dataset("SetFit/20_newsgroups", split="test")
+    # Find the top-8 most-common classes in train.
+    label_counts = Counter(ng_train["label_text"])
+    top8 = [label for label, _ in label_counts.most_common(8)]
+    print(f"  top-8 classes: {top8}")
+    # Filter to top-8.
+    ng_train_f = [r for r in ng_train if r["label_text"] in top8]
+    ng_test_f = [r for r in ng_test if r["label_text"] in top8]
+
+    n_per_class_train = max(1, args.n_train // 8)
+    n_per_class_eval = max(1, args.n_eval // 8)
+    train_items = balance_subset(ng_train_f, "label_text", top8,
+                                 n_per_class_train, seed=args.seed)
+    test_items = balance_subset(ng_test_f, "label_text", top8,
+                                n_per_class_eval, seed=args.seed + 1)
+    out_dir = Path("meta_harness_plus/tasks/data/newsgroups20")
+    # Truncate long posts for retrieval-friendliness (first 600 chars).
+    for it in train_items + test_items:
+        it["text"] = str(it["text"])[:600]
+    write_jsonl(out_dir / "newsgroups20_train.jsonl", train_items, "text", "label_text", top8)
+    write_jsonl(out_dir / "newsgroups20_test.jsonl", test_items, "text", "label_text", top8)
+    print(f"  wrote 20newsgroups (top-8): {len(train_items)} train, {len(test_items)} eval")
+
+    # === Symptom2Disease (gretelai/symptom_to_diagnosis, top-8 of 22 classes) ===
+    print("Downloading Symptom2Disease (top-8 classes)...")
+    s2d_train = load_dataset("gretelai/symptom_to_diagnosis", split="train")
+    s2d_test = load_dataset("gretelai/symptom_to_diagnosis", split="test")
+    label_counts = Counter(s2d_train["output_text"])
+    top8_s = [label for label, _ in label_counts.most_common(8)]
+    print(f"  top-8 disease classes: {top8_s}")
+    s2d_train_f = [r for r in s2d_train if r["output_text"] in top8_s]
+    s2d_test_f = [r for r in s2d_test if r["output_text"] in top8_s]
+    n_per_class_train = max(1, args.n_train // 8)
+    n_per_class_eval = max(1, args.n_eval // 8)
+    # Use input_text/output_text keys.
+    train_items = balance_subset(s2d_train_f, "output_text", top8_s,
+                                 n_per_class_train, seed=args.seed)
+    test_items = balance_subset(s2d_test_f, "output_text", top8_s,
+                                n_per_class_eval, seed=args.seed + 1)
+    out_dir = Path("meta_harness_plus/tasks/data/symptom2disease")
+    write_jsonl(out_dir / "symptom2disease_train.jsonl",
+                train_items, "input_text", "output_text", top8_s)
+    write_jsonl(out_dir / "symptom2disease_test.jsonl",
+                test_items, "input_text", "output_text", top8_s)
+    print(f"  wrote symptom2disease (top-8): {len(train_items)} train, {len(test_items)} eval")
+
 
 if __name__ == "__main__":
     main()
