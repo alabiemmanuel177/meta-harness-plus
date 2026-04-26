@@ -61,6 +61,10 @@ class ComponentRegistry:
         # Pre-bootstrapped correct demos for BootstrapFewShot. Set externally
         # via set_bootstrap_demos() at search startup (one-time cost).
         self._bootstrap_demos: list = []
+        # OPRO-style pre-generated instruction strings. Set via
+        # set_instruction_pool(). Used by the LLMProposer prompt builder
+        # to surface candidate system_hint values.
+        self._instruction_pool: list = []
 
     def register(self, entry: Entry) -> None:
         self._entries[(entry.kind, entry.name)] = entry
@@ -68,6 +72,14 @@ class ComponentRegistry:
     def set_bootstrap_demos(self, demos: list) -> None:
         """Store pre-bootstrapped demos for BootstrapFewShot. Idempotent."""
         self._bootstrap_demos = list(demos)
+
+    def set_instruction_pool(self, instructions: list) -> None:
+        """Store OPRO-style pre-generated instructions. Used by formatter
+        components when LLMProposer picks system_hint from this pool."""
+        self._instruction_pool = list(instructions)
+
+    def get_instruction_pool(self) -> list:
+        return getattr(self, "_instruction_pool", [])
 
     def available(self) -> list[tuple[str, str]]:
         return sorted(self._entries.keys())

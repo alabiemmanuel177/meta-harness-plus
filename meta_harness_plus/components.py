@@ -346,6 +346,55 @@ class BootstrapFewShot(FewShotSelector):
                 "demos_pool_size": len(self.demos_pool)}
 
 
+def bootstrap_instructions(
+    client,
+    task,
+    *,
+    n: int = 8,
+    seed_instruction: str = "Classify the input.",
+    temperature: float = 0.7,
+    max_tokens: int = 400,
+) -> list[str]:
+    """OPRO-style: ask an LLM to generate diverse instruction-string variants
+    given a seed instruction. One-time cost at search startup; mirrors
+    OPRO's instruction-tuning loop.
+
+    Returns a list of candidate instruction strings (incl. the seed). The
+    LLM proposer can then pick from these as ``system_hint`` values for
+    SimpleFormatter / CoTFormatter without spending search-iteration
+    budget on instruction mutation.
+
+    Note: ``client`` is duck-typed; we just call ``client.complete(system,
+    user, max_tokens, temperature)`` and read ``.text``.
+    """
+    classes_str = ", ".join(task.classes) if task.classes else "(open-ended)"
+    out: list[str] = [seed_instruction]
+    seen = {seed_instruction}
+    sys_msg = ("You are an instruction-tuning expert. Generate ONE concise, "
+               "high-quality classifier instruction. Output ONLY the "
+               "instruction text, no quotes, no labels.")
+    user_msg = (
+        f"Task: classify text into one of: {classes_str}.\n\n"
+        f"Past instruction (seed):\n{seed_instruction}\n\n"
+        "Generate a NEW instruction that you predict will improve "
+        "classification accuracy. Be concise (under 200 words)."
+    )
+    for _ in range(n):
+        try:
+            resp = client.complete(
+                system=sys_msg, user=user_msg,
+                max_tokens=max_tokens, temperature=temperature,
+            )
+            instr = resp.text.strip().strip('"').strip("'")
+            instr = instr.splitlines()[0].strip() if instr else ""
+            if instr and instr not in seen:
+                out.append(instr)
+                seen.add(instr)
+        except Exception:
+            continue
+    return out
+
+
 def bootstrap_demos(
     predictor,
     train_examples: Sequence[TaskExample],

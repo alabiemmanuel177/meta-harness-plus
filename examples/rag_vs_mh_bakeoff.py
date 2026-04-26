@@ -156,6 +156,15 @@ def run_one_model(model: str, ollama_url: str, run_dir: Path, args) -> dict:
               flush=True)
         registry.set_bootstrap_demos(demos)
 
+    if args.bootstrap_instructions:
+        from meta_harness_plus.components import bootstrap_instructions as _bi
+        print(f"  bootstrapping {args.bootstrap_instructions} instruction "
+              f"variants ...", flush=True)
+        instrs = _bi(client, task, n=args.bootstrap_instructions)
+        print(f"  instruction pool: {len(instrs)} candidates "
+              f"(incl. seed)", flush=True)
+        registry.set_instruction_pool(instrs)
+
     if args.ablation == "no-c3":
         # C3 ablation: random proposer instead of attribution-guided LLMProposer.
         # Build mutators dict from the registry by enumerating each kind's
@@ -436,6 +445,12 @@ def main():
                     help="Pre-bootstrap correct demos (DSPy-style) at search "
                          "startup. Adds ~30s + N_train LLM calls but enables "
                          "the bootstrap_fewshot component in the search space.")
+    ap.add_argument("--bootstrap-instructions", type=int, default=0,
+                    help="Pre-bootstrap N instruction variants (OPRO-style) at "
+                         "search startup. The pool is exposed to the "
+                         "LLMProposer so it can pick from these as "
+                         "candidate system_hint values without spending "
+                         "search-iteration budget on instruction mutation.")
     ap.add_argument("--seed-extra-baselines", action="store_true",
                     help="Seed CoT-RAG, voting-RAG, diverse-RAG into the search "
                          "frontier in addition to BARE and RAG. Use when the search "
