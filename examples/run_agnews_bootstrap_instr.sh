@@ -19,7 +19,7 @@ for SEED in 0 1 2 3 4; do
     --halving-k0 4 --halving-final-keep 2 \
     --eval-repeats 2 --attribution-repeats 2 --attribution-screen-size 12 \
     --cache-path runs/cache/openai_agnews_oproboot.jsonl \
-    --max-workers 4 --screen-seed $SEED \
+    --max-workers 2 --screen-seed $SEED \
     --bootstrap-instructions 8 --seed-extra-baselines \
     > "logs/openai_agnews_seed${SEED}_oproboot.log" 2>&1
 done

@@ -1,0 +1,42 @@
+{
+  "fewshot": {
+    "ewma_alpha": 0.3,
+    "ewma_delta": 0.003419048009999998,
+    "kind": "fewshot",
+    "m2": 0.018454106280193235,
+    "mean_delta": 0.004347826086956523,
+    "n": 23
+  },
+  "formatter": {
+    "ewma_alpha": 0.3,
+    "ewma_delta": -8.303025621407349e-05,
+    "kind": "formatter",
+    "m2": 0.0655072463768116,
+    "mean_delta": -0.0014492753623188436,
+    "n": 23
+  },
+  "reranker": {
+    "ewma_alpha": 0.3,
+    "ewma_delta": 0.006656244279999995,
+    "kind": "reranker",
+    "m2": 0.024912280701754382,
+    "mean_delta": 0.012280701754385961,
+    "n": 19
+  },
+  "retriever": {
+    "ewma_alpha": 0.3,
+    "ewma_delta": 0.0012106082099999993,
+    "kind": "retriever",
+    "m2": 0.00956521739130435,
+    "mean_delta": 0.004347826086956523,
+    "n": 23
+  },
+  "voter": {
+    "ewma_alpha": 0.3,
+    "ewma_delta": -0.0020842360699999986,
+    "kind": "voter",
+    "m2": 0.002028985507246376,
+    "mean_delta": -0.0028985507246376808,
+    "n": 23
+  }
+}

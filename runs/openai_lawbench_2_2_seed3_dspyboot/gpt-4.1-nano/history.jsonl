@@ -1,0 +1,10 @@
+{"admitted": true, "candidate_id": "cand_0001", "phase": "seed", "score": [0.14583333333333334, 517.1875, 700.6053909999251]}
+{"admitted": true, "candidate_id": "cand_0002", "phase": "seed", "score": [0.16666666666666666, 524.3125, 702.9392348540599]}
+{"admitted": false, "candidate_id": "cand_0003", "phase": "seed", "score": [0.14583333333333334, 636.6458333333334, 1047.245097541845]}
+{"admitted": false, "candidate_id": "cand_0004", "phase": "seed", "score": [0.13541666666666669, 1559.25, 2160.964036374925]}
+{"admitted": false, "candidate_id": "cand_0005", "phase": "seed", "score": [0.16666666666666666, 524.3125, 702.9413181873932]}
+{"frontier_size": 4, "iter": 0, "phase": "iter_end", "total_screen_evals": 78}
+{"frontier_size": 5, "iter": 1, "phase": "iter_end", "total_screen_evals": 60}
+{"frontier_size": 7, "iter": 2, "phase": "iter_end", "total_screen_evals": 72}
+{"frontier_size": 9, "iter": 4, "phase": "iter_end", "total_screen_evals": 72}
+{"frontier_size": 9, "iter": 5, "phase": "iter_end", "total_screen_evals": 78}

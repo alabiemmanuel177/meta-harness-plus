@@ -1,0 +1,82 @@
+{
+  "label": "OpenAI gpt-4.1-nano LawBench 2-2 6\u00d78 + bootstrap-demos (5 seeds)",
+  "n_seeds": 5,
+  "per_seed_bare_acc": [
+    0.146,
+    0.146,
+    0.146,
+    0.146,
+    0.146
+  ],
+  "per_seed_rag_acc": [
+    0.167,
+    0.167,
+    0.167,
+    0.167,
+    0.167
+  ],
+  "per_seed_mh_peak_acc": [
+    0.396,
+    0.375,
+    0.354,
+    0.292,
+    0.375
+  ],
+  "per_seed_rag_tokens": [
+    524.3,
+    524.3,
+    524.3,
+    524.3,
+    524.3
+  ],
+  "per_seed_mh_peak_tokens": [
+    2038.3,
+    1968.7,
+    2304.2,
+    1848.4,
+    1968.7
+  ],
+  "per_seed_n_dominate": [
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "per_seed_n_match_cheaper": [
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "ci": {
+    "mh_minus_rag_acc": {
+      "mean": 0.1914,
+      "low": 0.15819999999999998,
+      "high": 0.2164,
+      "confidence": 0.95
+    },
+    "mh_peak_acc": {
+      "mean": 0.3584,
+      "low": 0.3252,
+      "high": 0.3834,
+      "confidence": 0.95
+    },
+    "rag_acc": {
+      "mean": 0.167,
+      "low": 0.167,
+      "high": 0.167,
+      "confidence": 0.95
+    }
+  },
+  "paired_t_test": {
+    "n": 5,
+    "mean_diff": 0.1914,
+    "std_diff": 0.039978744352468114,
+    "t_statistic": 10.705273960587457,
+    "p_value_two_sided": 0.00043142915888494274,
+    "cohens_d": 4.787544058726391
+  },
+  "per_class_delta": {}
+}
