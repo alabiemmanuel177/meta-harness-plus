@@ -1,0 +1,25 @@
+{
+  "task": "agnews",
+  "model": "gpt-4.1-nano",
+  "api": "openai",
+  "rounds": 3,
+  "beam_size": 3,
+  "seed_acc": 0.8333333333333334,
+  "best_acc": 0.8333333333333334,
+  "best_prompt": "Classify the input.",
+  "final_beam": [
+    [
+      "Classify the input.",
+      0.8333333333333334
+    ],
+    [
+      "Classify the input into the appropriate category based on its content.",
+      0.8333333333333334
+    ],
+    [
+      "Classify the input into one of these categories: Business, Sci/Tech, World, or Other.",
+      0.8333333333333334
+    ]
+  ],
+  "elapsed_s": 169.0
+}

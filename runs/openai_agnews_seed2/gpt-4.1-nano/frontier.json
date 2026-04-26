@@ -1,0 +1,237 @@
+[
+  {
+    "candidate_id": "cand_0001",
+    "describe": [
+      {
+        "kind": "retriever",
+        "name": "null_retriever"
+      },
+      {
+        "kind": "fewshot",
+        "name": "null_fewshot"
+      },
+      {
+        "kind": "formatter",
+        "name": "simple_formatter",
+        "system_hint": "Classify the input."
+      },
+      {
+        "kind": "predictor",
+        "n_samples": 1,
+        "name": "llm_predictor",
+        "temperature": 0.0
+      },
+      {
+        "kind": "voter",
+        "name": "null_voter"
+      }
+    ],
+    "score": {
+      "accuracy": 0.8125,
+      "accuracy_spread": 0.0,
+      "latency_ms": 984.0653869999916,
+      "n_evaluated": 48,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "Business",
+          0.8333333333333334
+        ],
+        [
+          "Sci/Tech",
+          0.5833333333333334
+        ],
+        [
+          "Sports",
+          1.0
+        ],
+        [
+          "World",
+          0.8333333333333334
+        ]
+      ],
+      "tokens": 145.10416666666666
+    }
+  },
+  {
+    "candidate_id": "cand_0010",
+    "describe": [
+      {
+        "kind": "retriever",
+        "name": "null_retriever"
+      },
+      {
+        "kind": "reranker",
+        "name": "diversity_reranker"
+      },
+      {
+        "k": 3,
+        "kind": "fewshot",
+        "name": "topk_fewshot"
+      },
+      {
+        "kind": "formatter",
+        "name": "cot_formatter",
+        "system_hint": "Summarize and explain."
+      },
+      {
+        "kind": "predictor",
+        "n_samples": 1,
+        "name": "llm_predictor",
+        "temperature": 0.0
+      },
+      {
+        "kind": "voter",
+        "name": "null_voter"
+      }
+    ],
+    "score": {
+      "accuracy": 0.6875,
+      "accuracy_spread": 0.0,
+      "latency_ms": 642.6516578958257,
+      "n_evaluated": 48,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "Business",
+          0.8333333333333334
+        ],
+        [
+          "Sci/Tech",
+          0.08333333333333333
+        ],
+        [
+          "Sports",
+          0.9166666666666666
+        ],
+        [
+          "World",
+          0.9166666666666666
+        ]
+      ],
+      "tokens": 150.04166666666666
+    }
+  },
+  {
+    "candidate_id": "cand_0023",
+    "describe": [
+      {
+        "k": 3,
+        "kind": "retriever",
+        "name": "bow_retriever"
+      },
+      {
+        "kind": "reranker",
+        "m": 3,
+        "name": "llm_reranker",
+        "temperature": 0.75
+      },
+      {
+        "k": 3,
+        "kind": "fewshot",
+        "name": "topk_fewshot"
+      },
+      {
+        "kind": "formatter",
+        "name": "simple_formatter",
+        "system_hint": "Classify the input."
+      },
+      {
+        "kind": "predictor",
+        "n_samples": 1,
+        "name": "llm_predictor",
+        "temperature": 0.0
+      },
+      {
+        "kind": "voter",
+        "name": "majority_voter"
+      }
+    ],
+    "score": {
+      "accuracy": 0.75,
+      "accuracy_spread": 0.0,
+      "latency_ms": 587.8410964375042,
+      "n_evaluated": 48,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "Business",
+          0.75
+        ],
+        [
+          "Sci/Tech",
+          0.4166666666666667
+        ],
+        [
+          "Sports",
+          1.0
+        ],
+        [
+          "World",
+          0.8333333333333334
+        ]
+      ],
+      "tokens": 570.4166666666666
+    }
+  },
+  {
+    "candidate_id": "cand_0029",
+    "describe": [
+      {
+        "k": 6,
+        "kind": "retriever",
+        "name": "tfidf_retriever"
+      },
+      {
+        "kind": "reranker",
+        "name": "diversity_reranker"
+      },
+      {
+        "k": 2,
+        "kind": "fewshot",
+        "name": "topk_fewshot"
+      },
+      {
+        "kind": "formatter",
+        "name": "simple_formatter",
+        "system_hint": "Classify the input."
+      },
+      {
+        "kind": "predictor",
+        "n_samples": 1,
+        "name": "llm_predictor",
+        "temperature": 0.0
+      },
+      {
+        "kind": "voter",
+        "name": "null_voter"
+      }
+    ],
+    "score": {
+      "accuracy": 0.8333333333333334,
+      "accuracy_spread": 0.0,
+      "latency_ms": 739.2295872708473,
+      "n_evaluated": 48,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "Business",
+          0.9166666666666666
+        ],
+        [
+          "Sci/Tech",
+          0.5
+        ],
+        [
+          "Sports",
+          1.0
+        ],
+        [
+          "World",
+          0.9166666666666666
+        ]
+      ],
+      "tokens": 413.6875
+    }
+  }
+]

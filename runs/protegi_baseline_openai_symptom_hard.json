@@ -1,0 +1,25 @@
+{
+  "task": "symptom_hard",
+  "model": "gpt-4.1-nano",
+  "api": "openai",
+  "rounds": 3,
+  "beam_size": 3,
+  "seed_acc": null,
+  "best_acc": 0.8,
+  "best_prompt": "Classify the medical condition described in the input into the most relevant medical specialty, based on the primary system involved.",
+  "final_beam": [
+    [
+      "Classify the medical condition described in the input into the most relevant medical specialty, based on the primary system involved.",
+      0.8
+    ],
+    [
+      "Classify the medical input into its correct specialty category, considering symptoms and diagnoses.",
+      0.7333333333333333
+    ],
+    [
+      "Classify the medical input into its correct specialty category based solely on symptoms and diagnoses, choosing the most appropriate specialty from cardiology, neurology, orthopedics, or gastroenterology.",
+      0.7333333333333333
+    ]
+  ],
+  "elapsed_s": 46.3
+}
