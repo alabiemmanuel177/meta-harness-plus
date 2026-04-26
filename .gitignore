@@ -168,6 +168,9 @@ runs/*
 !runs/gemini_emotion_seed3/
 !runs/gemini_emotion_seed4/
 !runs/emotion_*_aggregate.json
+!runs/agent_local_fixture/
+!runs/openai_agnews_seed*_oproboot16/
+!runs/openai_agnews_oproboot16_aggregate.json
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/

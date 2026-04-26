@@ -1,0 +1,20 @@
+{"input": "MeI + PhONa >> PhOMe", "label": "heteroatom_alkylation"}
+{"input": "BnBr + NaOR >> BnOR", "label": "heteroatom_alkylation"}
+{"input": "PhOH + BzCl >> PhOBz", "label": "acylation"}
+{"input": "RCH2NH2 + ClCOR' >> RCH2NHCOR'", "label": "acylation"}
+{"input": "PhCHO + R2NLi >> PhCH(OH)R'", "label": "c_c_bond_formation"}
+{"input": "Ph2CO + RLi >> Ph2C(R)OH", "label": "c_c_bond_formation"}
+{"input": "phenol + Cl-CH=N-R >> imine cyclize >> benzoxazole", "label": "heterocycle_formation"}
+{"input": "RNHNH2 + 1,3-diketone >> pyrazole", "label": "heterocycle_formation"}
+{"input": "RCO2H + CH2N2 >> RCO2Me", "label": "protection"}
+{"input": "RCO2H + EtOH/H+ >> RCO2Et", "label": "protection"}
+{"input": "RNBoc + TFA >> RNH2", "label": "deprotection"}
+{"input": "ROMe + BBr3 >> ROH", "label": "deprotection"}
+{"input": "RCN + LiAlH4 >> RCH2NH2", "label": "reduction"}
+{"input": "ArC#N + Pd, H2 >> ArCH2NH2", "label": "reduction"}
+{"input": "RCH=CHR' + mCPBA >> RCH(O)CHR'", "label": "oxidation"}
+{"input": "RSMe + mCPBA >> RS(O)Me", "label": "oxidation"}
+{"input": "RX + NaN3 >> RN3", "label": "functional_group_interconversion"}
+{"input": "RCHO + NH2OH >> RCH=NOH", "label": "functional_group_interconversion"}
+{"input": "RC#CH + HBr >> RCH=CHBr", "label": "functional_group_addition"}
+{"input": "RCH=CH2 + B2H6 >> R-CH2CH2-B(OR')2", "label": "functional_group_addition"}

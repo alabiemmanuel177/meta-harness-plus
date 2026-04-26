@@ -1,0 +1,16 @@
+{"input": "give me a fun fact", "label": "general_quirky"}
+{"input": "do you have a favorite color", "label": "general_quirky"}
+{"input": "put on some classical music", "label": "play_music"}
+{"input": "play that song again", "label": "play_music"}
+{"input": "create a calendar invite for the team meeting", "label": "calendar_set"}
+{"input": "block off thursday morning for focus time", "label": "calendar_set"}
+{"input": "do i need an umbrella tomorrow", "label": "weather_query"}
+{"input": "what's the temperature outside right now", "label": "weather_query"}
+{"input": "any news from the markets", "label": "news_query"}
+{"input": "what happened in europe today", "label": "news_query"}
+{"input": "crank it up by twenty percent", "label": "audio_volume_up"}
+{"input": "increase volume to seventy", "label": "audio_volume_up"}
+{"input": "what's on my reminders", "label": "lists_query"}
+{"input": "list everything in my notes", "label": "lists_query"}
+{"input": "what emails came in this morning", "label": "email_query"}
+{"input": "show me messages from sarah", "label": "email_query"}

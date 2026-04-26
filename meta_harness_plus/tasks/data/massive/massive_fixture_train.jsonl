@@ -1,0 +1,24 @@
+{"input": "tell me a joke", "label": "general_quirky"}
+{"input": "say something funny", "label": "general_quirky"}
+{"input": "make me laugh", "label": "general_quirky"}
+{"input": "play some jazz", "label": "play_music"}
+{"input": "play the latest album by adele", "label": "play_music"}
+{"input": "start my workout playlist", "label": "play_music"}
+{"input": "set a meeting at 3pm tomorrow", "label": "calendar_set"}
+{"input": "add an event for friday at noon", "label": "calendar_set"}
+{"input": "schedule lunch with bob next monday", "label": "calendar_set"}
+{"input": "what's the weather in seattle today", "label": "weather_query"}
+{"input": "is it going to rain tomorrow", "label": "weather_query"}
+{"input": "tell me the forecast for this weekend", "label": "weather_query"}
+{"input": "read me the latest headlines", "label": "news_query"}
+{"input": "what's new in tech news", "label": "news_query"}
+{"input": "tell me today's top stories", "label": "news_query"}
+{"input": "turn up the volume", "label": "audio_volume_up"}
+{"input": "make it louder please", "label": "audio_volume_up"}
+{"input": "raise the sound a bit", "label": "audio_volume_up"}
+{"input": "what's on my shopping list", "label": "lists_query"}
+{"input": "show me my todo list", "label": "lists_query"}
+{"input": "read out my groceries", "label": "lists_query"}
+{"input": "any new emails", "label": "email_query"}
+{"input": "do i have any unread messages", "label": "email_query"}
+{"input": "check my inbox for new mail", "label": "email_query"}

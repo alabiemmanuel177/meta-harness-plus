@@ -1,0 +1,227 @@
+{
+  "task": "terminalbench_local",
+  "n_examples": 6,
+  "candidates": [
+    {
+      "label": "rule_based_oracle",
+      "accuracy": 1.0,
+      "tokens": 11.0,
+      "latency_ms": 12.17384633370481,
+      "n_evaluated": 6,
+      "n_repeats": 1,
+      "wall_seconds": 0.07496926000021631,
+      "trajectories": [
+        {
+          "task_id": "count_word_alpha",
+          "success": true,
+          "n_turns": 2,
+          "total_tokens": 11,
+          "total_latency_ms": 13.713517997530289,
+          "timed_out": false,
+          "hit_max_turns": false,
+          "error": null,
+          "final_observation": "",
+          "turns": [
+            {
+              "turn_idx": 0,
+              "observation": "",
+              "action": "grep -o 'alpha' doc.txt | wc -l | tr -d ' ' > answer.txt",
+              "stdout": "",
+              "stderr": "",
+              "exit_code": 0,
+              "elapsed_s": 0.013713207998080179,
+              "tokens": 10,
+              "truncated": false
+            },
+            {
+              "turn_idx": 1,
+              "observation": "",
+              "action": "<DONE>",
+              "stdout": "",
+              "stderr": "",
+              "exit_code": 0,
+              "elapsed_s": 3.0999945010989904e-07,
+              "tokens": 1,
+              "truncated": false
+            }
+          ]
+        },
+        {
+          "task_id": "json_oldest_user",
+          "success": true,
+          "n_turns": 2,
+          "total_tokens": 11,
+          "total_latency_ms": 19.28249299817253,
+          "timed_out": false,
+          "hit_max_turns": false,
+          "error": null,
+          "final_observation": "",
+          "turns": [
+            {
+              "turn_idx": 0,
+              "observation": "",
+              "action": "python3 -c 'import json;d=json.load(open(\"users.json\"));print(max(d[\"users\"],key=lambda u:u[\"age\"])[\"name\"])' > oldest.txt",
+              "stdout": "",
+              "stderr": "",
+              "exit_code": 0,
+              "elapsed_s": 0.019282242996268906,
+              "tokens": 10,
+              "truncated": false
+            },
+            {
+              "turn_idx": 1,
+              "observation": "",
+              "action": "<DONE>",
+              "stdout": "",
+              "stderr": "",
+              "exit_code": 0,
+              "elapsed_s": 2.500019036233425e-07,
+              "tokens": 1,
+              "truncated": false
+            }
+          ]
+        },
+        {
+          "task_id": "rename_log_to_txt",
+          "success": true,
+          "n_turns": 2,
+          "total_tokens": 11,
+          "total_latency_ms": 9.804773006180767,
+          "timed_out": false,
+          "hit_max_turns": false,
+          "error": null,
+          "final_observation": "",
+          "turns": [
+            {
+              "turn_idx": 0,
+              "observation": "",
+              "action": "for f in *.log; do mv \"$f\" \"${f%.log}.txt\"; done",
+              "stdout": "",
+              "stderr": "",
+              "exit_code": 0,
+              "elapsed_s": 0.009804663000977598,
+              "tokens": 10,
+              "truncated": false
+            },
+            {
+              "turn_idx": 1,
+              "observation": "",
+              "action": "<DONE>",
+              "stdout": "",
+              "stderr": "",
+              "exit_code": 0,
+              "elapsed_s": 1.1000520316883922e-07,
+              "tokens": 1,
+              "truncated": false
+            }
+          ]
+        },
+        {
+          "task_id": "write_add_function",
+          "success": true,
+          "n_turns": 2,
+          "total_tokens": 11,
+          "total_latency_ms": 9.024267994391266,
+          "timed_out": false,
+          "hit_max_turns": false,
+          "error": null,
+          "final_observation": "",
+          "turns": [
+            {
+              "turn_idx": 0,
+              "observation": "",
+              "action": "printf 'def add(a, b):\\n    return a + b\\n' > solution.py",
+              "stdout": "",
+              "stderr": "",
+              "exit_code": 0,
+              "elapsed_s": 0.009024137994856574,
+              "tokens": 10,
+              "truncated": false
+            },
+            {
+              "turn_idx": 1,
+              "observation": "",
+              "action": "<DONE>",
+              "stdout": "",
+              "stderr": "",
+              "exit_code": 0,
+              "elapsed_s": 1.2999953469261527e-07,
+              "tokens": 1,
+              "truncated": false
+            }
+          ]
+        },
+        {
+          "task_id": "grep_errors",
+          "success": true,
+          "n_turns": 2,
+          "total_tokens": 11,
+          "total_latency_ms": 10.96073000371689,
+          "timed_out": false,
+          "hit_max_turns": false,
+          "error": null,
+          "final_observation": "",
+          "turns": [
+            {
+              "turn_idx": 0,
+              "observation": "",
+              "action": "grep ERROR log.txt > errors.txt",
+              "stdout": "",
+              "stderr": "",
+              "exit_code": 0,
+              "elapsed_s": 0.010960530002193991,
+              "tokens": 10,
+              "truncated": false
+            },
+            {
+              "turn_idx": 1,
+              "observation": "",
+              "action": "<DONE>",
+              "stdout": "",
+              "stderr": "",
+              "exit_code": 0,
+              "elapsed_s": 2.00001522898674e-07,
+              "tokens": 1,
+              "truncated": false
+            }
+          ]
+        },
+        {
+          "task_id": "sum_numbers",
+          "success": true,
+          "n_turns": 2,
+          "total_tokens": 11,
+          "total_latency_ms": 10.257296002237126,
+          "timed_out": false,
+          "hit_max_turns": false,
+          "error": null,
+          "final_observation": "",
+          "turns": [
+            {
+              "turn_idx": 0,
+              "observation": "",
+              "action": "awk '{s+=$1} END {print s}' nums.txt > sum.txt",
+              "stdout": "",
+              "stderr": "",
+              "exit_code": 0,
+              "elapsed_s": 0.010257185997033957,
+              "tokens": 10,
+              "truncated": false
+            },
+            {
+              "turn_idx": 1,
+              "observation": "",
+              "action": "<DONE>",
+              "stdout": "",
+              "stderr": "",
+              "exit_code": 0,
+              "elapsed_s": 1.1000520316883922e-07,
+              "tokens": 1,
+              "truncated": false
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

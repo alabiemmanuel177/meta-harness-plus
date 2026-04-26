@@ -64,18 +64,42 @@ from meta_harness_plus.tasks import (
 from meta_harness_plus.tasks.lawbench import build_lawbench_task
 
 
+def _try(factory):
+    """Wrap a factory call so missing-data raises only at task time."""
+    return factory
+
+
 TASK_FACTORIES = {
     "symptom_hard": build_symptom_hard_task,
     "news": build_news_task,
     "news_hard": build_news_hard_task,
     "news_hard_50": build_news_hard_50_task,
     "lawbench_2_2": lambda: build_lawbench_task("2-2"),
+    "lawbench_1_1": lambda: build_lawbench_task("1-1"),
+    "lawbench_2_1": lambda: build_lawbench_task("2-1"),
+    "lawbench_2_4": lambda: build_lawbench_task("2-4"),
+    "lawbench_3_2": lambda: build_lawbench_task("3-2"),
     "agnews": build_agnews_task,
     "emotion": build_emotion_task,
     "newsgroups20": build_newsgroups20_task,
     "symptom2disease": build_symptom2disease_task,
     "patents": build_patents_task,
     "gsm8k": lambda: build_gsm8k_task(n_train=80, n_eval=48),
+    # New public datasets — real-data variants raise FileNotFoundError until
+    # `python3 scripts/download_extra_public_datasets.py` is run. Fixture
+    # variants always work (synthetic data, no network).
+    "uspto50k": lambda: __import__(
+        "meta_harness_plus.tasks.uspto", fromlist=["build_uspto50k_task"]
+    ).build_uspto50k_task(),
+    "massive_en_us": lambda: __import__(
+        "meta_harness_plus.tasks.massive", fromlist=["build_massive_task"]
+    ).build_massive_task(locale="en-US"),
+    "uspto_fixture": lambda: __import__(
+        "meta_harness_plus.tasks.uspto", fromlist=["build_uspto_fixture_task"]
+    ).build_uspto_fixture_task(),
+    "massive_fixture": lambda: __import__(
+        "meta_harness_plus.tasks.massive", fromlist=["build_massive_fixture_task"]
+    ).build_massive_fixture_task(),
 }
 
 

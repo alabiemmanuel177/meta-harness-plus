@@ -32,6 +32,25 @@ from .math_task import (
     build_gsm8k_task,
     extract_math_answer,
 )
+from .terminalbench_fixture import build_terminalbench_fixture
+from .uspto import (
+    USPTO50K_CLASSES,
+    build_uspto50k_task,
+    build_uspto_fixture_task,
+    build_uspto_patents_task,
+)
+from .massive import (
+    MASSIVE_TOP8,
+    build_massive_fixture_task,
+    build_massive_task,
+)
+from .lawbench import (
+    LAWBENCH_CLASSIFICATION_SUBTASKS,
+    build_all_lawbench_classification_tasks,
+    build_lawbench_fixture_task,
+    build_lawbench_task,
+    list_available_lawbench_subtasks,
+)
 
 __all__ = [
     "build_toy_task",
@@ -53,4 +72,17 @@ __all__ = [
     "build_symptom2disease_task",
     "build_gsm8k_task",
     "extract_math_answer",
+    "build_terminalbench_fixture",
+    "USPTO50K_CLASSES",
+    "build_uspto50k_task",
+    "build_uspto_fixture_task",
+    "build_uspto_patents_task",
+    "MASSIVE_TOP8",
+    "build_massive_fixture_task",
+    "build_massive_task",
+    "LAWBENCH_CLASSIFICATION_SUBTASKS",
+    "build_all_lawbench_classification_tasks",
+    "build_lawbench_fixture_task",
+    "build_lawbench_task",
+    "list_available_lawbench_subtasks",
 ]

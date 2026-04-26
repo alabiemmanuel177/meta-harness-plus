@@ -163,3 +163,58 @@ def write_lawbench_fixture(out_dir: Path | None = None) -> tuple[Path, Path]:
 def lawbench_classes() -> Sequence[str]:
     """Class set for the bundled fixture."""
     return ("contract", "criminal", "family", "ip", "tort")
+
+
+# ---------------- Multi-subtask helpers ----------------
+
+# Known LawBench classification subtask IDs (the original benchmark has
+# 20 subtasks across 5 task categories — see
+# https://github.com/open-compass/LawBench). Subtasks marked classification
+# are usable directly with our framework; QA / summarization / generation
+# subtasks would need an open-ended task abstraction.
+LAWBENCH_CLASSIFICATION_SUBTASKS: Sequence[str] = (
+    "1-1",  # article recitation
+    "1-2",  # knowledge question
+    "2-1",  # element recognition
+    "2-2",  # case classification (the paper's headline subtask)
+    "2-4",  # crime amount calculation (numeric answer; we treat as classification)
+    "2-5",  # criminal damages calculation
+    "3-1",  # legal entity recognition
+    "3-2",  # case dispute
+    "3-3",  # case analysis
+    "3-4",  # criminal sentence prediction
+    "3-7",  # criminal damages multi-class
+)
+
+
+def list_available_lawbench_subtasks() -> list[str]:
+    """Return the list of LawBench subtask IDs that have JSONL files
+    bundled (or downloaded) under tasks/data/lawbench/.
+    """
+    if not _DATA_DIR.exists():
+        return []
+    out: list[str] = []
+    for p in sorted(_DATA_DIR.iterdir()):
+        # Match lawbench_<subtask>_train.jsonl and infer the subtask ID.
+        if p.name.startswith("lawbench_") and p.name.endswith("_train.jsonl"):
+            sub = p.name[len("lawbench_"): -len("_train.jsonl")]
+            if sub == "fixture":
+                continue
+            test = _DATA_DIR / f"lawbench_{sub}_test.jsonl"
+            if test.exists():
+                out.append(sub)
+    return out
+
+
+def build_all_lawbench_classification_tasks() -> dict[str, Task]:
+    """Build a Task for each available LawBench classification subtask.
+
+    Skips subtasks whose JSONL files aren't on disk; doesn't raise.
+    """
+    tasks: dict[str, Task] = {}
+    for sub in list_available_lawbench_subtasks():
+        try:
+            tasks[sub] = build_lawbench_task(subtask=sub)
+        except FileNotFoundError:
+            continue
+    return tasks

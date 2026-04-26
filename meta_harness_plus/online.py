@@ -1,4 +1,10 @@
-"""Online/continual harness improvement — production-traffic frontier updates.
+"""Online/continual harness improvement — minimal prototype.
+
+NOTE: For production use prefer ``meta_harness_plus.continual`` — that
+module has full state persistence, real per-example paired CIs (not
+±2σ-spread heuristic), drift detection, configurable cost-regression
+gates, and rollback support. This file is the original prototype and
+is kept for back-compat with the early demos / tests.
 
 The offline MH++ search produces a Pareto frontier on a static eval set.
 In production, the data distribution drifts and new labelled examples

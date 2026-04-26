@@ -1,0 +1,30 @@
+{"input": "CCBr + KOC(C)(C)C >> CC.OC(C)(C)C", "label": "heteroatom_alkylation"}
+{"input": "ClCCBr + NaSCH3 >> ClCCSCH3", "label": "heteroatom_alkylation"}
+{"input": "BrCH2CO2H + Et3N >> Et3N+CH2CO2H Br-", "label": "heteroatom_alkylation"}
+{"input": "PhNH2 + AcCl >> PhNHAc", "label": "acylation"}
+{"input": "ROH + AcCl >> ROAc", "label": "acylation"}
+{"input": "RNH2 + Ac2O >> RNHAc", "label": "acylation"}
+{"input": "PhBr + ArB(OH)2 >> PhAr", "label": "c_c_bond_formation"}
+{"input": "RC#CH + ArI >> RC#CAr", "label": "c_c_bond_formation"}
+{"input": "RCHO + R'MgBr >> RCH(OH)R'", "label": "c_c_bond_formation"}
+{"input": "Ph-CO-CH2Br + thiourea >> 2-aminothiazole", "label": "heterocycle_formation"}
+{"input": "RC(=O)NHR' + POCl3 >> oxadiazole", "label": "heterocycle_formation"}
+{"input": "anthranilic acid + RCO2H >> quinazolinone", "label": "heterocycle_formation"}
+{"input": "ROH + TBSCl >> ROTBS", "label": "protection"}
+{"input": "ROH + DMP >> R-CH(OMe)2", "label": "protection"}
+{"input": "ROH + BnBr >> ROBn", "label": "protection"}
+{"input": "ROTBS + TBAF >> ROH", "label": "deprotection"}
+{"input": "ROBn + Pd/C, H2 >> ROH", "label": "deprotection"}
+{"input": "RNCbz + Pd/C, H2 >> RNH2", "label": "deprotection"}
+{"input": "RCHO + NaBH4 >> RCH2OH", "label": "reduction"}
+{"input": "RCO2Et + LiAlH4 >> RCH2OH", "label": "reduction"}
+{"input": "PhNO2 + Pd/C, H2 >> PhNH2", "label": "reduction"}
+{"input": "RCH2OH + DMP >> RCHO", "label": "oxidation"}
+{"input": "RCH(OH)R' + Swern >> RCO-R'", "label": "oxidation"}
+{"input": "ArCH3 + KMnO4 >> ArCO2H", "label": "oxidation"}
+{"input": "RCO2H + SOCl2 >> RCOCl", "label": "functional_group_interconversion"}
+{"input": "RCO2H + DCC, HOBt + R'NH2 >> RCONHR'", "label": "functional_group_interconversion"}
+{"input": "RCH2OH + PBr3 >> RCH2Br", "label": "functional_group_interconversion"}
+{"input": "RCH=CH2 + HBr >> RCHBrCH3", "label": "functional_group_addition"}
+{"input": "RC#CH + H2O/Hg+ >> RC(O)CH3", "label": "functional_group_addition"}
+{"input": "RCH=CH2 + Br2 >> RCHBrCH2Br", "label": "functional_group_addition"}
