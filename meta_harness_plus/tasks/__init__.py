@@ -21,6 +21,10 @@ from .news import (
     build_news_hard_task,
     build_news_hard_50_task,
 )
+from .public import (
+    build_agnews_task,
+    build_emotion_task,
+)
 
 __all__ = [
     "build_toy_task",
@@ -35,4 +39,6 @@ __all__ = [
     "build_news_task",
     "build_news_hard_task",
     "build_news_hard_50_task",
+    "build_agnews_task",
+    "build_emotion_task",
 ]
