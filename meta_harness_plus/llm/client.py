@@ -173,7 +173,11 @@ class HTTPClient:
             headers["x-api-key"] = self.api_key
             headers["anthropic-version"] = "2023-06-01"
         elif self._is_ollama_native:
-            pass  # local Ollama: no auth
+            # Local Ollama needs no auth; Ollama Cloud (ollama.com/api/chat)
+            # uses the same native protocol but requires a bearer token.
+            # Send one only if the caller provided an api_key.
+            if self.api_key:
+                headers["authorization"] = f"Bearer {self.api_key}"
         elif self._is_gemini:
             pass  # Gemini auth goes in the URL as ?key=...
         else:

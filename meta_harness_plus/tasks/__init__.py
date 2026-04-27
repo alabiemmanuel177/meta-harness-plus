@@ -32,6 +32,16 @@ from .math_task import (
     build_gsm8k_task,
     extract_math_answer,
 )
+from .aime_task import (
+    build_aime25_task,
+    build_aime25_fixture_task,
+    parse_aime_answer,
+)
+from .hmmt_task import (
+    build_hmmt_feb2025_task,
+    build_hmmt_fixture_task,
+    parse_hmmt_int_answer,
+)
 from .terminalbench_fixture import build_terminalbench_fixture
 from .uspto import (
     USPTO50K_CLASSES,
@@ -72,6 +82,12 @@ __all__ = [
     "build_symptom2disease_task",
     "build_gsm8k_task",
     "extract_math_answer",
+    "build_aime25_task",
+    "build_aime25_fixture_task",
+    "parse_aime_answer",
+    "build_hmmt_feb2025_task",
+    "build_hmmt_fixture_task",
+    "parse_hmmt_int_answer",
     "build_terminalbench_fixture",
     "USPTO50K_CLASSES",
     "build_uspto50k_task",

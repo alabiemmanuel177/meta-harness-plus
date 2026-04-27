@@ -171,6 +171,7 @@ runs/*
 !runs/agent_local_fixture/
 !runs/openai_agnews_seed*_oproboot16/
 !runs/openai_agnews_oproboot16_aggregate.json
+!runs/wow_push/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
