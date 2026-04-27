@@ -1,0 +1,33 @@
+[
+  {
+    "b": 0.75,
+    "k": 20,
+    "k1": 1.5,
+    "kind": "retriever",
+    "name": "bm25_retriever"
+  },
+  {
+    "kind": "reranker",
+    "name": "diversity_reranker"
+  },
+  {
+    "k": 3,
+    "kind": "fewshot",
+    "name": "topk_fewshot"
+  },
+  {
+    "kind": "formatter",
+    "name": "cot_formatter",
+    "system_hint": "Classify the input into one of the given classes. Briefly analyze which key terms suggest each possibility, then output ONLY the class name, lowercase, on the final line. No other prose."
+  },
+  {
+    "kind": "predictor",
+    "n_samples": 1,
+    "name": "llm_predictor",
+    "temperature": 0.1
+  },
+  {
+    "kind": "voter",
+    "name": "null_voter"
+  }
+]

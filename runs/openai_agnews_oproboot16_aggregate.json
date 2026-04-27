@@ -1,0 +1,82 @@
+{
+  "label": "OpenAI gpt-4.1-nano AG News + --bootstrap-instructions 16 (5 seeds)",
+  "n_seeds": 5,
+  "per_seed_bare_acc": [
+    0.812,
+    0.812,
+    0.812,
+    0.812,
+    0.812
+  ],
+  "per_seed_rag_acc": [
+    0.771,
+    0.771,
+    0.771,
+    0.771,
+    0.771
+  ],
+  "per_seed_mh_peak_acc": [
+    0.854,
+    0.833,
+    0.823,
+    0.833,
+    0.875
+  ],
+  "per_seed_rag_tokens": [
+    447.3,
+    447.3,
+    447.3,
+    447.3,
+    447.3
+  ],
+  "per_seed_mh_peak_tokens": [
+    451.4,
+    446.1,
+    457.4,
+    247.1,
+    692.2
+  ],
+  "per_seed_n_dominate": [
+    0,
+    1,
+    0,
+    1,
+    0
+  ],
+  "per_seed_n_match_cheaper": [
+    3,
+    2,
+    0,
+    3,
+    0
+  ],
+  "ci": {
+    "mh_minus_rag_acc": {
+      "mean": 0.07259999999999996,
+      "low": 0.05799999999999994,
+      "high": 0.08939999999999997,
+      "confidence": 0.95
+    },
+    "mh_peak_acc": {
+      "mean": 0.8436,
+      "low": 0.829,
+      "high": 0.8603999999999999,
+      "confidence": 0.95
+    },
+    "rag_acc": {
+      "mean": 0.771,
+      "low": 0.771,
+      "high": 0.771,
+      "confidence": 0.95
+    }
+  },
+  "paired_t_test": {
+    "n": 5,
+    "mean_diff": 0.07259999999999996,
+    "std_diff": 0.020875823337056693,
+    "t_statistic": 7.7763895845160445,
+    "p_value_two_sided": 0.0014744022950957574,
+    "cohens_d": 3.477707146099844
+  },
+  "per_class_delta": {}
+}

@@ -48,6 +48,20 @@ optimization) into MH++'s search space. vs RAG: Δ +0.110 [+0.100,
 +0.121], paired t=+17.71, p=0.0001, d=+7.92. The earlier 0.852 column
 value is preserved in `runs/agnews_openai_aggregate.json`.
 
+**Note on `--bootstrap-instructions 16` retry (honest negative result):**
+A follow-up sweep with `--bootstrap-instructions 16` (double the
+instruction-pool budget) was run to test the hypothesis that a richer
+pool would close the residual -1.5pt gap. It did not. 5-seed mean
+**0.844** (per-seed [0.854, 0.833, 0.823, 0.833, 0.875]) vs the 8-pool
+0.881 — a **-3.7pt regression**. vs OPRO 0.896 the gap *widens* to
+-5.2pt. Aggregate: `runs/openai_agnews_oproboot16_aggregate.json`.
+Honest interpretation: pool=8 appears near-optimal for this cell;
+pool=16 adds noisy candidate instructions that pull MH++'s peak
+accuracy down. (Two of five 16-pool seeds did however achieve
+strict-Pareto dominance over RAG on the multi-objective frontier —
+better acc + fewer tokens — so the broader search space still has
+value beyond mere peak-accuracy chasing.)
+
 ### MH++ wins (margin > 0)
 
 - **news_hard_50**: MH++ 0.928, best baseline voting-RAG 0.900. **+2.8pt**
@@ -66,6 +80,12 @@ value is preserved in `runs/agnews_openai_aggregate.json`.
   optimization at the same instruction-search budget still beats
   MH++'s broader component-shape + instruction search by 1.5pt mean
   on this dataset. Aggregate: `runs/openai_agnews_oproboot_aggregate.json`.
+  A `--bootstrap-instructions 16` follow-up did **not** close the gap —
+  it *regressed* mean MH++ acc to 0.844 (-3.7pt vs 8-pool, -5.2pt vs
+  OPRO). Doubling the candidate-instruction pool admits noisier seeds
+  and pulls peak accuracy down. Aggregate:
+  `runs/openai_agnews_oproboot16_aggregate.json`. The pool size is a
+  real hyperparameter with a sweet spot; bigger ≠ better.
 - **lawbench_2_2** — **CLOSED**. With `--bootstrap-demos` (DSPy-style
   BootstrapFewShot component added to MH++'s search space), full
   5-seed mean MH++ acc = **0.358** vs DSPy 0.333 = **+2.5pt mean win**.

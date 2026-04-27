@@ -1,0 +1,247 @@
+[
+  {
+    "ablated_score": {
+      "accuracy": 0.5833333333333334,
+      "accuracy_spread": 0.0,
+      "latency_ms": 1223.3731189165424,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "Business",
+          0.3
+        ],
+        [
+          "Sci/Tech",
+          0.5
+        ],
+        [
+          "World",
+          1.0
+        ]
+      ],
+      "tokens": 284.45833333333337
+    },
+    "accuracy_delta": -0.04166666666666663,
+    "candidate_id": "cand_0026",
+    "full_score": {
+      "accuracy": 0.5416666666666667,
+      "accuracy_spread": 0.08333333333333337,
+      "latency_ms": 1283.6790373342556,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "Business",
+          0.4
+        ],
+        [
+          "Sci/Tech",
+          0.6666666666666666
+        ],
+        [
+          "World",
+          0.625
+        ]
+      ],
+      "tokens": 677.0833333333334
+    },
+    "kind": "retriever"
+  },
+  {
+    "ablated_score": {
+      "accuracy": 0.5416666666666667,
+      "accuracy_spread": 0.08333333333333337,
+      "latency_ms": 1076.0641647511718,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "Business",
+          0.3
+        ],
+        [
+          "Sci/Tech",
+          0.5
+        ],
+        [
+          "World",
+          0.875
+        ]
+      ],
+      "tokens": 672.7916666666667
+    },
+    "accuracy_delta": 0.0,
+    "candidate_id": "cand_0026",
+    "full_score": {
+      "accuracy": 0.5416666666666667,
+      "accuracy_spread": 0.08333333333333337,
+      "latency_ms": 1283.6790373342556,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "Business",
+          0.4
+        ],
+        [
+          "Sci/Tech",
+          0.6666666666666666
+        ],
+        [
+          "World",
+          0.625
+        ]
+      ],
+      "tokens": 677.0833333333334
+    },
+    "kind": "reranker"
+  },
+  {
+    "ablated_score": {
+      "accuracy": 0.5833333333333334,
+      "accuracy_spread": 0.0,
+      "latency_ms": 935.6641238758302,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "Business",
+          0.2
+        ],
+        [
+          "Sci/Tech",
+          0.6666666666666666
+        ],
+        [
+          "World",
+          1.0
+        ]
+      ],
+      "tokens": 324.75
+    },
+    "accuracy_delta": -0.04166666666666663,
+    "candidate_id": "cand_0026",
+    "full_score": {
+      "accuracy": 0.5416666666666667,
+      "accuracy_spread": 0.08333333333333337,
+      "latency_ms": 1283.6790373342556,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "Business",
+          0.4
+        ],
+        [
+          "Sci/Tech",
+          0.6666666666666666
+        ],
+        [
+          "World",
+          0.625
+        ]
+      ],
+      "tokens": 677.0833333333334
+    },
+    "kind": "fewshot"
+  },
+  {
+    "ablated_score": {
+      "accuracy": 0.5416666666666667,
+      "accuracy_spread": 0.08333333333333337,
+      "latency_ms": 626.2786034582401,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "Business",
+          0.5
+        ],
+        [
+          "Sci/Tech",
+          0.0
+        ],
+        [
+          "World",
+          1.0
+        ]
+      ],
+      "tokens": 548.7916666666667
+    },
+    "accuracy_delta": 0.0,
+    "candidate_id": "cand_0026",
+    "full_score": {
+      "accuracy": 0.5416666666666667,
+      "accuracy_spread": 0.08333333333333337,
+      "latency_ms": 1283.6790373342556,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "Business",
+          0.4
+        ],
+        [
+          "Sci/Tech",
+          0.6666666666666666
+        ],
+        [
+          "World",
+          0.625
+        ]
+      ],
+      "tokens": 677.0833333333334
+    },
+    "kind": "formatter"
+  },
+  {
+    "ablated_score": {
+      "accuracy": 0.5416666666666667,
+      "accuracy_spread": 0.08333333333333337,
+      "latency_ms": 1027.7495223328563,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "Business",
+          0.4
+        ],
+        [
+          "Sci/Tech",
+          0.5
+        ],
+        [
+          "World",
+          0.75
+        ]
+      ],
+      "tokens": 674.3333333333333
+    },
+    "accuracy_delta": 0.0,
+    "candidate_id": "cand_0026",
+    "full_score": {
+      "accuracy": 0.5416666666666667,
+      "accuracy_spread": 0.08333333333333337,
+      "latency_ms": 1283.6790373342556,
+      "n_evaluated": 12,
+      "n_repeats": 2,
+      "per_class_accuracy": [
+        [
+          "Business",
+          0.4
+        ],
+        [
+          "Sci/Tech",
+          0.6666666666666666
+        ],
+        [
+          "World",
+          0.625
+        ]
+      ],
+      "tokens": 677.0833333333334
+    },
+    "kind": "voter"
+  }
+]
