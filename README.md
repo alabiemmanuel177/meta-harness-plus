@@ -1,4 +1,45 @@
-# Meta-Harness++
+# Meta-Harness++ / V10 SWE-bench Verified harness
+
+This repository hosts two related lines of work:
+
+1. **V10 — `harness/`** — a clean-rebuild SWE-bench Verified harness targeting 70%+ Pass@1, oracle-free, leaderboard-eligible. **This is the active project and the artifact under review.** See **[docs/V10_DESIGN.md](docs/V10_DESIGN.md)** for the full design.
+2. **Meta-Harness++ — `meta_harness_plus/`** — the original research line (multi-objective harness search over LLM tooling), plus the V7 and V8 SWE-bench attempts. **V7/V8 are documented contaminated baselines.** They are retained here for paper comparison, reproducibility of prior runs, and so the published "documented contamination → clean rebuild" lift can be cited directly. See **[DESIGN.md](DESIGN.md)** for the original Meta-Harness++ research framing.
+
+## V10 — what to look at for leaderboard review
+
+If you're evaluating this work for SWE-bench Verified leaderboard eligibility or reading the arXiv preprint:
+
+- **Read first:** [docs/V10_DESIGN.md](docs/V10_DESIGN.md) — full design including the contamination model (§2, §12), the phase-by-phase architecture, the cost model, and the asset inventory.
+- **Look at:** `harness/`, `tests/test_no_oracle_leak.py`, `tests/test_dataset_and_conventions.py`, `tests/test_sandbox_and_cache.py`, `splits/dev_50.json`, `docs/audits/v7_missing_evals.md`, and the V10 PR.
+- **Do NOT look at `meta_harness_plus/swebench_v7.py`, `swebench_adapter.py`, `agent_swebench_loop.py` as the V10 submission.** Those modules contain V7's actor with `FAIL_TO_PASS` pasted into the prompt at line 146, and they back V7's 63.6% number. They are kept tracked in this repo as the **explicit contaminated baseline**; the V10 firewall test (`tests/test_no_oracle_leak.py`) statically forbids any V10 module from importing them, and the runtime `LLMCallInspector` would raise `OracleLeakError` if any of their fields ever reached an LLM call.
+
+The V10 contamination paths and the redesign that closes them are documented in **[V10_DESIGN.md §12](docs/V10_DESIGN.md)**.
+
+### V10 quickstart
+
+```bash
+make verify-images          # 498/500 Verified images present locally
+make test-v10               # 34 V10 unit tests, all green
+make smoke                  # collect-only smoke (≤1 s)
+make smoke-exec             # real pytest execution smoke (≤30 s)
+make smoke-negative         # confirm firewall raises on real call paths
+```
+
+Phase 0 (this state) sets up the contamination firewall, the leak-free sandbox, and the dev-50 split. Phase 1+ (localization, repro oracle, hybrid generation, validation, selection, refinement, and an optional fine-tuned localizer) lands in subsequent PRs against `main`.
+
+## Why both lines live in one public repo
+
+Most leaderboard submissions ship a clean number and ask reviewers to trust it. By keeping V7's contaminated source side-by-side with V10's clean rebuild — and the V7 baseline data alongside the V10 firewall — this repository documents:
+
+- What oracle leakage actually looks like in a working harness (V7's `swebench_v7.py:146` pastes `FAIL_TO_PASS` into the actor prompt).
+- How to detect leakage statically and at runtime (V10's `tests/test_no_oracle_leak.py`).
+- How much it inflates scores (V7 = 63.6% with leakage; V10 target = 70%+ oracle-free; the lift is part of the paper's contribution).
+
+V7's run artifacts (`runs/swebench_500_v7/`) and the audit of why 33 V7 instances have no eval report (`docs/audits/v7_missing_evals.md`) are the calibration data that drives V10's difficulty priors and Phase 1 risk surfaces. They are deliberately public.
+
+---
+
+# Meta-Harness++ (the original research line)
 
 A multi-objective, budget-aware, attribution-guided framework for automated search over LLM harnesses. Extends [Meta-Harness](https://arxiv.org/abs/2603.28052) (Lee et al. 2026, Stanford IRIS) with three fixes to limitations of the original.
 

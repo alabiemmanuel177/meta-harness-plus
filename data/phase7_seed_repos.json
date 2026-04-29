@@ -1,0 +1,313 @@
+{
+  "version": "v10-phase7-seed-r1-hardcoded",
+  "mode": "hardcoded",
+  "description": "Phase 7 corpus seed \u2014 v0 hardcoded sample of well-known Python repos for validating the crawler pipeline. The full ~5000-repo seed requires PyPI + GitHub API curation; deferred to a network-enabled session per V10_DESIGN.md \u00a710.5.",
+  "acceptable_licenses": [
+    "apache-2.0",
+    "bsd-2-clause",
+    "bsd-3-clause",
+    "isc",
+    "mit"
+  ],
+  "n_total": 50,
+  "n_accepted": 47,
+  "n_rejected": 3,
+  "rejected": [
+    {
+      "repo": "pylint-dev/pylint",
+      "license": "gpl-2.0",
+      "reason": "license"
+    },
+    {
+      "repo": "ansible/ansible",
+      "license": "gpl-3.0",
+      "reason": "license"
+    },
+    {
+      "repo": "tqdm/tqdm",
+      "license": "mpl-2.0",
+      "reason": "license"
+    }
+  ],
+  "repos": [
+    "pallets/flask",
+    "pallets/click",
+    "psf/requests",
+    "encode/httpx",
+    "tiangolo/fastapi",
+    "tornadoweb/tornado",
+    "pyca/cryptography",
+    "scikit-learn/scikit-learn",
+    "pydata/xarray",
+    "scipy/scipy",
+    "matplotlib/matplotlib",
+    "astropy/astropy",
+    "sympy/sympy",
+    "pandas-dev/pandas",
+    "pytest-dev/pytest",
+    "python/mypy",
+    "psf/black",
+    "sphinx-doc/sphinx",
+    "PyCQA/flake8",
+    "PyCQA/isort",
+    "aio-libs/aiohttp",
+    "python-trio/trio",
+    "MagicStack/asyncpg",
+    "sqlalchemy/sqlalchemy",
+    "django/django",
+    "MongoEngine/mongoengine",
+    "huggingface/transformers",
+    "huggingface/datasets",
+    "pytorch/vision",
+    "scikit-image/scikit-image",
+    "mwaskom/seaborn",
+    "bokeh/bokeh",
+    "plotly/plotly.py",
+    "python-pillow/Pillow",
+    "boto/boto3",
+    "Textualize/rich",
+    "pydantic/pydantic",
+    "psf/requests-toolbelt",
+    "more-itertools/more-itertools",
+    "python-attrs/attrs",
+    "spec-first/connexion",
+    "pyyaml/pyyaml",
+    "pypa/pip",
+    "pypa/setuptools",
+    "pyca/cryptography",
+    "werkzeug-team/werkzeug",
+    "miguelgrinberg/Flask-SocketIO"
+  ],
+  "metadata": {
+    "pallets/flask": {
+      "repo": "pallets/flask",
+      "license": "bsd-3-clause",
+      "category": "web"
+    },
+    "pallets/click": {
+      "repo": "pallets/click",
+      "license": "bsd-3-clause",
+      "category": "web"
+    },
+    "psf/requests": {
+      "repo": "psf/requests",
+      "license": "apache-2.0",
+      "category": "web"
+    },
+    "encode/httpx": {
+      "repo": "encode/httpx",
+      "license": "bsd-3-clause",
+      "category": "web"
+    },
+    "tiangolo/fastapi": {
+      "repo": "tiangolo/fastapi",
+      "license": "mit",
+      "category": "web"
+    },
+    "tornadoweb/tornado": {
+      "repo": "tornadoweb/tornado",
+      "license": "apache-2.0",
+      "category": "web"
+    },
+    "pyca/cryptography": {
+      "repo": "pyca/cryptography",
+      "license": "apache-2.0",
+      "category": "security"
+    },
+    "scikit-learn/scikit-learn": {
+      "repo": "scikit-learn/scikit-learn",
+      "license": "bsd-3-clause",
+      "category": "ml"
+    },
+    "pydata/xarray": {
+      "repo": "pydata/xarray",
+      "license": "apache-2.0",
+      "category": "data"
+    },
+    "scipy/scipy": {
+      "repo": "scipy/scipy",
+      "license": "bsd-3-clause",
+      "category": "scientific"
+    },
+    "matplotlib/matplotlib": {
+      "repo": "matplotlib/matplotlib",
+      "license": "bsd-3-clause",
+      "category": "scientific"
+    },
+    "astropy/astropy": {
+      "repo": "astropy/astropy",
+      "license": "bsd-3-clause",
+      "category": "scientific"
+    },
+    "sympy/sympy": {
+      "repo": "sympy/sympy",
+      "license": "bsd-3-clause",
+      "category": "scientific"
+    },
+    "pandas-dev/pandas": {
+      "repo": "pandas-dev/pandas",
+      "license": "bsd-3-clause",
+      "category": "data"
+    },
+    "pytest-dev/pytest": {
+      "repo": "pytest-dev/pytest",
+      "license": "mit",
+      "category": "tools"
+    },
+    "python/mypy": {
+      "repo": "python/mypy",
+      "license": "mit",
+      "category": "tools"
+    },
+    "psf/black": {
+      "repo": "psf/black",
+      "license": "mit",
+      "category": "tools"
+    },
+    "sphinx-doc/sphinx": {
+      "repo": "sphinx-doc/sphinx",
+      "license": "bsd-2-clause",
+      "category": "tools"
+    },
+    "PyCQA/flake8": {
+      "repo": "PyCQA/flake8",
+      "license": "mit",
+      "category": "tools"
+    },
+    "PyCQA/isort": {
+      "repo": "PyCQA/isort",
+      "license": "mit",
+      "category": "tools"
+    },
+    "aio-libs/aiohttp": {
+      "repo": "aio-libs/aiohttp",
+      "license": "apache-2.0",
+      "category": "async"
+    },
+    "python-trio/trio": {
+      "repo": "python-trio/trio",
+      "license": "apache-2.0",
+      "category": "async"
+    },
+    "MagicStack/asyncpg": {
+      "repo": "MagicStack/asyncpg",
+      "license": "apache-2.0",
+      "category": "async"
+    },
+    "sqlalchemy/sqlalchemy": {
+      "repo": "sqlalchemy/sqlalchemy",
+      "license": "mit",
+      "category": "db"
+    },
+    "django/django": {
+      "repo": "django/django",
+      "license": "bsd-3-clause",
+      "category": "web"
+    },
+    "MongoEngine/mongoengine": {
+      "repo": "MongoEngine/mongoengine",
+      "license": "mit",
+      "category": "db"
+    },
+    "huggingface/transformers": {
+      "repo": "huggingface/transformers",
+      "license": "apache-2.0",
+      "category": "ml"
+    },
+    "huggingface/datasets": {
+      "repo": "huggingface/datasets",
+      "license": "apache-2.0",
+      "category": "ml"
+    },
+    "pytorch/vision": {
+      "repo": "pytorch/vision",
+      "license": "bsd-3-clause",
+      "category": "ml"
+    },
+    "scikit-image/scikit-image": {
+      "repo": "scikit-image/scikit-image",
+      "license": "bsd-3-clause",
+      "category": "ml"
+    },
+    "mwaskom/seaborn": {
+      "repo": "mwaskom/seaborn",
+      "license": "bsd-3-clause",
+      "category": "viz"
+    },
+    "bokeh/bokeh": {
+      "repo": "bokeh/bokeh",
+      "license": "bsd-3-clause",
+      "category": "viz"
+    },
+    "plotly/plotly.py": {
+      "repo": "plotly/plotly.py",
+      "license": "mit",
+      "category": "viz"
+    },
+    "python-pillow/Pillow": {
+      "repo": "python-pillow/Pillow",
+      "license": "mit",
+      "category": "media"
+    },
+    "boto/boto3": {
+      "repo": "boto/boto3",
+      "license": "apache-2.0",
+      "category": "cloud"
+    },
+    "Textualize/rich": {
+      "repo": "Textualize/rich",
+      "license": "mit",
+      "category": "tools"
+    },
+    "pydantic/pydantic": {
+      "repo": "pydantic/pydantic",
+      "license": "mit",
+      "category": "tools"
+    },
+    "psf/requests-toolbelt": {
+      "repo": "psf/requests-toolbelt",
+      "license": "apache-2.0",
+      "category": "web"
+    },
+    "more-itertools/more-itertools": {
+      "repo": "more-itertools/more-itertools",
+      "license": "mit",
+      "category": "tools"
+    },
+    "python-attrs/attrs": {
+      "repo": "python-attrs/attrs",
+      "license": "mit",
+      "category": "tools"
+    },
+    "spec-first/connexion": {
+      "repo": "spec-first/connexion",
+      "license": "apache-2.0",
+      "category": "web"
+    },
+    "pyyaml/pyyaml": {
+      "repo": "pyyaml/pyyaml",
+      "license": "mit",
+      "category": "tools"
+    },
+    "pypa/pip": {
+      "repo": "pypa/pip",
+      "license": "mit",
+      "category": "tools"
+    },
+    "pypa/setuptools": {
+      "repo": "pypa/setuptools",
+      "license": "mit",
+      "category": "tools"
+    },
+    "werkzeug-team/werkzeug": {
+      "repo": "werkzeug-team/werkzeug",
+      "license": "bsd-3-clause",
+      "category": "web"
+    },
+    "miguelgrinberg/Flask-SocketIO": {
+      "repo": "miguelgrinberg/Flask-SocketIO",
+      "license": "mit",
+      "category": "web"
+    }
+  }
+}
