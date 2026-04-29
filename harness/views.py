@@ -206,10 +206,10 @@ class StaticSignal:
 class CandidateView:
     """The ONLY view of a candidate patch that selectors may see.
 
-    Has no `resolved`, no `report`, no eval-derived field. The grader's
-    verdict (written to ``eval_outputs/{run_id}/``) cannot reach here by
-    construction — the firewall test scans for any field name resembling
-    a forbidden token.
+    Carries no eval-derived field. The grader's verdict (written to the
+    isolated output directory described in V10_DESIGN.md §12.6) cannot
+    reach here by construction — the firewall test scans for any field
+    name resembling a forbidden token.
     """
 
     candidate_id: str
