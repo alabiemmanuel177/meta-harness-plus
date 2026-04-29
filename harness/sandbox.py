@@ -308,7 +308,13 @@ class Sandbox:
 
         ``collect_only=True`` runs ``pytest --collect-only`` instead of
         executing the suite — useful for fast smoke tests.
+
+        ``state_label`` is a caller-supplied label for the worktree
+        state ('base' or 'patched'); validated against forbidden tokens
+        as defense-in-depth (a forbidden token in state_label could
+        flow through SuiteResult.workdir_state to a downstream prompt).
         """
+        _assert_no_forbidden_token(state_label, label="run_public_suite.state_label")
         # Final guard before exec: the dirs were validated at __init__
         # but we re-check in case anyone reached in and mutated them.
         _assert_no_forbidden_token(self._dirs, label="run_public_suite.dirs")

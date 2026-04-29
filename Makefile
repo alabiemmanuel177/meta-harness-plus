@@ -35,6 +35,9 @@ smoke: firewall
 smoke-exec: firewall
 	$(PYTHON) scripts/smoke_phase0.py --exec --timeout-s 480
 
+smoke-negative: firewall
+	$(PYTHON) scripts/negative_smoke.py
+
 clean-v10-cache:
 	rm -rf trajectories/v10_* runs/v10_*
 

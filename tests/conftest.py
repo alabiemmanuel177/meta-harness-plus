@@ -64,9 +64,25 @@ def _walk_value_for_tokens(value: Any, *, depth: int = 0) -> list[str]:
         return out2
     if dataclasses.is_dataclass(value) and not isinstance(value, type):
         out3: list[str] = []
+        declared_field_names: set[str] = set()
         for f in dataclasses.fields(value):
-            out3.append(f.name)  # field NAMES are also inspected
+            declared_field_names.add(f.name)
+            out3.append(f.name)  # declared field NAMES are inspected
             out3.extend(_walk_value_for_tokens(getattr(value, f.name), depth=depth + 1))
+        # Also walk __dict__ for SMUGGLED attributes added via
+        # object.__setattr__(frozen_instance, 'x', value) — they bypass the
+        # dataclass __post_init__ validator but still land in __dict__.
+        # The inspector must catch this.
+        try:
+            d = getattr(value, "__dict__", None)
+            if d:
+                for k, v in d.items():
+                    if k in declared_field_names:
+                        continue  # already walked above
+                    out3.append(k)
+                    out3.extend(_walk_value_for_tokens(v, depth=depth + 1))
+        except Exception:
+            pass
         return out3
     # Generic object — inspect __dict__ if available
     try:
