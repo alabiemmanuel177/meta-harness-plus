@@ -112,6 +112,7 @@ class Sandbox:
         cpus: float = 2.0,
         no_network: bool = True,
         require_image_present: bool = True,
+        max_observation_chars: int = 32_768,
     ):
         self._view = view
         self._exec = DockerShellExecutor(
@@ -120,6 +121,7 @@ class Sandbox:
             cpus=cpus,
             no_network=no_network,
             ensure_pytest=False,
+            max_observation_chars=max_observation_chars,
         )
         # Defense-in-depth: assert the test directives we'll use don't
         # smuggle a forbidden token. Cheap, runs before any container starts.
