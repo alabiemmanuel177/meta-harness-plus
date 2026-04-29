@@ -176,3 +176,52 @@ runs/*
 .mypy_cache/
 .ruff_cache/
 logs/
+
+# ---------------------------------------------------------------------------
+# V10 additions (Phase 0 cleanup)
+# ---------------------------------------------------------------------------
+
+# Tooling state
+.claude/
+.codex
+.codex/
+
+# V10 run outputs (regenerable, may be large)
+trajectories/v10_*/
+runs/v10_*/
+logs/run_evaluation/v10_*/
+eval_outputs/
+
+# Phase 7 corpus (large; regenerable)
+data/phase7_corpus/
+
+# Stray scratch outputs at repo root (use runs/ for new outputs)
+/claude-sonnet-*.json
+/claude-opus-*.json
+/claude-haiku-*.json
+/deepseek-*.json
+/devstral-*.json
+/qwen-*.json
+/qwen3-*.json
+/gpt-*.json
+/o3-*.json
+/llama-*.json
+
+# Personal planning notes (kept locally)
+/Roadmaps
+/Tasks
+
+# Math/benchmark scratch outputs in wow_push (override the !runs/wow_push/
+# allowlist above — these are MH++ AIME/HMMT/Phase3 seed dumps, tangential
+# to V10. cost_log.jsonl stays tracked as cumulative spend record.)
+runs/wow_push/aime25_*.json
+runs/wow_push/hmmt_*.json
+runs/wow_push/news_*.json
+runs/wow_push/phase*_*.json
+runs/wow_push/PRO_CONCURRENCY_PROBE.json
+runs/wow_push/*.md
+
+# Build artifacts NOT ignored:
+#   splits/*.json                 — reproducibility-critical, small
+#   docs/audits/*.md              — review artifacts
+#   runs/swebench_500_v7/         — documented V7 baseline data (V10_DESIGN.md §13.3)
