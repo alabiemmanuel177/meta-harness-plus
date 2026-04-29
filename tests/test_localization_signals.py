@@ -24,6 +24,7 @@ from harness.localization_signals import (
     DepGraphHop,
     EmbeddingHit,
     GitArchaeologyHit,
+    RankedFile,
     RerankerOutput,
     SIGNAL_CLASSES,
     SymbolGrepHit,
@@ -34,6 +35,7 @@ from harness.localization_signals import (
     STAGE_1E_GIT_ARCHEOLOGY,
     STAGE_1F_DEP_GRAPH,
     STAGE_1G_RERANK,
+    UPSTREAM_SIGNAL_KINDS,
 )
 from harness.trajectory import TrajectoryWriter, trajectory
 
@@ -139,7 +141,7 @@ def test_dep_graph_hop_constructs() -> None:
     json.dumps(h.as_dict())
 
 
-def test_reranker_output_constructs() -> None:
+def test_reranker_output_constructs_with_ranked_file_objects() -> None:
     r = RerankerOutput(
         stage=STAGE_1G_RERANK,
         model="claude-sonnet-4-6",
@@ -147,8 +149,20 @@ def test_reranker_output_constructs() -> None:
         output_tokens=1_200,
         prompt_token_count=42_000,
         ranked_files=(
-            ("django/contrib/auth/forms.py", 0.92, "issue mentions UserCreationForm directly"),
-            ("django/contrib/auth/models.py", 0.71, "imported by forms.py; defines User"),
+            RankedFile(
+                file_path="django/contrib/auth/forms.py",
+                final_score=0.92,
+                rationale="issue mentions UserCreationForm directly",
+                upstream_signals=("bm25", "embedding", "symbol_grep"),
+                upstream_best_rank={"bm25": 1, "embedding": 3, "symbol_grep": 1},
+            ),
+            RankedFile(
+                file_path="django/contrib/auth/models.py",
+                final_score=0.71,
+                rationale="imported by forms.py; defines User",
+                upstream_signals=("dep_graph",),
+                upstream_best_rank={"dep_graph": 1},
+            ),
         ),
         skeleton_compression="symbol_skeleton",
     )
@@ -156,6 +170,76 @@ def test_reranker_output_constructs() -> None:
     json.dumps(d, default=str)
     assert d["_signal"] == "RerankerOutput"
     assert len(d["ranked_files"]) == 2
+    # Each entry preserves the upstream-signal attribution.
+    assert d["ranked_files"][0]["upstream_signals"] == ["bm25", "embedding", "symbol_grep"]
+    assert d["ranked_files"][0]["upstream_best_rank"] == {"bm25": 1, "embedding": 3, "symbol_grep": 1}
+
+
+# ---------------------------------------------------------------------------
+# RankedFile validation
+# ---------------------------------------------------------------------------
+
+
+def test_ranked_file_rejects_unknown_upstream_signal_kind() -> None:
+    with pytest.raises(ValueError, match="unknown kinds"):
+        RankedFile(
+            file_path="x.py",
+            final_score=0.5,
+            rationale="rationale",
+            upstream_signals=("bm25", "made_up_signal"),
+        )
+
+
+def test_ranked_file_accepts_subset_of_known_kinds() -> None:
+    # Empty upstream_signals: a candidate that the reranker named without
+    # any upstream signal supporting it. Edge case but legal.
+    rf = RankedFile(
+        file_path="x.py",
+        final_score=0.5,
+        rationale="reranker liked it",
+        upstream_signals=(),
+    )
+    assert rf.upstream_signals == ()
+
+
+def test_ranked_file_rejects_non_tuple_upstream_signals() -> None:
+    with pytest.raises(TypeError, match="must be tuple"):
+        RankedFile(
+            file_path="x.py",
+            final_score=0.5,
+            rationale="r",
+            upstream_signals=["bm25"],  # list, not tuple
+        )
+
+
+def test_ranked_file_rejects_zero_or_negative_rank() -> None:
+    with pytest.raises(ValueError, match="must be int >= 1"):
+        RankedFile(
+            file_path="x.py",
+            final_score=0.5,
+            rationale="r",
+            upstream_signals=("bm25",),
+            upstream_best_rank={"bm25": 0},
+        )
+
+
+def test_ranked_file_upstream_signal_kinds_are_canonical() -> None:
+    """The fixed set of kinds matches the user-spec exactly."""
+    assert UPSTREAM_SIGNAL_KINDS == frozenset({
+        "bm25", "embedding", "traceback",
+        "symbol_grep", "git_archaeology", "dep_graph",
+    })
+
+
+def test_reranker_output_rejects_non_ranked_file_entry() -> None:
+    with pytest.raises(TypeError, match="must be RankedFile"):
+        RerankerOutput(
+            stage=STAGE_1G_RERANK,
+            model="x",
+            input_tokens=1, output_tokens=1, prompt_token_count=1,
+            ranked_files=(("x.py", 0.5, "r"),),  # tuple, not RankedFile
+            skeleton_compression="full",
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -180,15 +264,32 @@ def test_dep_graph_hop_rejects_zero_hop() -> None:
         )
 
 
-def test_reranker_output_rejects_malformed_ranked_files() -> None:
-    with pytest.raises(ValueError):
-        RerankerOutput(
-            stage=STAGE_1G_RERANK,
-            model="claude-sonnet-4-6",
-            input_tokens=10, output_tokens=10, prompt_token_count=10,
-            ranked_files=(("x.py", 0.5),),  # 2-tuple, must be 3
-            skeleton_compression="full",
-        )
+def test_reranker_output_round_trips_ranked_files_via_json(tmp_path: pathlib.Path) -> None:
+    """Full RerankerOutput → as_dict → json → load preserves the
+    upstream_signals attribution per ranked file."""
+    r = RerankerOutput(
+        stage=STAGE_1G_RERANK,
+        model="claude-sonnet-4-6",
+        input_tokens=10, output_tokens=10, prompt_token_count=10,
+        ranked_files=(
+            RankedFile(
+                file_path="a.py", final_score=0.9,
+                rationale="r1", upstream_signals=("bm25", "embedding"),
+                upstream_best_rank={"bm25": 1, "embedding": 2},
+            ),
+            RankedFile(
+                file_path="b.py", final_score=0.5,
+                rationale="r2", upstream_signals=("traceback",),
+                upstream_best_rank={"traceback": 3},
+            ),
+        ),
+        skeleton_compression="full",
+    )
+    rt = json.loads(json.dumps(r.as_dict(), default=str))
+    assert rt["_signal"] == "RerankerOutput"
+    assert len(rt["ranked_files"]) == 2
+    assert rt["ranked_files"][0]["upstream_signals"] == ["bm25", "embedding"]
+    assert rt["ranked_files"][1]["upstream_best_rank"] == {"traceback": 3}
 
 
 # ---------------------------------------------------------------------------
@@ -247,7 +348,12 @@ def test_all_signal_classes_round_trip_through_json(tmp_path: pathlib.Path) -> N
         "RerankerOutput": RerankerOutput(
             stage="1g", model="x",
             input_tokens=1, output_tokens=1, prompt_token_count=1,
-            ranked_files=(("a", 0.5, "rationale"),),
+            ranked_files=(
+                RankedFile(
+                    file_path="a", final_score=0.5,
+                    rationale="rationale", upstream_signals=("bm25",),
+                ),
+            ),
             skeleton_compression="full",
         ),
     }

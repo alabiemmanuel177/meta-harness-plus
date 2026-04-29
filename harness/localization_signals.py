@@ -104,23 +104,38 @@ class BM25Hit:
     """One BM25 retrieval result against the issue query.
 
     Phase 1 stage 1b. The query is the issue's tokenized text; the
-    document is per-file content (or a per-file summary, depending on
-    the reranker config — recorded in ``query_basis``).
+    document is per-file content. ``query_strategy`` records which of
+    the three Stage 1b query shapes this hit came from (full issue /
+    first paragraph / extracted symbols), so per-strategy ablations
+    can be done from logs alone.
     """
 
     stage: LocalizationStage
     file_path: str
     score: float
-    rank: int            # 1-indexed
-    query_basis: str     # 'issue_text' | 'issue_summary' | 'symbol_only' | etc.
+    rank: int                # 1-indexed
+    query_basis: str         # 'issue_text' | 'issue_summary' | 'symbol_only' | etc.
+    query_strategy: str = "full_issue"  # 'full_issue' | 'first_paragraph' | 'extracted_symbols'
 
     def __post_init__(self) -> None:
         _assert_no_forbidden_field_names(type(self))
         if self.rank < 1:
             raise ValueError("BM25Hit.rank is 1-indexed")
+        if self.query_strategy not in QUERY_STRATEGIES:
+            raise ValueError(
+                f"BM25Hit.query_strategy invalid: {self.query_strategy!r}; "
+                f"must be one of {QUERY_STRATEGIES}"
+            )
 
     def as_dict(self) -> dict:
         return _signal_as_dict(self)
+
+
+QUERY_STRATEGIES: tuple[str, ...] = (
+    "full_issue",
+    "first_paragraph",
+    "extracted_symbols",
+)
 
 
 @dataclass(frozen=True)
@@ -270,15 +285,87 @@ class DepGraphHop:
 # ---------------------------------------------------------------------------
 
 
+# ---------------------------------------------------------------------------
+# RankedFile — per-candidate record carrying upstream-signal attribution.
+# Replaces the earlier flat 3-tuple in RerankerOutput.ranked_files so the
+# ablation table can be auto-generated from RerankerOutput records alone,
+# without joining across upstream signal records.
+# ---------------------------------------------------------------------------
+
+UPSTREAM_SIGNAL_KINDS: frozenset[str] = frozenset({
+    "bm25",
+    "embedding",
+    "traceback",
+    "symbol_grep",
+    "git_archaeology",
+    "dep_graph",
+})
+
+
+@dataclass(frozen=True)
+class RankedFile:
+    """One ranked candidate emitted by the Phase 1 reranker.
+
+    Carries enough upstream-signal attribution to reconstruct, from a
+    single RerankerOutput log line, which Stage 1b–1f signals named
+    this file and at what rank — i.e., the ablation pivot.
+
+    Fields:
+      file_path             — relative path inside the repo at base_commit
+      final_score           — reranker's combined score (model-defined)
+      rationale             — human-readable string from the reranker
+      upstream_signals      — tuple of stage labels that named this file
+                              (subset of UPSTREAM_SIGNAL_KINDS)
+      upstream_best_rank    — None if no upstream rank info, else dict
+                              {signal_kind: best_rank_seen} where
+                              best_rank_seen is 1-indexed
+    """
+
+    file_path: str
+    final_score: float
+    rationale: str
+    upstream_signals: tuple[str, ...]
+    upstream_best_rank: dict | None = None  # dict[str, int] | None
+
+    def __post_init__(self) -> None:
+        if not self.file_path:
+            raise ValueError("RankedFile.file_path required")
+        if not isinstance(self.upstream_signals, tuple):
+            raise TypeError(
+                f"RankedFile.upstream_signals must be tuple, "
+                f"got {type(self.upstream_signals).__name__}"
+            )
+        unknown = set(self.upstream_signals) - UPSTREAM_SIGNAL_KINDS
+        if unknown:
+            raise ValueError(
+                f"RankedFile.upstream_signals contains unknown kinds: "
+                f"{sorted(unknown)}; must be subset of "
+                f"{sorted(UPSTREAM_SIGNAL_KINDS)}"
+            )
+        if self.upstream_best_rank is not None:
+            unknown_rank_keys = set(self.upstream_best_rank.keys()) - UPSTREAM_SIGNAL_KINDS
+            if unknown_rank_keys:
+                raise ValueError(
+                    f"RankedFile.upstream_best_rank has unknown keys: "
+                    f"{sorted(unknown_rank_keys)}"
+                )
+            for k, v in self.upstream_best_rank.items():
+                if not isinstance(v, int) or v < 1:
+                    raise ValueError(
+                        f"RankedFile.upstream_best_rank[{k!r}] must be int >= 1, "
+                        f"got {v!r}"
+                    )
+
+
 @dataclass(frozen=True)
 class RerankerOutput:
     """The top-K LLM rerank of aggregated candidates from stages 1b-1f.
 
     Phase 1 stage 1g. Recorded per LLM call: the reranker sees the
     aggregated candidate list and picks the top-K with rationale.
-    Aggregation rationale is logged so ablations can show which
-    upstream signal (BM25, embedding, grep, archaeology, dep-graph)
-    contributed to each kept candidate.
+    Each ranked entry is a typed RankedFile (refactored from the earlier
+    flat 3-tuple in commit 3b) — this makes per-upstream-signal
+    ablations auto-generatable from RerankerOutput records alone.
     """
 
     stage: LocalizationStage
@@ -286,30 +373,43 @@ class RerankerOutput:
     input_tokens: int
     output_tokens: int
     prompt_token_count: int             # for context-budget audits
-    ranked_files: tuple                 # tuple of (file_path, score, rationale)
+    ranked_files: tuple                 # tuple of RankedFile
     skeleton_compression: str           # 'full' | 'top-30-symbols' | etc.
 
     def __post_init__(self) -> None:
         _assert_no_forbidden_field_names(type(self))
-        # Validate ranked_files shape: each entry is a 3-tuple of (str, float, str).
         for i, entry in enumerate(self.ranked_files):
-            if not isinstance(entry, tuple) or len(entry) != 3:
-                raise ValueError(
-                    f"RerankerOutput.ranked_files[{i}] must be a 3-tuple"
-                )
-            fp, score, rationale = entry
-            if not isinstance(fp, str) or not isinstance(score, (int, float)):
-                raise ValueError(
-                    f"RerankerOutput.ranked_files[{i}]: "
-                    f"({type(fp).__name__}, {type(score).__name__}, ...)"
-                )
-            if not isinstance(rationale, str):
-                raise ValueError(
-                    f"RerankerOutput.ranked_files[{i}].rationale must be str"
+            if not isinstance(entry, RankedFile):
+                raise TypeError(
+                    f"RerankerOutput.ranked_files[{i}] must be RankedFile, "
+                    f"got {type(entry).__name__}"
                 )
 
     def as_dict(self) -> dict:
-        return _signal_as_dict(self)
+        d = {
+            "_signal": "RerankerOutput",
+            "stage": self.stage,
+            "model": self.model,
+            "input_tokens": self.input_tokens,
+            "output_tokens": self.output_tokens,
+            "prompt_token_count": self.prompt_token_count,
+            "skeleton_compression": self.skeleton_compression,
+            "ranked_files": [
+                {
+                    "file_path": rf.file_path,
+                    "final_score": rf.final_score,
+                    "rationale": rf.rationale,
+                    "upstream_signals": list(rf.upstream_signals),
+                    "upstream_best_rank": (
+                        dict(rf.upstream_best_rank)
+                        if rf.upstream_best_rank is not None
+                        else None
+                    ),
+                }
+                for rf in self.ranked_files
+            ],
+        }
+        return d
 
 
 # ---------------------------------------------------------------------------
@@ -350,12 +450,15 @@ __all__ = [
     "STAGE_1G_RERANK",
     "STAGE_1H_FUNCTION_LINE",
     "ALL_STAGES",
+    "QUERY_STRATEGIES",
+    "UPSTREAM_SIGNAL_KINDS",
     "BM25Hit",
     "EmbeddingHit",
     "TracebackFrame",
     "SymbolGrepHit",
     "GitArchaeologyHit",
     "DepGraphHop",
+    "RankedFile",
     "RerankerOutput",
     "LocalizationSignal",
     "SIGNAL_CLASSES",
