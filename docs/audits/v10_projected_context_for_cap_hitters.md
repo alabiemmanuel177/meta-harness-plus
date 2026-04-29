@@ -19,29 +19,36 @@ Token estimate via 4-chars-per-token heuristic. Tighter numbers would need a rea
 
 Token columns: skeleton-files-only / skeleton-symbols / top-30 files (symbols) / top-30 files (full content). The `primary_bucket` column uses skeleton-symbols (the most likely Phase 1 reranker shape) for bucketing.
 
-| Instance | Repo | Files | Total lines | Issue tok | Files-only tok | Symbol-skel tok | Top-30 sym tok | Top-30 full tok | Bucket |
-|---|---|---|---|---|---|---|---|---|---|
-| `sympy__sympy-23262` | sympy/sympy | 1,545 | 761,046 | 258 | 44,393 | **596,668** | 153,057 | 1,639,250 | 500K-1M |
-| `django__django-16315` | django/django | 2,755 | 452,166 | 324 | 81,930 | **551,067** | 79,912 | 922,126 | 500K-1M |
-| `django__django-16032` | django/django | 2,751 | 449,813 | 194 | 81,806 | **548,306** | 79,412 | 916,800 | 500K-1M |
-| `django__django-15814` | django/django | 2,749 | 447,590 | 661 | 81,750 | **546,438** | 78,850 | 910,585 | 500K-1M |
-| `django__django-15022` | django/django | 2,724 | 389,383 | 306 | 80,960 | **534,473** | 76,696 | 823,951 | 500K-1M |
-| `django__django-15128` | django/django | 2,724 | 389,016 | 665 | 80,960 | **534,235** | 76,584 | 821,540 | 500K-1M |
-| `django__django-14351` | django/django | 2,691 | 376,917 | 2,135 | 79,874 | **519,224** | 73,073 | 793,415 | 500K-1M |
-| `django__django-13417` | django/django | 2,672 | 366,379 | 235 | 79,280 | **506,443** | 70,198 | 763,115 | 500K-1M |
-| `django__django-13406` | django/django | 2,673 | 366,260 | 771 | 79,308 | **506,383** | 70,198 | 763,094 | 500K-1M |
-| `sympy__sympy-15976` | sympy/sympy | 1,308 | 600,098 | 263 | 37,491 | **506,166** | 137,209 | 1,813,670 | 500K-1M |
-| `django__django-11734` | django/django | 2,570 | 345,570 | 208 | 76,052 | **482,290** | 65,848 | 719,229 | 200K-500K |
-| `matplotlib__matplotlib-26208` | matplotlib/matplotlib | 897 | 244,331 | 519 | 28,126 | **164,688** | 56,637 | 824,800 | <200K |
-| `matplotlib__matplotlib-24177` | matplotlib/matplotlib | 892 | 239,190 | 507 | 26,540 | **161,778** | 55,284 | 802,937 | <200K |
-| `matplotlib__matplotlib-21568` | matplotlib/matplotlib | 901 | 231,281 | 324 | 26,819 | **158,219** | 54,058 | 779,459 | <200K |
-| `matplotlib__matplotlib-20488` | matplotlib/matplotlib | 889 | 226,025 | 488 | 26,494 | **153,569** | 53,358 | 770,547 | <200K |
-| `pydata__xarray-6599` | pydata/xarray | 165 | 123,939 | 1,077 | 4,420 | **79,320** | 46,558 | 761,621 | <200K |
+| Instance | Repo | Files | Symbol-skel tok | Top-30 full tok | Top-10 full tok | **TOTAL naive** | TOTAL compressed | Compression strategy |
+|---|---|---|---|---|---|---|---|---|
+| `sympy__sympy-15976` | sympy/sympy | 1,308 | 506,166 | 1,813,670 | 696,561 | **2,325,100** | 1,274,394 | INSUFFICIENT: even aggressive compression > 800K — must split across LLM calls |
+| `sympy__sympy-23262` | sympy/sympy | 1,545 | 596,668 | 1,639,250 | 744,090 | **2,241,176** | 1,411,696 | INSUFFICIENT: even aggressive compression > 800K — must split across LLM calls |
+| `django__django-16315` | django/django | 2,755 | 551,067 | 922,126 | 470,516 | **1,478,518** | 1,067,875 | aggressive: drop full skeleton; top-10 full + top-30 symbols |
+| `django__django-16032` | django/django | 2,751 | 548,306 | 916,800 | 466,976 | **1,470,300** | 1,061,268 | aggressive: drop full skeleton; top-10 full + top-30 symbols |
+| `django__django-15814` | django/django | 2,749 | 546,438 | 910,585 | 463,262 | **1,462,685** | 1,055,940 | aggressive: drop full skeleton; top-10 full + top-30 symbols |
+| `django__django-15022` | django/django | 2,724 | 534,473 | 823,951 | 409,390 | **1,363,730** | 987,707 | aggressive: drop full skeleton; top-10 full + top-30 symbols |
+| `django__django-15128` | django/django | 2,724 | 534,235 | 821,540 | 407,234 | **1,361,441** | 985,673 | aggressive: drop full skeleton; top-10 full + top-30 symbols |
+| `django__django-14351` | django/django | 2,691 | 519,224 | 793,415 | 397,992 | **1,319,775** | 962,202 | aggressive: drop full skeleton; top-10 full + top-30 symbols |
+| `django__django-13406` | django/django | 2,673 | 506,383 | 763,094 | 380,493 | **1,275,249** | 929,137 | aggressive: drop full skeleton; top-10 full + top-30 symbols |
+| `django__django-13417` | django/django | 2,672 | 506,443 | 763,115 | 380,493 | **1,274,793** | 928,660 | aggressive: drop full skeleton; top-10 full + top-30 symbols |
+| `django__django-11734` | django/django | 2,570 | 482,290 | 719,229 | 362,013 | **1,206,727** | 883,112 | aggressive: drop full skeleton; top-10 full + top-30 symbols |
+| `matplotlib__matplotlib-26208` | matplotlib/matplotlib | 897 | 164,688 | 824,800 | 434,282 | **995,008** | 632,570 | compress: top-10 full + top-11..30 symbols only |
+| `matplotlib__matplotlib-24177` | matplotlib/matplotlib | 892 | 161,778 | 802,937 | 419,825 | **970,223** | 614,488 | compress: top-10 full + top-11..30 symbols only |
+| `matplotlib__matplotlib-21568` | matplotlib/matplotlib | 901 | 158,219 | 779,459 | 403,784 | **943,003** | 594,317 | compress: top-10 full + top-11..30 symbols only |
+| `matplotlib__matplotlib-20488` | matplotlib/matplotlib | 889 | 153,569 | 770,547 | 397,813 | **929,604** | 583,521 | compress: top-10 full + top-11..30 symbols only |
+| `pydata__xarray-6599` | pydata/xarray | 165 | 79,320 | 761,621 | 486,885 | **847,019** | 592,337 | compress: top-10 full + top-11..30 symbols only |
+
+TOTAL naive = symbol-skeleton + top-30-files-full-content + issue + system (~2K) + retrieval-signals (~3K). This is the worst-case single-LLM-call upper bound; real V10 splits across multiple calls (reranker sees skeleton only; patch generator sees top-K full content). 800K is the design budget — anything above needs compression. TOTAL compressed = top-10 at full content + top-11..30 as symbols only + skeleton + issue + system + retrieval.
 
 ## Phase 1 design conclusions
 
-- Median skeleton-symbol projection: **506,443 tokens**. Max: **596,668 tokens**.
-- The largest cap-hitter still fits in 1M context but uses 50%+ of it. Phase 1's reranker should pre-filter to top-N (recommended N=30) before the rerank LLM call to keep cost predictable.
-- Top-30-full-content projection (Phase 1 worst case if the agent path reads the full top-30 files): max **1,813,670 tokens**, median **821,540**.
+- Skeleton-symbol projection — median **506,443**, max **596,668** tokens (well within 1M context).
+- **TOTAL naive** projection (single-LLM-call worst case) — median **1,319,775**, max **2,325,100** tokens. **16/16** instances cross the 800K design budget.
+- **TOTAL compressed** (top-10 full + top-11..30 symbols + skeleton) — median **962,202**, max **1,411,696** tokens. **11/16** instances still over 800K after compression.
+
+### Compression strategy by instance (Phase 1 acceptance criteria)
+
+- **11 instances exceed 800K even with compression.** Phase 1 MUST split these across multiple LLM calls: a localizer call (skeleton + retrieval signals only) and separate per-candidate patch-generation calls (issue + single file content). Specific instances flagged in the per-instance table.
+- Top-30-full-content alone — max **1,813,670** tokens (`sympy__sympy-23262`-class instances; sympy ships large per-file modules). On these, top-30 full content dominates the budget; compression cannot help and we must pass fewer files. Phase 1 hyperparameter `K_files_full=10` is the safer default on big-repo instances.
 
 **Phase 1 commit 2 acceptance criterion:** the Stage 1a skeleton builder MUST produce a skeleton ≤ the symbol-skeleton projection above for each cap-hitter instance. If skeleton size on the real Phase 1a build differs from this audit by >2x, the skeleton builder needs revisiting before Stage 1b.

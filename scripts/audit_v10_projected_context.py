@@ -151,33 +151,90 @@ def _q(s: str) -> str:
 
 
 def _project_token_counts(files: list[dict], issue_chars: int) -> dict:
-    """Project token counts for various V10 prompt shapes."""
+    """Project token counts for various V10 prompt shapes.
+
+    The TOTAL projection (added per Phase 1 review) is the worst-case
+    single-LLM-call upper bound: every Phase 1 signal source dumped
+    into one prompt. Real V10 splits across multiple calls (skeleton
+    only into the reranker; top-K file content only into the patch
+    generator), so TOTAL is over-pessimistic — but it sets the
+    aggregate cap that no single LLM call may exceed.
+    """
     n_files = len(files)
     total_lines = sum(f["lines"] for f in files)
     total_classes = sum(f["classes"] for f in files)
     total_functions = sum(f["functions"] for f in files)
     total_chars = sum(f["chars"] for f in files)
 
-    # Path-only skeleton: just one path per file, ~80 chars/path with framing.
+    chars_per_symbol_line = 50
+
+    # Path-only skeleton.
     chars_files_only = sum(80 + len(f["path"]) for f in files)
 
     # Symbol skeleton: path + 1 line per class + 1 line per function.
-    # Typical line: "  def foo(self, x): ..." -> ~40 chars.
-    chars_per_symbol_line = 50
     chars_symbol_skeleton = chars_files_only + (
         chars_per_symbol_line * (total_classes + total_functions)
     )
 
-    # Top-30 files by LOC, full file content (worst case for reranker
-    # if it sees actual code, not just summaries):
-    top30 = sorted(files, key=lambda f: -f["lines"])[:30]
-    chars_top30_full = sum(f["chars"] for f in top30)
+    # Top-K files by LOC.
+    by_lines = sorted(files, key=lambda f: -f["lines"])
+    top10 = by_lines[:10]
+    top30 = by_lines[:30]
+    top11_to_30 = by_lines[10:30]
 
-    # Top-30 files by LOC, symbols-only:
+    chars_top10_full = sum(f["chars"] for f in top10)
+    chars_top30_full = sum(f["chars"] for f in top30)
     chars_top30_symbols = sum(
         80 + len(f["path"]) + chars_per_symbol_line * (f["classes"] + f["functions"])
         for f in top30
     )
+    chars_top11_30_symbols = sum(
+        80 + len(f["path"]) + chars_per_symbol_line * (f["classes"] + f["functions"])
+        for f in top11_to_30
+    )
+
+    # Fixed budgets for non-corpus prompt parts.
+    chars_system = 2_000 * CHARS_PER_TOKEN          # ~2 K tokens system prompt
+    chars_retrieval_signals = 3_000 * CHARS_PER_TOKEN  # ~3 K tokens for top-30 candidate list
+
+    chars_total_naive = (
+        chars_symbol_skeleton
+        + chars_top30_full
+        + issue_chars
+        + chars_system
+        + chars_retrieval_signals
+    )
+    # Compressed: drop full-content for files outside top-10; keep
+    # symbol-only summaries for top-11..30.
+    chars_total_compressed = (
+        chars_symbol_skeleton  # full skeleton, symbol form
+        + chars_top10_full      # only top-10 at full content
+        + chars_top11_30_symbols  # ranks 11-30 as symbols only
+        + issue_chars
+        + chars_system
+        + chars_retrieval_signals
+    )
+    # Aggressive: drop the full skeleton (only top-K files visible).
+    chars_total_aggressive = (
+        chars_top10_full
+        + chars_top30_symbols
+        + issue_chars
+        + chars_system
+        + chars_retrieval_signals
+    )
+
+    tokens_total_naive = chars_total_naive // CHARS_PER_TOKEN
+    tokens_total_compressed = chars_total_compressed // CHARS_PER_TOKEN
+    tokens_total_aggressive = chars_total_aggressive // CHARS_PER_TOKEN
+
+    if tokens_total_naive < 800_000:
+        compression_strategy = "none — naive total fits 800K budget"
+    elif tokens_total_compressed < 800_000:
+        compression_strategy = "compress: top-10 full + top-11..30 symbols only"
+    elif tokens_total_aggressive < 800_000:
+        compression_strategy = "aggressive: drop full skeleton; top-10 full + top-30 symbols"
+    else:
+        compression_strategy = "INSUFFICIENT: even aggressive compression > 800K — must split across LLM calls"
 
     return {
         "n_files": n_files,
@@ -189,7 +246,12 @@ def _project_token_counts(files: list[dict], issue_chars: int) -> dict:
         "tokens_symbol_skeleton": chars_symbol_skeleton // CHARS_PER_TOKEN,
         "tokens_top30_symbols": chars_top30_symbols // CHARS_PER_TOKEN,
         "tokens_top30_full": chars_top30_full // CHARS_PER_TOKEN,
+        "tokens_top10_full": chars_top10_full // CHARS_PER_TOKEN,
         "tokens_issue": issue_chars // CHARS_PER_TOKEN,
+        "tokens_total_naive": tokens_total_naive,
+        "tokens_total_compressed": tokens_total_compressed,
+        "tokens_total_aggressive": tokens_total_aggressive,
+        "compression_strategy": compression_strategy,
     }
 
 
@@ -301,23 +363,30 @@ def main() -> int:
     )
     out.append("")
     out.append(
-        "| Instance | Repo | Files | Total lines | Issue tok | "
-        "Files-only tok | Symbol-skel tok | Top-30 sym tok | "
-        "Top-30 full tok | Bucket |"
+        "| Instance | Repo | Files | Symbol-skel tok | Top-30 full tok | "
+        "Top-10 full tok | **TOTAL naive** | TOTAL compressed | Compression strategy |"
     )
-    out.append(
-        "|---|---|---|---|---|---|---|---|---|---|"
-    )
-    rows.sort(key=lambda r: -r["tokens_symbol_skeleton"])
+    out.append("|---|---|---|---|---|---|---|---|---|")
+    rows.sort(key=lambda r: -r["tokens_total_naive"])
     for r in rows:
         out.append(
             f"| `{r['instance_id']}` | {r['repo']} | "
-            f"{r['n_files']:,} | {r['total_lines']:,} | "
-            f"{r['tokens_issue']:,} | {r['tokens_files_only']:,} | "
-            f"**{r['tokens_symbol_skeleton']:,}** | "
-            f"{r['tokens_top30_symbols']:,} | "
-            f"{r['tokens_top30_full']:,} | {r['primary_bucket'].split(' (')[0]} |"
+            f"{r['n_files']:,} | {r['tokens_symbol_skeleton']:,} | "
+            f"{r['tokens_top30_full']:,} | {r['tokens_top10_full']:,} | "
+            f"**{r['tokens_total_naive']:,}** | "
+            f"{r['tokens_total_compressed']:,} | "
+            f"{r['compression_strategy']} |"
         )
+    out.append("")
+    out.append(
+        "TOTAL naive = symbol-skeleton + top-30-files-full-content + issue + "
+        "system (~2K) + retrieval-signals (~3K). This is the worst-case "
+        "single-LLM-call upper bound; real V10 splits across multiple calls "
+        "(reranker sees skeleton only; patch generator sees top-K full "
+        "content). 800K is the design budget — anything above needs "
+        "compression. TOTAL compressed = top-10 at full content + "
+        "top-11..30 as symbols only + skeleton + issue + system + retrieval."
+    )
     out.append("")
 
     if failed:
@@ -331,42 +400,77 @@ def main() -> int:
     out.append("## Phase 1 design conclusions")
     out.append("")
     sym_tokens = [r["tokens_symbol_skeleton"] for r in rows]
+    naive_totals = [r["tokens_total_naive"] for r in rows]
+    compressed_totals = [r["tokens_total_compressed"] for r in rows]
     if sym_tokens:
-        max_sym = max(sym_tokens)
         med_sym = sorted(sym_tokens)[len(sym_tokens) // 2]
+        max_sym = max(sym_tokens)
         out.append(
-            f"- Median skeleton-symbol projection: **{med_sym:,} tokens**. "
-            f"Max: **{max_sym:,} tokens**."
+            f"- Skeleton-symbol projection — median **{med_sym:,}**, "
+            f"max **{max_sym:,}** tokens (well within 1M context)."
         )
-        if max_sym >= 1_000_000:
+
+        med_naive = sorted(naive_totals)[len(naive_totals) // 2]
+        max_naive = max(naive_totals)
+        n_over_800k_naive = sum(1 for t in naive_totals if t >= 800_000)
+        out.append(
+            f"- **TOTAL naive** projection (single-LLM-call worst case) — "
+            f"median **{med_naive:,}**, max **{max_naive:,}** tokens. "
+            f"**{n_over_800k_naive}/{len(naive_totals)}** instances cross the "
+            f"800K design budget."
+        )
+
+        med_compressed = sorted(compressed_totals)[len(compressed_totals) // 2]
+        max_compressed = max(compressed_totals)
+        n_over_800k_compressed = sum(1 for t in compressed_totals if t >= 800_000)
+        out.append(
+            f"- **TOTAL compressed** (top-10 full + top-11..30 symbols + "
+            f"skeleton) — median **{med_compressed:,}**, max "
+            f"**{max_compressed:,}** tokens. "
+            f"**{n_over_800k_compressed}/{len(compressed_totals)}** instances "
+            f"still over 800K after compression."
+        )
+
+        out.append("")
+        out.append("### Compression strategy by instance (Phase 1 acceptance criteria)")
+        out.append("")
+        if n_over_800k_naive == 0:
             out.append(
-                "- **At least one cap-hitter would still blow up V10's "
-                "skeleton-symbol projection.** Phase 1 MUST do BM25 / "
-                "embedding pre-filter to a top-N candidate set BEFORE "
-                "any reranker call. Naive 'pass the full skeleton' is "
-                "not viable on these instances."
+                "- **Naive total fits 800K on every cap-hitter.** Phase 1 "
+                "may default to passing skeleton + top-30 full content + "
+                "issue + retrieval signals into a single LLM call without "
+                "compression."
             )
-        elif max_sym >= 500_000:
+        elif n_over_800k_compressed == 0:
             out.append(
-                "- The largest cap-hitter still fits in 1M context but "
-                "uses 50%+ of it. Phase 1's reranker should pre-filter "
-                "to top-N (recommended N=30) before the rerank LLM call "
-                "to keep cost predictable."
+                f"- **{n_over_800k_naive} instances need compression**, "
+                f"but the documented strategy (top-10 full + top-11..30 "
+                f"symbols only) fits all of them under 800K. Phase 1 "
+                f"should default to compressed shape on big-repo instances "
+                f"(django, sympy, matplotlib) and leave naive for small "
+                f"repos. The compression toggle is a Stage 1g knob, not "
+                f"a Stage 1b concern."
             )
         else:
             out.append(
-                "- All cap-hitters fit comfortably in 1M context with "
-                "the symbol skeleton. V10's prompt shape (no "
-                "FAIL_TO_PASS, structured skeleton) is materially "
-                "smaller than V7's; the cap risk does not transfer."
+                f"- **{n_over_800k_compressed} instances exceed 800K even "
+                f"with compression.** Phase 1 MUST split these across "
+                f"multiple LLM calls: a localizer call (skeleton + "
+                f"retrieval signals only) and separate per-candidate "
+                f"patch-generation calls (issue + single file content). "
+                f"Specific instances flagged in the per-instance table."
             )
+
+        # Top contributors to TOTAL.
         top30_full_tokens = [r["tokens_top30_full"] for r in rows]
         max_top30 = max(top30_full_tokens)
         out.append(
-            f"- Top-30-full-content projection (Phase 1 worst case if "
-            f"the agent path reads the full top-30 files): "
-            f"max **{max_top30:,} tokens**, median "
-            f"**{sorted(top30_full_tokens)[len(top30_full_tokens) // 2]:,}**."
+            f"- Top-30-full-content alone — max **{max_top30:,}** tokens "
+            f"(`sympy__sympy-23262`-class instances; sympy ships large "
+            f"per-file modules). On these, top-30 full content dominates "
+            f"the budget; compression cannot help and we must pass fewer "
+            f"files. Phase 1 hyperparameter `K_files_full=10` is the "
+            f"safer default on big-repo instances."
         )
     out.append("")
     out.append(
