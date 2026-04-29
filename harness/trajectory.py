@@ -62,6 +62,30 @@ class TrajectoryWriter:
             self.file_handle.write(json.dumps(record, default=str) + "\n")
             self.file_handle.flush()
 
+    def write_signal(self, signal) -> None:
+        """Append a typed localization signal to the trajectory.
+
+        ``signal`` must be one of the dataclasses in
+        ``harness.localization_signals.SIGNAL_CLASSES``. Records the
+        signal under event=``signal_<class>`` with payload =
+        ``signal.as_dict()``. The structured shape lets the ablation
+        table be auto-generated from logs (V10_DESIGN.md §7).
+        """
+        # Lazy import — harness.localization_signals depends on
+        # harness.views; circular import risk is low but the import
+        # happens at first use rather than at module load.
+        from harness.localization_signals import SIGNAL_CLASSES
+
+        if not isinstance(signal, SIGNAL_CLASSES):
+            raise TypeError(
+                f"write_signal expects a localization_signals dataclass; "
+                f"got {type(signal).__name__}. See harness.localization_signals."
+            )
+        self.write(
+            event_type=f"signal_{type(signal).__name__}",
+            payload=signal.as_dict(),
+        )
+
     def advance_turn(self) -> None:
         """Close the current turn file, open the next."""
         self.close()
