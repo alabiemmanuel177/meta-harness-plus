@@ -93,12 +93,31 @@ def _iter_raw_rows(path: pathlib.Path) -> Iterator[dict]:
             yield json.loads(line)
 
 
-def _build_skeleton_phase0(repo: str, base_commit: str) -> RepoSkeleton:
-    """Phase 0 placeholder — empty skeleton. Phase 1 walks the repo at
-    base_commit and produces the real tree (file/class/function with
-    one-line summaries). Returning empty here keeps the projection
-    boundary simple while letting downstream code accept the type.
+def _build_skeleton_for_view(repo: str, base_commit: str) -> RepoSkeleton:
+    """Try to load a cached skeleton from ``harness.skeleton``'s cache;
+    return an empty skeleton if not cached.
+
+    Phase 1 callers fill in the skeleton on-demand via
+    ``harness.skeleton.load_or_build_skeleton(view, sandbox=...)``.
+    Cached skeletons are loaded transparently; empty is the documented
+    default for instances whose skeleton hasn't been built yet.
+
+    This replaces the Phase 0 placeholder (``_build_skeleton_phase0``)
+    that always returned empty.
     """
+    # Lazy import to keep dataset.py free of skeleton's heavier deps
+    # (and to avoid an import cycle should skeleton.py ever import
+    # dataset.py for any reason).
+    from harness.skeleton import _cache_path, _deserialize_skeleton
+    path = _cache_path(repo, base_commit)
+    if path.exists():
+        try:
+            return _deserialize_skeleton(path)
+        except Exception:
+            # Malformed cache file → fall through to empty rather than
+            # crashing the loader. Phase 1's load_or_build_skeleton
+            # will rebuild on next access.
+            pass
     return RepoSkeleton(repo=repo, base_commit=base_commit, files=())
 
 
@@ -132,7 +151,7 @@ def _project_to_view(row: dict) -> InstanceView:
         repo=repo,
         base_commit=base_commit,
         problem_statement=problem_statement,
-        repo_skeleton=_build_skeleton_phase0(repo, base_commit),
+        repo_skeleton=_build_skeleton_for_view(repo, base_commit),
         test_directives=TestDirectives(dirs=dirs, source=source),
     )
 

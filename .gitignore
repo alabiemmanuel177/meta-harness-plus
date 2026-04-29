@@ -191,6 +191,7 @@ trajectories/v10_*/
 runs/v10_*/
 logs/run_evaluation/v10_*/
 eval_outputs/
+repo_cache/
 
 # Phase 7 corpus (large; regenerable)
 data/phase7_corpus/
