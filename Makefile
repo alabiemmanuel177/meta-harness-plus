@@ -1,8 +1,8 @@
 # V10 SWE-bench harness Makefile
 # Phase 0 targets — see docs/V10_DESIGN.md §10.
 
-PYTHON ?= .venv/bin/python3
-PYTEST ?= $(PYTHON) -m pytest
+PYTHON ?= PYTHONPATH=. .venv/bin/python3
+PYTEST ?= .venv/bin/python3 -m pytest
 
 .PHONY: help firewall smoke build-split test-v10 ablate eval clean-v10-cache
 
@@ -42,7 +42,7 @@ smoke-strict: firewall
 	@echo "[smoke-strict] verifying global import-time cache hygiene"
 	@$(PYTHON) -c "import harness; print('[smoke-strict] harness import OK — V10_EXCLUSIVE_DIRS clean')"
 	@echo "[smoke-strict] running smoke under strict hygiene"
-	PYTHONPATH=. $(PYTHON) scripts/smoke_phase0.py
+	$(PYTHON) scripts/smoke_phase0.py
 	@echo "[smoke-strict] OK"
 
 verify-images:
