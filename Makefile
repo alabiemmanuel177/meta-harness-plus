@@ -38,6 +38,13 @@ smoke-exec: firewall
 smoke-negative: firewall
 	$(PYTHON) scripts/negative_smoke.py
 
+smoke-strict: firewall
+	@echo "[smoke-strict] verifying global import-time cache hygiene"
+	@$(PYTHON) -c "import harness; print('[smoke-strict] harness import OK — V10_EXCLUSIVE_DIRS clean')"
+	@echo "[smoke-strict] running smoke under strict hygiene"
+	PYTHONPATH=. $(PYTHON) scripts/smoke_phase0.py
+	@echo "[smoke-strict] OK"
+
 verify-images:
 	$(PYTHON) scripts/verify_images.py
 

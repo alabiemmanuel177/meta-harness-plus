@@ -228,11 +228,19 @@ def test_no_harness_module_has_forbidden_string_literal_in_source() -> None:
 
 def test_no_harness_module_reads_eval_outputs() -> None:
     """`eval_outputs/` is the post-submission grader's exclusive write
-    target. No harness module (other than harness/eval.py) may reference
-    that path in any string literal."""
+    target. No harness module may reference that path in any string
+    literal except:
+      - harness/eval.py (the grader itself)
+      - harness/cache.py (lists eval_outputs as a V10_EXCLUSIVE_DIR
+        for the import-time hygiene check; never reads from it)
+    """
+    eval_outputs_allowlist = {
+        HARNESS_ROOT / "eval.py",
+        HARNESS_ROOT / "cache.py",
+    }
     violations: list[str] = []
     for path in _harness_py_files():
-        if path == HARNESS_ROOT / "eval.py":
+        if path in eval_outputs_allowlist:
             continue
         tree = ast.parse(path.read_text())
         for node in ast.walk(tree):
@@ -242,7 +250,10 @@ def test_no_harness_module_reads_eval_outputs() -> None:
                         f"{path.relative_to(PROJECT_ROOT)}:{node.lineno}: "
                         f"references eval_outputs in {node.value[:120]!r}"
                     )
-    assert not violations, "harness modules outside eval.py reference eval_outputs: " + "; ".join(violations)
+    assert not violations, (
+        "harness modules outside the allowlist reference eval_outputs: "
+        + "; ".join(violations)
+    )
 
 
 # ---------------------------------------------------------------------------

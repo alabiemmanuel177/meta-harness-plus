@@ -15,25 +15,26 @@ design doc). No module here may import from:
 The firewall test in ``tests/test_no_oracle_leak.py`` enforces these
 boundaries statically (AST scan) and at runtime (LLM-call wrapping).
 
-# TODO(phase-1): wire strict global cache hygiene at import time.
-#
-# Currently `assert_clean_cache_at_startup()` is invoked only by the
-# Phase 0 smoke runner with a SCOPED check (`scope=(trajectories/v10_smoke,)`).
-# That keeps Phase 0 runnable on a developer machine where legacy V7/V8
-# runs/ entries still exist.
-#
-# Phase 1 commit N (the localizer entry point) MUST replace the smoke's
-# scoped check with a global one fired here at import:
-#
-#     from harness.cache import assert_clean_cache_at_startup
-#     assert_clean_cache_at_startup()  # global default — every V10_CACHE_DIR
-#
-# Acceptance gate: `make smoke-strict` (added in Phase 1) runs the smoke
-# with the global hygiene enabled and exits 0 only if no non-V10-tagged
-# entries exist in any V10_CACHE_DIR. Until that target is green, the
-# smoke import below stays scoped.
-#
-# Tracked under V10_DESIGN.md §12.7 ("V10 cache hygiene at startup").
+Cache hygiene wire-in (Phase 0 commit 18, satisfying the prior commit-10
+TODO): every import of ``harness`` triggers
+``assert_clean_cache_at_startup()`` BEFORE any other V10 code can run.
+The default check inspects V10_EXCLUSIVE_DIRS (the grader output dir
+and ``.harness_cache/``) and refuses to start if either contains
+non-V10-tagged entries. Shared parents (``runs/``, ``trajectories/``,
+``repo_cache/``) are tolerated for legacy V7/V8 baseline data; their
+V10-tagged children are checked per-run.
+
+Acceptance: ``make smoke-strict`` runs the smoke under the global
+import-time hygiene; passing means no leftover legacy entries can seed
+a V10 cache. See V10_DESIGN.md §12.7 and ``harness/cache.py``.
 """
+
+# Fail fast at import: refuse to load V10 if eval_outputs/ or
+# .harness_cache/ have been seeded with non-V10 data.
+from harness.cache import assert_clean_cache_at_startup as _assert_v10_cache_clean
+
+_assert_v10_cache_clean()
+del _assert_v10_cache_clean
+
 
 __all__: list[str] = []

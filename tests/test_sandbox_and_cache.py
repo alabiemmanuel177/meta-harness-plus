@@ -129,13 +129,27 @@ def test_clean_cache_passes_with_only_v10_entries(tmp_path: pathlib.Path) -> Non
     assert_clean_cache_at_startup(cwd=tmp_path)
 
 
-def test_clean_cache_raises_on_legacy_entry(tmp_path: pathlib.Path) -> None:
-    (tmp_path / "runs" / "swebench_500_v7").mkdir(parents=True)
+def test_clean_cache_raises_on_legacy_entry_in_exclusive_dir(tmp_path: pathlib.Path) -> None:
+    """Default check (V10_EXCLUSIVE_DIRS only) must raise on a legacy
+    entry in eval_outputs/ — that dir is V10-owned by the grader."""
+    (tmp_path / "eval_outputs" / "swebench_500_v7_run").mkdir(parents=True)
     with pytest.raises(CacheLeakError):
         assert_clean_cache_at_startup(cwd=tmp_path)
 
 
+def test_clean_cache_tolerates_legacy_in_namespaced_parent(tmp_path: pathlib.Path) -> None:
+    """Legacy entries in V10_NAMESPACED_PARENTS (runs/, trajectories/)
+    must NOT raise the default check — those dirs are shared with V7
+    baselines per V10_DESIGN.md §13.3."""
+    (tmp_path / "runs" / "swebench_500_v7").mkdir(parents=True)
+    (tmp_path / "trajectories" / "trajectories_v7").mkdir(parents=True)
+    # Should NOT raise — runs/ and trajectories/ are namespaced parents.
+    assert_clean_cache_at_startup(cwd=tmp_path)
+
+
 def test_v10_tag_prefix_is_canonical() -> None:
     assert V10_TAG_PREFIX == "v10_"
+    # V10_CACHE_DIRS is the union of exclusive + namespaced parents.
+    assert pathlib.Path("eval_outputs") in V10_CACHE_DIRS
     assert pathlib.Path("runs") in V10_CACHE_DIRS
     assert pathlib.Path("trajectories") in V10_CACHE_DIRS
