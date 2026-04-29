@@ -226,6 +226,64 @@ def test_no_harness_module_has_forbidden_string_literal_in_source() -> None:
     assert not violations, "forbidden string literals: " + "; ".join(violations)
 
 
+def test_no_harness_module_outside_eval_reads_patch_field() -> None:
+    """The gold ``patch`` field is read only at evaluation time
+    (harness/eval.py) — never in the inference pipeline. AST scan
+    rejects any other harness/ module that:
+
+      - subscripts a value with the literal string ``"patch"``
+        (``row["patch"]``)
+      - accesses a ``.patch`` attribute (``row.patch``)
+      - calls ``getattr(_, "patch")`` / ``hasattr`` / ``setattr``
+        / ``delattr`` with the literal string ``"patch"``
+
+    Phase 1 stage 1b's retrieval recall eval reads the gold patch in
+    ``harness/eval.py:_load_gold_touched_files``. That's the only
+    legitimate use site.
+    """
+    patch_eval_only = {HARNESS_ROOT / "eval.py"}
+    violations: list[str] = []
+    for path in _harness_py_files():
+        if path in patch_eval_only:
+            continue
+        tree = ast.parse(path.read_text())
+        for node in ast.walk(tree):
+            # Subscript: x["patch"]
+            if isinstance(node, ast.Subscript):
+                sl = node.slice
+                if isinstance(sl, ast.Constant) and isinstance(sl.value, str):
+                    if sl.value == "patch":
+                        violations.append(
+                            f"{path.relative_to(PROJECT_ROOT)}:{node.lineno}: "
+                            f"_['patch'] subscript"
+                        )
+            # Attribute: x.patch (excluding method names like .apply_patch)
+            if isinstance(node, ast.Attribute) and node.attr == "patch":
+                violations.append(
+                    f"{path.relative_to(PROJECT_ROOT)}:{node.lineno}: _.patch attribute"
+                )
+            # getattr/setattr/hasattr/delattr with "patch"
+            if isinstance(node, ast.Call):
+                fn = node.func
+                name = (
+                    fn.id if isinstance(fn, ast.Name)
+                    else fn.attr if isinstance(fn, ast.Attribute)
+                    else ""
+                )
+                if name not in {"getattr", "hasattr", "setattr", "delattr"}:
+                    continue
+                if len(node.args) >= 2 and isinstance(node.args[1], ast.Constant):
+                    if node.args[1].value == "patch":
+                        violations.append(
+                            f"{path.relative_to(PROJECT_ROOT)}:{node.lineno}: "
+                            f"{name}(_, 'patch')"
+                        )
+    assert not violations, (
+        "harness modules outside eval.py read the gold patch field: "
+        + "; ".join(violations)
+    )
+
+
 def test_no_harness_module_reads_eval_outputs() -> None:
     """`eval_outputs/` is the post-submission grader's exclusive write
     target. No harness module may reference that path in any string
