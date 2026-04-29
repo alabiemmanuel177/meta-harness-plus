@@ -382,6 +382,33 @@ Concrete commits, in this order:
 
 I'll wait for ack on this doc before starting Phase 0.
 
+### 10.5 Phase 7 corpus crawl (side-quest, started in parallel with Phase 1)
+
+Phase 7's fine-tuned localizer needs a public, pre-cutoff bug-fix corpus. The corpus build is multi-week wall-clock; we start it in parallel with Phase 1 so we aren't data-starved if dev-100 says we need fine-tuning.
+
+**Plan:**
+
+- Seed list: ~5,000 Python repos, license-filtered (MIT / Apache-2.0 / BSD only). Initial seed: PyPI top-500 by download + curated list of 4,500 GitHub Python repos with >50 stars and >100 commits. Source the seed list once; commit it to `data/phase7_seed_repos.json`.
+- For each repo, clone (shallow + filter) at HEAD, then walk `git log` for commits matching `fix:`, `bug`, `closes #`, `fixes #` patterns BEFORE the model cutoff date. Cap at 50 commits per repo to bound disk.
+- For each candidate fix commit, emit a JSONL record: `{repo, sha, parent_sha, issue_text, files_changed, lines_changed, pre_commit_skeleton}`. Issue text comes from the linked GitHub issue if available, else the commit message.
+- Skeletons are computed at `parent_sha` (so the model sees pre-fix state, like at base_commit). Use the same skeleton builder that Phase 1 uses — keeps training and inference identically shaped.
+- Output: `data/phase7_corpus/{repo}/{sha}.jsonl`, append-mode. Resumeable: skip repos whose JSONL already exists.
+
+**Operational requirements (kept honest, surfaced to user before any real run):**
+
+- GitHub access token in `GH_TOKEN` env. Without it, the public REST API caps at 60 req/hr — too slow.
+- ~50 GB free disk for an initial 100-repo run (clones + skeletons). ~500 GB for the full 5k-repo run. The `make disk-budget` target reports headroom.
+- Network bandwidth: each repo clone 50–500 MB; full run ~1–2 TB egress.
+- License filter is strict: any non-MIT/Apache-2.0/BSD repo is dropped. We log the rejection so we can audit later.
+
+**Status:** scaffold lives at `scripts/phase7_crawl.py`. The script is intentionally NOT auto-started; running it is a deliberate operator decision because of the disk + bandwidth + GH-token cost. The user gates the actual crawl.
+
+**What this enables (or doesn't):**
+
+- If we never reach Phase 7, the corpus is unused but the cost was just disk + a one-time crawl. Acceptable.
+- If we do reach Phase 7, having the corpus ready saves 2–4 weeks vs. starting from zero.
+- Crucially, the corpus is **public, pre-cutoff data** — no SWE-bench eval data, no FAIL_TO_PASS, no overlap with the Verified test set. The license filter ensures we can publish a fine-tuned model without legal complications.
+
 ---
 
 ## 11. Model substitution
@@ -674,3 +701,70 @@ def assert_clean_cache_at_startup() -> None:
 **Existing leak paths exist in `agent_docker.py:run_tests`, `swebench_adapter.SWEBenchInstance`, `swebench_adapter.load_swebench_verified`, and `swebench_adapter.build_user_prompt`.** Phase 0 cannot proceed by importing these modules. The V10 `harness/` package replaces all four with leak-free analogues per §12.4.
 
 The four tightenings (firewall AST scan for getattr/subscript, repo-conventions source citations + override-vs-discovery consistency, case-insensitive substring runtime guard, eval output isolation + V10 cache hygiene) are folded into §12.4–§12.7 and become Phase 0 acceptance criteria.
+
+---
+
+## 13. Asset inventory
+
+V10 inherits substantial pre-existing infrastructure from V7/V8 work. This section is the source-of-truth on what we're using, what's gated, and what the Phase 1 hard requirements are.
+
+### 13.1 SWE-bench Verified Docker images (498/500 cached locally; target: 500/500)
+
+- All Verified instance images previously pulled; `docker images | grep swebench/sweb.eval` shows 498 entries, 2 short of the full set.
+- **Sandbox MUST NOT pull at runtime.** A missing image is a hard error with a clear message; the operator pulls explicitly before a large run. Image pulls are 2–3 minutes each and a silent network call mid-run is a debugging nightmare.
+- **`make verify-images`** confirms every instance_id in `splits/test_500.json` (or any specified split) has its image present locally. Runs in <5 s. Required gate before any large eval.
+- We do not prune the image cache — it's a 1+ TB asset that took multiple cycles to pull. Treat it as load-bearing infrastructure.
+
+### 13.2 Verified dataset jsonl
+
+- Path: `meta_harness_plus/tasks/data/swebench_verified.jsonl` (500 rows).
+- `harness/dataset.py` reads from this file as the **single source of truth.** It does NOT call `datasets.load_dataset(...)` at runtime; HF cache, arrow shards, and any other path are explicitly ruled out.
+- An asserted boundary in the loader fails fast if the file is missing or has unexpected size — surfaces a stale checkout instead of silently re-downloading.
+
+### 13.3 V7 trajectories and eval reports — DATA, not ground truth
+
+Two artifact paths from prior work:
+
+- `runs/swebench_500_v7/cache/trajectories_v7/` — V7 per-instance trajectories, 500/500 instances.
+- `logs/run_evaluation/v7_full500_seed0/` — V7 official eval reports, 467/500 instances.
+
+**Permitted use:**
+
+- **Difficulty heuristic.** Instances V7 solved cleanly (single attempt, low turn count) are likely "easy" in V10's routing. Instances V7 failed despite FAIL_TO_PASS being in the prompt are "hard" by definition. This is OUR observation about OUR prior runs, not a SWE-bench eval field — legitimate, oracle-free signal.
+- **Calibration ground truth on dev-50 only.** The dev-50 split builder may read `splits/v7_difficulty_priors.json` as one input among others. The production routing logic at inference time does NOT — it re-derives difficulty from issue features (length, traceback, candidate-file count) and uses V7 priors only as a calibration target during dev-50 sweeps.
+
+**Strictly forbidden:**
+
+- Seeding V10 patches, prompts, or selector decisions from V7 outputs. V7 trajectories were generated under a contaminated prompt (FAIL_TO_PASS in the actor prompt at `swebench_v7.py:146`); their candidate distribution is biased toward FAIL_TO_PASS-fitted patches.
+- Any path where a V7 candidate's text reaches an LLM call. The firewall test scans for this.
+
+**Pre-Phase-1 deliverables:**
+
+- `scripts/audit_missing_v7_evals.py` — accounts for the 33 instances missing V7 reports. Output: `docs/audits/v7_missing_evals.md` with breakdown by repo, error type, and runtime. If failures concentrate in specific repos, our sandbox needs hardening before Phase 1 lands the same instances.
+- `scripts/analyze_v7_for_routing.py` — produces `splits/v7_difficulty_priors.json`. Each entry: `{instance_id, estimated_difficulty: easy|medium|hard, signal_basis: "v7_resolved|v7_unresolved|v7_partial"}`. Read by dev-50 builder; not by inference routing.
+
+### 13.4 API auth status
+
+- DeepSeek v4 API working; cumulative spend through Phase 0 = $6.46 (tracked in `runs/wow_push/cost_log.jsonl`).
+- Claude (Anthropic) API key must be verified working before Phase 1 starts — even though early Phase 1 dev iterates on DeepSeek for cost, the model-agnostic call site means we must be able to swap mid-experiment without discovering an auth issue at hour 14 of a run.
+- Verification target (Phase 1 gate, not Phase 0 PR): `scripts/check_api_keys.py` pings each configured role's provider with a no-op call and asserts auth + rate-limit headroom.
+
+### 13.5 Disk capacity
+
+- 1.25 TB free at Phase 0 close.
+- Trajectory storage estimate: ~150 MB / instance × 500 = ~75 GB compressed per full Verified run.
+- Headroom: ~15 full runs before disk pressure (assuming 75 GB/run linear).
+- `make disk-budget` (Phase 1 deliverable) estimates remaining capacity given a stated run plan (e.g., "1 dev-100 run + 1 test-500 run + ablation matrix" → required ~250 GB, 1 TB headroom).
+
+### 13.6 Pre-Phase-1 ordering
+
+Per the asset inventory ack, in this order before Phase 1 starts:
+
+1. `make verify-images` — all 500 present (commit 11)
+2. `scripts/audit_missing_v7_evals.py` (commit 12)
+3. `scripts/analyze_v7_for_routing.py` (commit 13)
+4. Negative smoke (commit 9 — DONE)
+5. Full execution smoke (commit 8 — DONE)
+6. Cache hygiene global wire-in TODO documented in `harness/__init__.py` (commit 10 — DONE)
+
+Items 1–3 land in this PR. Phase 1 starts after this PR merges.
