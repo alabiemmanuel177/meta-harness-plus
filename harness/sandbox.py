@@ -188,25 +188,80 @@ class Sandbox:
 
     # ----- public test suite (the leak-free replacement for run_tests) -----
 
+    def _resolve_effective_test_paths(self) -> tuple[str, ...]:
+        """Return the test paths actually present in this container.
+
+        Override entries in TestDirectives are written for the typical
+        Verified base_commit per repo, but older base_commits in some
+        repos place tests at the repo root (e.g., psf/requests at
+        base_commit before the tests/ migration had test_requests.py at
+        top level). Filter to only those override paths that exist;
+        for missing paths, fall back to filesystem discovery inside the
+        container (top-level test_*.py files only — same scope as
+        default pytest discovery for a flat repo).
+        """
+        effective: list[str] = []
+        # Phase 1: filter override dirs to those that exist in the container.
+        for d in self._dirs:
+            check = self._exec.run(
+                f"test -e /testbed/{_q(d)} && echo OK || echo MISSING",
+                timeout_s=10,
+            )
+            if "OK" in check.stdout:
+                effective.append(d)
+        if effective:
+            return tuple(effective)
+        # Phase 2: nothing from the override exists. Discover via filesystem.
+        find_res = self._exec.run(
+            "cd /testbed && find . -maxdepth 2 -type f "
+            r"\( -name 'test_*.py' -o -name '*_test.py' \) "
+            "-not -path '*/.git/*' -not -path '*/__pycache__/*' "
+            "| head -40",
+            timeout_s=15,
+        )
+        discovered = [
+            line.lstrip("./").strip()
+            for line in find_res.stdout.splitlines()
+            if line.strip()
+        ]
+        if discovered:
+            return tuple(discovered)
+        # Last resort: empty selection — pytest will collect from cwd.
+        return (".",)
+
     def run_public_suite(
         self,
         *,
         state_label: str = "base",
         timeout_s: int = 480,
+        collect_only: bool = False,
     ) -> SuiteResult:
         """Run the repo's public test suite at the directories in
         ``view.test_directives.dirs``. Default pytest discovery — no
         test-name allowlist or denylist sourced from a dataset row.
+
+        If declared test directories don't exist at this base_commit,
+        falls back to filesystem discovery inside the container (still
+        leak-free — the discovery scans only public file paths, never
+        touches dataset metadata).
+
+        ``collect_only=True`` runs ``pytest --collect-only`` instead of
+        executing the suite — useful for fast smoke tests.
         """
         # Final guard before exec: the dirs were validated at __init__
         # but we re-check in case anyone reached in and mutated them.
         _assert_no_forbidden_token(self._dirs, label="run_public_suite.dirs")
 
-        dirs_arg = " ".join(_q(d) for d in self._dirs)
+        effective = self._resolve_effective_test_paths()
+        _assert_no_forbidden_token(effective, label="run_public_suite.effective")
+
+        dirs_arg = " ".join(_q(d) for d in effective)
+        flags = "-p no:cacheprovider --tb=short -q"
+        if collect_only:
+            flags += " --collect-only"
         cmd = (
             "cd /testbed && "
-            f"python -m pytest -p no:cacheprovider --tb=short -q "
-            f"{dirs_arg} 2>&1 | tail -200"
+            f"python -m pytest {flags} {dirs_arg} 2>&1 | tail -200"
         )
         t0 = time.perf_counter()
         res = self._exec.run(cmd, timeout_s=timeout_s)
@@ -217,7 +272,7 @@ class Sandbox:
             log_excerpt=res.stdout,
             truncated=res.truncated,
             workdir_state=state_label,
-            test_dirs=self._dirs,
+            test_dirs=effective,
         )
 
     def run_repro(self, code: str, *, timeout_s: float = 60.0) -> ExecResult:

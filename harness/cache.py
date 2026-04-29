@@ -47,15 +47,30 @@ def assert_clean_cache_at_startup(
     *,
     extra_dirs: tuple[pathlib.Path, ...] = (),
     cwd: pathlib.Path | None = None,
+    scope: tuple[pathlib.Path, ...] | None = None,
 ) -> None:
     """Raise ``CacheLeakError`` if any V10 cache dir has non-V10 entries.
 
-    Phase 0 callers: invoke from the smoke runner (``scripts/smoke_phase0.py``)
-    once at startup. Phase 3+ wires this into ``harness/__init__.py`` so it
-    fires before any other V10 code executes.
+    Args:
+        extra_dirs: additional directories to check beyond V10_CACHE_DIRS.
+        cwd: project root (default: cwd).
+        scope: if given, OVERRIDES V10_CACHE_DIRS — only the listed
+            directories are checked. Phase 0 smoke uses a scoped check
+            (e.g., trajectories/v10_smoke/) so legacy V7/V8 caches in
+            runs/ and trajectories/ don't break the smoke; Phase 1+
+            production runs use the global default to enforce strict
+            hygiene before any LLM call.
+
+    Phase 0 callers: invoke from ``scripts/smoke_phase0.py`` once at
+    startup with ``scope`` set to the smoke's own write paths. Phase 3+
+    wires this into ``harness/__init__.py`` (no scope) so the global
+    check fires before any V10 code runs.
     """
     base = cwd or pathlib.Path.cwd()
-    dirs = tuple(base / d for d in V10_CACHE_DIRS) + tuple(base / d for d in extra_dirs)
+    if scope is not None:
+        dirs = tuple(base / d for d in scope)
+    else:
+        dirs = tuple(base / d for d in V10_CACHE_DIRS) + tuple(base / d for d in extra_dirs)
     bad: list[str] = []
     for d in dirs:
         for entry in _legacy_entries(d):
