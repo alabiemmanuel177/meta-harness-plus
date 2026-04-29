@@ -47,15 +47,44 @@ _PROJECTED_KEYS: frozenset[str] = frozenset({
 
 
 def _default_dataset_path() -> pathlib.Path:
+    """Single source of truth for the Verified dataset.
+
+    Per V10_DESIGN.md §13.2: this file is canonical. We do NOT call
+    ``datasets.load_dataset(...)`` at runtime; HF cache, arrow shards,
+    and any other network-derived path are explicitly ruled out. The
+    file was committed once during early V7 work and has been frozen
+    since; treat it as a build artifact, not a refreshable input.
+    """
     return (
         pathlib.Path(__file__).resolve().parent.parent
         / "meta_harness_plus" / "tasks" / "data" / "swebench_verified.jsonl"
     )
 
 
-def _iter_raw_rows(path: pathlib.Path) -> Iterator[dict]:
+# Asserted boundary: the loader's only legal source is the local jsonl.
+# Keep this short and auditable. If a future change wants to load from
+# elsewhere, that's a deliberate decision that needs to be reviewed.
+_EXPECTED_ROW_COUNT = 500
+
+
+def _assert_dataset_source_of_truth(path: pathlib.Path) -> None:
     if not path.exists():
-        raise FileNotFoundError(f"Verified dataset not found at {path}")
+        raise FileNotFoundError(
+            f"Verified dataset not found at {path}. V10 reads only this "
+            f"local jsonl; no HuggingFace fallback. See V10_DESIGN.md §13.2."
+        )
+    # Sanity-check size: the expected file is ~6 MB / 500 rows. A 0-byte
+    # or wildly-shrunken file means the cache is corrupted.
+    if path.stat().st_size < 1_000_000:
+        raise ValueError(
+            f"Verified dataset at {path} is suspiciously small "
+            f"({path.stat().st_size} bytes). Expected ~6 MB / "
+            f"{_EXPECTED_ROW_COUNT} rows."
+        )
+
+
+def _iter_raw_rows(path: pathlib.Path) -> Iterator[dict]:
+    _assert_dataset_source_of_truth(path)
     with path.open() as fh:
         for line in fh:
             line = line.strip()

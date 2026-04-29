@@ -38,6 +38,12 @@ smoke-exec: firewall
 smoke-negative: firewall
 	$(PYTHON) scripts/negative_smoke.py
 
+verify-images:
+	$(PYTHON) scripts/verify_images.py
+
+verify-images-dev50:
+	$(PYTHON) scripts/verify_images.py --split splits/dev_50.json
+
 clean-v10-cache:
 	rm -rf trajectories/v10_* runs/v10_*
 

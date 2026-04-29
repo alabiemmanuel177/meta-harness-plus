@@ -45,13 +45,15 @@ def main() -> int:
 
     print(f"[smoke] instance_id={args.instance_id}")
 
-    # 1. Cache hygiene gate. Phase 0 uses a SCOPED check on the smoke's
-    # own write paths only — production-strict global hygiene fires in
-    # Phase 1+. See V10_DESIGN.md §12.7 and harness/cache.py.
-    print("[smoke] checking V10 cache hygiene (scoped)…")
-    assert_clean_cache_at_startup(
-        scope=(pathlib.Path(args.trajectories_root),),
-    )
+    # 1. Cache hygiene gate. Phase 0 scopes the check to ``trajectories/``
+    # (the parent of the smoke's own v10_-tagged subdir). The contract:
+    # ``trajectories/`` may only contain V10-tagged subdirs at the top
+    # level; the contents of those subdirs follow their own naming.
+    # Production-strict global hygiene fires in Phase 1+
+    # (see V10_DESIGN.md §12.7 and the TODO in harness/__init__.py).
+    print("[smoke] checking V10 cache hygiene (scoped: trajectories/)…")
+    smoke_root = pathlib.Path(args.trajectories_root)
+    assert_clean_cache_at_startup(scope=(smoke_root.parent,))
 
     # 2. Project the instance to InstanceView via the asserted boundary.
     print("[smoke] loading InstanceView…")

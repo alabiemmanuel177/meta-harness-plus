@@ -111,6 +111,7 @@ class Sandbox:
         memory_gb: float = 4.0,
         cpus: float = 2.0,
         no_network: bool = True,
+        require_image_present: bool = True,
     ):
         self._view = view
         self._exec = DockerShellExecutor(
@@ -124,6 +125,13 @@ class Sandbox:
         # smuggle a forbidden token. Cheap, runs before any container starts.
         self._dirs: tuple[str, ...] = view.test_directives.dirs
         _assert_no_forbidden_token(self._dirs, label="__init__.test_dirs")
+        # Image-required gate (V10_DESIGN.md §13.1): fail fast if the
+        # SWE-bench instance image is not present locally. The legacy
+        # ``docker run`` would attempt to pull on miss; for V10 we want
+        # network silence and predictable startup latency. Operators
+        # pull explicitly via ``make verify-images``.
+        if require_image_present:
+            _assert_image_present_locally(self._exec.image, view.instance_id)
 
     @property
     def view(self) -> InstanceView:
@@ -358,6 +366,31 @@ def _q(s: str) -> str:
     return "'" + s.replace("'", "'\\''") + "'"
 
 
+class ImageMissingError(RuntimeError):
+    """Required SWE-bench image not present locally. Run
+    ``make verify-images`` to confirm coverage and pull any missing
+    images out-of-band."""
+
+
+def _assert_image_present_locally(image: str, instance_id: str) -> None:
+    """Confirm ``docker image inspect <image>`` succeeds. Cheap; fails
+    fast (sub-second) when an image is missing, so the operator gets
+    a clean error instead of a surprise pull mid-run."""
+    import subprocess as _sp
+    res = _sp.run(
+        ["docker", "image", "inspect", image, "--format", "{{.Id}}"],
+        capture_output=True, text=True, timeout=10,
+    )
+    if res.returncode != 0:
+        raise ImageMissingError(
+            f"SWE-bench image not present locally for {instance_id!r}: "
+            f"{image}. V10 sandbox refuses to pull at runtime "
+            f"(see V10_DESIGN.md §13.1). Run `make verify-images` to "
+            f"see the full set of missing images, then pull them "
+            f"out-of-band before re-running."
+        )
+
+
 def public_suite_signal_from_results(
     base: SuiteResult,
     patched: SuiteResult,
@@ -406,6 +439,7 @@ def sandbox(view: InstanceView, **kwargs) -> Iterator[Sandbox]:
 
 
 __all__ = [
+    "ImageMissingError",
     "OracleLeakError",
     "Sandbox",
     "SuiteResult",
