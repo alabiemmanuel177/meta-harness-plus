@@ -191,6 +191,7 @@ class RetrievalResult:
     bm25_hits_per_strategy: dict       # {strategy: list[BM25Hit]}
     embedding_hits: list               # list[EmbeddingHit]
     n_files_indexed: int
+    traceback_hits: list = field(default_factory=list)  # list[TracebackFrame]; populated when include_traceback=True
 
 
 # ---------------------------------------------------------------------------
@@ -205,6 +206,9 @@ def run_stage_1b_retrieval(
     embedder=None,
     bm25_top_k: int = BM25_TOP_K_PER_QUERY,
     embedding_top_k: int = EMBEDDING_TOP_K,
+    embedding_use_shortlist: bool = True,
+    include_traceback: bool = False,
+    skeleton=None,
     trajectory_writer=None,
 ) -> RetrievalResult:
     """Run BM25 across all 3 query strategies + embedding (if embedder
@@ -267,30 +271,40 @@ def run_stage_1b_retrieval(
             _bump_signal(file_path, "bm25", rank, score)
         bm25_hits_per_strategy[strategy] = signals
 
-    # Embedding retrieval on a BM25-pre-shortlisted subset (cost guard
-    # for big-repo instances).
+    # Embedding retrieval. Production runs against a BM25-pre-shortlisted
+    # subset (cost guard for big-repo instances). Eval runs without the
+    # shortlist (embedding_use_shortlist=False) to measure embedding's
+    # true upper bound — if the gold file is at BM25 rank 250, the
+    # shortlist hides it from embedding and we'd be measuring BM25.
     embedding_hits: list[EmbeddingHit] = []
     if embedder is not None:
-        # Build the shortlist from union of BM25 top-N across strategies.
-        shortlist_paths: list[str] = []
-        seen: set[str] = set()
-        for strategy_hits in bm25_hits_per_strategy.values():
-            for sig in strategy_hits[:EMBEDDING_SHORTLIST_FROM_BM25 // 3]:
-                if sig.file_path not in seen:
-                    seen.add(sig.file_path)
-                    shortlist_paths.append(sig.file_path)
+        if embedding_use_shortlist:
+            # Build the shortlist from union of BM25 top-N across strategies.
+            shortlist_paths: list[str] = []
+            seen: set[str] = set()
+            for strategy_hits in bm25_hits_per_strategy.values():
+                for sig in strategy_hits[:EMBEDDING_SHORTLIST_FROM_BM25 // 3]:
+                    if sig.file_path not in seen:
+                        seen.add(sig.file_path)
+                        shortlist_paths.append(sig.file_path)
+                    if len(shortlist_paths) >= EMBEDDING_SHORTLIST_FROM_BM25:
+                        break
                 if len(shortlist_paths) >= EMBEDDING_SHORTLIST_FROM_BM25:
                     break
-            if len(shortlist_paths) >= EMBEDDING_SHORTLIST_FROM_BM25:
-                break
-        if shortlist_paths:
-            path_to_content = dict(zip(paths, contents))
-            shortlist_contents = [path_to_content[p] for p in shortlist_paths]
+            embed_paths = shortlist_paths
+            embed_contents = [
+                {p: c for p, c in zip(paths, contents)}[p] for p in embed_paths
+            ]
+        else:
+            # Eval mode: embed every file in the corpus.
+            embed_paths = paths
+            embed_contents = contents
+        if embed_paths:
             from harness.embedding import retrieve_by_embedding
             results = retrieve_by_embedding(
                 embedder,
-                file_paths=shortlist_paths,
-                file_contents=shortlist_contents,
+                file_paths=embed_paths,
+                file_contents=embed_contents,
                 query=view.problem_statement,
                 top_k=embedding_top_k,
             )
@@ -307,6 +321,43 @@ def run_stage_1b_retrieval(
                 if trajectory_writer is not None:
                     trajectory_writer.write_signal(sig)
                 _bump_signal(r.file_path, "embedding", r.rank, r.cosine_similarity)
+
+    # Stage 1c — traceback frames suffix-matched against the skeleton.
+    # The skeleton is required (passed in by the caller); if absent we
+    # skip with a warning rather than re-walking the repo here.
+    traceback_signals: list = []
+    if include_traceback:
+        if skeleton is None:
+            print(f"[retr-eval:{view.instance_id}] WARN: include_traceback=True but skeleton=None; skipping Stage 1c")
+        else:
+            from harness.traceback_parser import (
+                emit_traceback_frames,
+                parse_tracebacks,
+                rank_for_frame,
+            )
+            parsed = parse_tracebacks(view.problem_statement)
+            n_frames = len(parsed)
+            if n_frames > 0:
+                # Group emitted frames by frame_index so we can assign
+                # rank within each frame's match set.
+                tb_signals = emit_traceback_frames(view.problem_statement, skeleton)
+                # Bucket by frame_index for rank assignment.
+                by_frame_idx: dict = {}
+                for sig in tb_signals:
+                    by_frame_idx.setdefault(sig.frame_index, []).append(sig)
+                for frame_idx in sorted(by_frame_idx.keys()):
+                    frame_signals = by_frame_idx[frame_idx]
+                    for match_index, sig in enumerate(frame_signals):
+                        rank = rank_for_frame(
+                            sig,
+                            n_frames_total=n_frames,
+                            match_index_within_frame=match_index,
+                        )
+                        traceback_signals.append(sig)
+                        if trajectory_writer is not None:
+                            trajectory_writer.write_signal(sig)
+                        # score = 1.0 / rank gives a monotonic decreasing score.
+                        _bump_signal(sig.file_path, "traceback", rank, 1.0 / rank)
 
     # Build the aggregated candidate list.
     aggregated: list[dict] = []
@@ -332,6 +383,7 @@ def run_stage_1b_retrieval(
         candidates=tuple(aggregated),
         bm25_hits_per_strategy=bm25_hits_per_strategy,
         embedding_hits=embedding_hits,
+        traceback_hits=traceback_signals,
         n_files_indexed=len(paths),
     )
 

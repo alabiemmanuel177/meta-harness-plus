@@ -56,12 +56,34 @@ def _ranked_files_from_retrieval(result) -> list[str]:
     return [c["file_path"] for c in result.candidates]
 
 
+def _instance_best_rank_under(per_strategy_retrieved, entry, threshold: int) -> bool:
+    """Return True iff for this entry, the gold file appears at any
+    rank in any strategy."""
+    iid = entry.instance_id
+    gold_set = set(entry.gold_files)
+    strategies = per_strategy_retrieved.get(iid, {})
+    for rlist in strategies.values():
+        for fp in rlist[:threshold]:
+            if fp in gold_set or any(fp.endswith(g) or g.endswith(fp) for g in gold_set):
+                return True
+    return False
+
+
 def _ranked_files_per_strategy(result) -> dict:
     """Return per-strategy + per-signal ranked file lists for ablation."""
     out: dict[str, list[str]] = {}
     for strategy, hits in result.bm25_hits_per_strategy.items():
         out[f"bm25_{strategy}"] = [h.file_path for h in hits]
     out["embedding"] = [h.file_path for h in result.embedding_hits]
+    # Traceback hits are already in frame-priority order; preserve.
+    if result.traceback_hits:
+        seen: set[str] = set()
+        traceback_paths: list[str] = []
+        for sig in result.traceback_hits:
+            if sig.file_path not in seen:
+                seen.add(sig.file_path)
+                traceback_paths.append(sig.file_path)
+        out["traceback"] = traceback_paths
     out["aggregated"] = _ranked_files_from_retrieval(result)
     return out
 
@@ -72,7 +94,18 @@ def main() -> int:
                     help="run only the first N dev-50 instances")
     ap.add_argument("--no-embedding", action="store_true",
                     help="skip embedding even if sentence-transformers is installed")
+    ap.add_argument("--no-shortlist", action="store_true",
+                    help="run embedding against the full repo file list "
+                         "instead of the BM25 top-200 shortlist; "
+                         "measures embedding's true upper bound (eval-only;"
+                         "production keeps the shortlist for cost reasons)")
+    ap.add_argument("--include-traceback", action="store_true",
+                    help="run Stage 1c traceback parser; emits TracebackFrame "
+                         "signals from issue text and includes them in candidate aggregation")
+    ap.add_argument("--no-traceback", action="store_true",
+                    help="explicit ablation flag — disable traceback even if it would otherwise run")
     args = ap.parse_args()
+    use_traceback = args.include_traceback and not args.no_traceback
 
     dev = json.loads(DEV_50.read_text())
     instances = dev["instances"]
@@ -98,7 +131,19 @@ def main() -> int:
         try:
             view = load_verified_view(iid)
             with Sandbox(view, max_observation_chars=32_000_000) as sb:
-                result = run_stage_1b_retrieval(view, sb, embedder=embedder)
+                # If traceback is requested, build the skeleton first so
+                # the matcher has the candidate-path universe.
+                skeleton = None
+                if use_traceback:
+                    from harness.skeleton import load_or_build_skeleton
+                    skeleton = load_or_build_skeleton(view, sandbox=sb)
+                result = run_stage_1b_retrieval(
+                    view, sb,
+                    embedder=embedder,
+                    embedding_use_shortlist=not args.no_shortlist,
+                    include_traceback=use_traceback,
+                    skeleton=skeleton,
+                )
         except Exception as exc:
             failed.append((iid, f"{type(exc).__name__}: {exc}"))
             print(f"FAIL: {type(exc).__name__}")
@@ -208,6 +253,61 @@ def main() -> int:
             f"| `{entry.instance_id}` | {entry.repo} | {gold_str} | {hit_marker} | {n_idx} |"
         )
     out.append("")
+
+    # ---- Misses section: per-instance best-rank-seen-across-strategies ----
+    misses = [e for e in report.per_instance if not e.top10_hit]
+    if misses:
+        out.append("## Misses — top-10 failures (Stage 1c targets)")
+        out.append("")
+        out.append(
+            "For every dev-50 instance where top-10 didn't hit, this "
+            "table reports the BEST rank seen for any gold file across "
+            "all retrieval strategies. If best_rank is small (e.g., 11-30), "
+            "the gold IS reachable but ordering is wrong — Stage 1g "
+            "rerank can fix it. If best_rank is large (>200) or `not_found`, "
+            "the upstream signals never named the gold file — Stage 1c–1f "
+            "(traceback / grep / archeology / dep-graph) are the path."
+        )
+        out.append("")
+        out.append("| Instance | Repo | Gold files | best_rank | best_strategy | n_indexed |")
+        out.append("|---|---|---|---|---|---|")
+        for entry in sorted(misses, key=lambda e: (e.repo, e.instance_id)):
+            iid = entry.instance_id
+            gold_set = set(entry.gold_files)
+            strategies = per_strategy_retrieved.get(iid, {})
+            best_rank: int | None = None
+            best_strategy = "n/a"
+            for sk, rlist in strategies.items():
+                for rank, fp in enumerate(rlist, start=1):
+                    if fp in gold_set or any(fp.endswith(g) or g.endswith(fp) for g in gold_set):
+                        if best_rank is None or rank < best_rank:
+                            best_rank = rank
+                            best_strategy = sk
+                        break
+            best_str = str(best_rank) if best_rank is not None else "**not_found**"
+            gold_str = ", ".join(f"`{p}`" for p in entry.gold_files[:2])
+            if len(entry.gold_files) > 2:
+                gold_str += f" (+{len(entry.gold_files) - 2})"
+            n_idx = n_files_indexed_per_instance.get(iid, "?")
+            out.append(
+                f"| `{iid}` | {entry.repo} | {gold_str} | {best_str} | "
+                f"`{best_strategy}` | {n_idx} |"
+            )
+        out.append("")
+        # Quick stats on the misses.
+        not_found = sum(
+            1 for e in misses
+            if not _instance_best_rank_under(per_strategy_retrieved, e, threshold=10**6)
+        )
+        rescuable = len(misses) - not_found
+        out.append(
+            f"**Misses summary:** {len(misses)}/{report.n_instances} instances "
+            f"missed top-10. Of those, {rescuable} have the gold file at SOME "
+            f"rank in SOME strategy (rescuable by Stage 1g rerank); {not_found} "
+            f"have the gold file in NO strategy's results (need new signal "
+            f"sources from Stage 1c–1f)."
+        )
+        out.append("")
 
     if failed:
         out.append("## Retrieval failures")

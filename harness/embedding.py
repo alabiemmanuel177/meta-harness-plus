@@ -88,11 +88,29 @@ class LocalEmbedder(EmbedderProtocol):
             self._model = SentenceTransformer(self.model_name, device=self.device)
         return self._model
 
-    def embed_documents(self, texts: list[str]) -> list[list[float]]:
+    DEFAULT_DOC_TRUNC_CHARS = 2048
+
+    def embed_documents(
+        self,
+        texts: list[str],
+        *,
+        batch_size: int = 64,
+        truncate_chars: int | None = DEFAULT_DOC_TRUNC_CHARS,
+    ) -> list[list[float]]:
+        """Embed a list of documents.
+
+        ``truncate_chars`` (default 4096) caps each document's length
+        before tokenization. The bge-large-en-v1.5 max sequence length
+        is 512 tokens (~2K chars); truncating to 4K chars covers a
+        comfortable header (imports, class defs) on most files. None
+        disables truncation.
+        """
         model = self._ensure_model()
+        if truncate_chars is not None:
+            texts = [t[:truncate_chars] if len(t) > truncate_chars else t for t in texts]
         embs = model.encode(
             texts,
-            batch_size=8,
+            batch_size=batch_size,
             show_progress_bar=False,
             convert_to_numpy=True,
             normalize_embeddings=True,  # cosine sim becomes dot product
