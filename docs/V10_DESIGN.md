@@ -521,6 +521,8 @@ class Sandbox:
 
 `self._dirs` is computed from `view.test_directives`, which in turn was derived in `harness/dataset.py` from **repo conventions only** (filesystem inspection of where `test_*.py` lives at base_commit, plus a hardcoded per-repo override map for known repos). It is never derived from a dataset field.
 
+**Discovery-first semantics (revised in commit 7).** The override map is a *preferred default + sanity check*; **filesystem discovery inside the container at base_commit is the source of truth.** This handles repo refactors that happened mid-Verified-corpus: e.g., `psf/requests` Verified instances at older base_commits ship a top-level `test_requests.py` rather than a `tests/` directory. Discovery finds the actual layout; if the override and discovery disagree, we log a warning to the trajectory and proceed with the discovered set.
+
 **Tightening 2 (per ack):** every entry in the per-repo override map at `harness/repo_conventions.py` carries a source comment citing the public artifact at base_commit it was derived from. Examples:
 
 ```python

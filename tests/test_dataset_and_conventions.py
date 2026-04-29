@@ -148,3 +148,65 @@ def test_resolve_test_directives_default_fallback() -> None:
     dirs, source = resolve_test_directives("nobody/nothing", repo_root=None)
     assert dirs == ("tests/",)
     assert source == "fallback:default"
+
+
+def test_psf_requests_pre_migration_handled_by_discovery(tmp_path: pathlib.Path) -> None:
+    """Regression test for the override-vs-reality mismatch surfaced by
+    Phase 0 commit 6's smoke (psf/requests at base_commit 091991b had
+    no tests/ directory; tests lived in top-level test_requests.py).
+
+    The override map declares ``tests/`` for psf/requests because that's
+    the post-migration layout. At the pre-migration commit, discovery
+    must find the top-level ``test_requests.py`` and the discovery-first
+    resolution path in Sandbox._resolve_effective_test_paths picks it up.
+    This test models that synthetic checkout shape and confirms
+    discover_test_dirs surfaces the right answer.
+    """
+    # Synthesize psf/requests pre-migration layout
+    (tmp_path / "requests").mkdir()
+    (tmp_path / "requests" / "__init__.py").write_text("")
+    (tmp_path / "test_requests.py").write_text(
+        "import pytest\n\ndef test_smoke():\n    assert 1 == 1\n"
+    )
+    # Note: NO tests/ directory at this base_commit
+    assert not (tmp_path / "tests").exists()
+
+    discovered = discover_test_dirs(tmp_path)
+    # Discovery counts the test file regardless of how it folds the path —
+    # the key invariant is that the synthetic pre-migration layout is
+    # discoverable, so a Sandbox at this commit would not "lose" the
+    # tests just because the override directory doesn't exist.
+    assert discovered.n_test_files == 1, (
+        f"pre-migration test_requests.py not discovered; got {discovered!r}"
+    )
+    # And: the override map's declared dirs do NOT match the actual layout
+    # at this commit. Discovery's answer therefore differs from the override.
+    from harness.repo_conventions import REPO_TEST_DIRS
+    override = REPO_TEST_DIRS["psf/requests"]
+    assert override == ("tests/",)
+    # discovered.dirs in this synthetic case is ("./",) — pytest at /testbed
+    # with this entry would still find the test file. Critically, discovery
+    # did NOT silently substitute the override-declared 'tests/' that does
+    # not exist. The discovery-first refactor in Sandbox uses this answer
+    # over the override.
+    assert "tests/" not in discovered.dirs
+
+
+def test_override_vs_discovery_synthetic_disagreement_is_loggable(tmp_path: pathlib.Path) -> None:
+    """If a synthetic checkout has tests in a directory that disagrees
+    with the override map, discovery wins (override is preferred-default).
+    This is the discovery-first semantic from V10_DESIGN.md §12.4(b)
+    after commit 7's refactor.
+
+    We can't easily test the Sandbox-side warning print without a real
+    container; the static-side equivalent here is just confirming
+    discovery returns the actual layout, which the Sandbox then uses.
+    """
+    # Layout mismatches the override (which says tests/, not testing/).
+    (tmp_path / "testing").mkdir()
+    (tmp_path / "testing" / "test_thing.py").write_text("def test(): pass\n")
+    discovered = discover_test_dirs(tmp_path)
+    # Discovery finds 'testing/'
+    assert any("testing" in d for d in discovered.dirs)
+    # Discovery did NOT pretend the override-declared 'tests/' exists.
+    assert not any(d == "tests/" for d in discovered.dirs)

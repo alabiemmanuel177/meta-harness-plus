@@ -189,45 +189,106 @@ class Sandbox:
     # ----- public test suite (the leak-free replacement for run_tests) -----
 
     def _resolve_effective_test_paths(self) -> tuple[str, ...]:
-        """Return the test paths actually present in this container.
+        """Discovery-first resolution: filesystem inspection inside the
+        container is the source of truth; the override map in
+        ``harness.repo_conventions`` is a preferred-default + sanity
+        check (per V10_DESIGN.md §12.4(b)).
 
-        Override entries in TestDirectives are written for the typical
-        Verified base_commit per repo, but older base_commits in some
-        repos place tests at the repo root (e.g., psf/requests at
-        base_commit before the tests/ migration had test_requests.py at
-        top level). Filter to only those override paths that exist;
-        for missing paths, fall back to filesystem discovery inside the
-        container (top-level test_*.py files only — same scope as
-        default pytest discovery for a flat repo).
+        This handles the psf/requests pre-/post-migration case: at older
+        base_commits the only test file was top-level ``test_requests.py``,
+        while at newer commits there's a ``tests/`` directory. The
+        override declares ``("tests/",)``; discovery finds the actual
+        layout. Same shape works for any repo refactor that happened
+        mid-Verified-corpus.
+
+        Returns the discovered paths. If discovery finds nothing, falls
+        back to the override-declared paths (filtered to those that
+        exist), or to the override as-is, or to ``(".",)`` as last resort.
         """
-        effective: list[str] = []
-        # Phase 1: filter override dirs to those that exist in the container.
+        # Discovery: find test_*.py / *_test.py at depth ≤ 3 inside /testbed.
+        # Depth 3 covers `pkg/tests/sub/test_x.py` patterns; depth 2 alone
+        # would miss those. Capped at 60 results to bound the find cost.
+        find_res = self._exec.run(
+            "cd /testbed && find . -maxdepth 4 -type f "
+            r"\( -name 'test_*.py' -o -name '*_test.py' \) "
+            "-not -path '*/.git/*' -not -path '*/__pycache__/*' "
+            "-not -path '*/.tox/*' -not -path '*/.eggs/*' "
+            "| head -60",
+            timeout_s=20,
+        )
+        discovered_files = [
+            line.lstrip("./").strip()
+            for line in find_res.stdout.splitlines()
+            if line.strip()
+        ]
+
+        if discovered_files:
+            # Reduce to top-level test directories; if a test file is at
+            # the repo root, keep it as a file (not a parent dir).
+            discovered_paths = self._collapse_to_test_roots(discovered_files)
+            self._sanity_check_override_vs_discovery(discovered_paths)
+            return discovered_paths
+
+        # Discovery found nothing. Try override entries that physically exist.
+        override_present: list[str] = []
         for d in self._dirs:
             check = self._exec.run(
                 f"test -e /testbed/{_q(d)} && echo OK || echo MISSING",
                 timeout_s=10,
             )
             if "OK" in check.stdout:
-                effective.append(d)
-        if effective:
-            return tuple(effective)
-        # Phase 2: nothing from the override exists. Discover via filesystem.
-        find_res = self._exec.run(
-            "cd /testbed && find . -maxdepth 2 -type f "
-            r"\( -name 'test_*.py' -o -name '*_test.py' \) "
-            "-not -path '*/.git/*' -not -path '*/__pycache__/*' "
-            "| head -40",
-            timeout_s=15,
-        )
-        discovered = [
-            line.lstrip("./").strip()
-            for line in find_res.stdout.splitlines()
-            if line.strip()
-        ]
-        if discovered:
-            return tuple(discovered)
-        # Last resort: empty selection — pytest will collect from cwd.
+                override_present.append(d)
+        if override_present:
+            return tuple(override_present)
+
+        # Last resort.
         return (".",)
+
+    def _collapse_to_test_roots(self, files: list[str]) -> tuple[str, ...]:
+        """Mirror ``repo_conventions.discover_test_dirs`` collapsing logic
+        but on container-side find output. If a path contains 'tests' or
+        'testing' as a path segment, keep up to and including that
+        segment; otherwise keep the file or its parent dir."""
+        roots: set[str] = set()
+        for rel in files:
+            parts = rel.split("/")
+            collapsed = None
+            for i, p in enumerate(parts):
+                if p in {"tests", "testing"}:
+                    collapsed = "/".join(parts[: i + 1]) + "/"
+                    break
+            if collapsed is None:
+                # Keep the file as-is when it's at the repo root (e.g.,
+                # psf/requests pre-migration ships `test_requests.py`).
+                if "/" not in rel:
+                    collapsed = rel
+                else:
+                    parent = "/".join(parts[:-1])
+                    collapsed = parent + "/"
+            roots.add(collapsed)
+        return tuple(sorted(roots))
+
+    def _sanity_check_override_vs_discovery(
+        self, discovered: tuple[str, ...]
+    ) -> None:
+        """Log (don't raise) a warning when the override declares a
+        directory that discovery did not find. Helps identify stale
+        override entries for repos whose layout changed across
+        base_commits.
+        """
+        declared = set(self._dirs)
+        found = set(discovered)
+        missing_from_discovery = sorted(declared - found)
+        if missing_from_discovery:
+            # The trajectory writer is the canonical place for this; we
+            # don't wire that here to keep Sandbox decoupled from
+            # trajectories. Print is fine for Phase 0; Phase 1 wires the
+            # warning into the per-instance trajectory log.
+            print(
+                f"[sandbox:{self._view.instance_id}] "
+                f"override-vs-discovery mismatch: declared {sorted(declared)} "
+                f"but discovery found {sorted(found)}. Discovery wins."
+            )
 
     def run_public_suite(
         self,
