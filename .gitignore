@@ -195,17 +195,10 @@ eval_outputs/
 # Phase 7 corpus (large; regenerable)
 data/phase7_corpus/
 
-# Stray scratch outputs at repo root (use runs/ for new outputs)
-/claude-sonnet-*.json
-/claude-opus-*.json
-/claude-haiku-*.json
-/deepseek-*.json
-/devstral-*.json
-/qwen-*.json
-/qwen3-*.json
-/gpt-*.json
-/o3-*.json
-/llama-*.json
+# Scratch dir for ad-hoc experimental outputs (workbench results that
+# aren't part of the V10 submission surface; replaces the prior
+# /claude-sonnet-*.json, /deepseek-*.json, /devstral-*.json, etc. patterns).
+scratch/
 
 # Personal planning notes (kept locally)
 /Roadmaps

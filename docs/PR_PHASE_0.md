@@ -1,9 +1,28 @@
 # V10 Phase 0: contamination firewall + sandbox + dev-50 split
 
-**Branch:** `v10/phase-0` (commits `53a722d..48de73a`, 13 commits)
+**Branch:** `v10/phase-0`, 21 commits.
 **Base:** `main @ 134747a` (last pre-V10 commit)
-**Diff:** 25 files, +8114 lines (no deletions; greenfield package)
-**Status:** Ready to merge. Negative smoke (the explicit pre-merge blocker) verified passing.
+**Diff:** 58 files, +17566 / −1
+**Status:** Ready to merge. Negative smoke (the explicit pre-merge blocker) verified passing. All Phase 0 gates green.
+
+---
+
+## Reading order for leaderboard eligibility review
+
+The diff is large because Phase 0 also tracked V7/V8 baseline source for documentation per V10_DESIGN.md §13.3. To make this reviewable in an afternoon rather than a week, read in this order:
+
+1. **`README.md`** — project framing (V10 = clean leaderboard submission; V7/V8 = documented contaminated baselines).
+2. **`docs/V10_DESIGN.md`** — the full design (12 sections + asset inventory). Especially §2 (contamination model), §12 (sandbox audit + four tightenings), §13 (asset inventory).
+3. **`harness/`** — the V10 implementation (~3K lines). `views.py` (frozen dataclasses with field-name validators), `dataset.py` (single asserted projection boundary), `sandbox.py` (leak-free wrapper around DockerShellExecutor; runtime guard with case-insensitive substring match), `cache.py` (cache hygiene with `V10_EXCLUSIVE_DIRS` vs `V10_NAMESPACED_PARENTS` split), `eval.py` (post-submission grader, isolated to eval_outputs/).
+4. **`tests/test_no_oracle_leak.py`** — the firewall (type + AST + runtime layers).
+5. **`scripts/smoke_phase0.py`** and **`scripts/negative_smoke.py`** — proof the firewall fires (positive smoke runs end-to-end on psf__requests-2317; negative smoke confirms `OracleLeakError` raises on tampered InstanceView and forbidden state_label).
+6. **`splits/dev_50.json`** + **`docs/audits/v7_missing_evals.md`** + **`docs/audits/empty_v7_context_budget.md`** — the calibration data and risk audits driving Phase 1 decisions.
+
+The remaining ~9K lines are documented V7/V8 baseline data:
+- `runs/swebench_500_v7/` — V7 run artifacts (predictions + 467 eval reports + per-instance trajectories).
+- `meta_harness_plus/{swebench_v7,swebench_adapter,agent_swebench_loop,agent_docker}.py` + tests + example runners — the contaminated V7 source. The firewall test statically forbids any V10 module from importing the leak surfaces; the runtime guard would raise `OracleLeakError` if any of their fields ever reached an LLM call.
+
+These are included for reproducibility per V10_DESIGN.md §13.3 ("V7's success/failure pattern is OUR observation about OUR runs — legitimate, oracle-free signal") but are NOT part of the V10 submission surface. **Ignore for review purposes.**
 
 ---
 
