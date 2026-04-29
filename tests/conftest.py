@@ -78,14 +78,20 @@ def _walk_value_for_tokens(value: Any, *, depth: int = 0) -> list[str]:
     return []
 
 
+def _normalize(s: str) -> str:
+    """Casefold + strip underscores so SCREAMING_SNAKE and CamelCase
+    both reduce to the canonical form. Mirrors sandbox._normalize."""
+    return s.casefold().replace("_", "")
+
+
 def _scan_for_forbidden(strings: list[str]) -> tuple[str, str] | None:
     """Return (token, matched_string) if any forbidden token is found, else None."""
-    tokens = _forbidden_tokens()
+    tokens_norm = tuple(_normalize(t) for t in _forbidden_tokens())
     for s in strings:
-        folded = s.casefold()
-        for tok in tokens:
-            if tok in folded:
-                return (tok, s)
+        normalized = _normalize(s)
+        for tok_norm, tok_orig in zip(tokens_norm, _forbidden_tokens()):
+            if tok_norm in normalized:
+                return (tok_orig, s)
     return None
 
 
