@@ -32,6 +32,9 @@ build-split:
 smoke: firewall
 	$(PYTHON) scripts/smoke_phase0.py
 
+smoke-exec: firewall
+	$(PYTHON) scripts/smoke_phase0.py --exec --timeout-s 480
+
 clean-v10-cache:
 	rm -rf trajectories/v10_* runs/v10_*
 

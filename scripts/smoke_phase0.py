@@ -35,10 +35,12 @@ DEFAULT_INSTANCE = "psf__requests-2317"
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--instance-id", default=DEFAULT_INSTANCE)
-    ap.add_argument("--timeout-s", type=int, default=240,
-                    help="public suite timeout (s); generous for smoke")
+    ap.add_argument("--timeout-s", type=int, default=480,
+                    help="public suite timeout (s)")
     ap.add_argument("--trajectories-root", default="trajectories/v10_smoke")
     ap.add_argument("--no-network", action="store_true", default=True)
+    ap.add_argument("--exec", action="store_true", default=False,
+                    help="actually execute pytest (default: collect-only)")
     args = ap.parse_args()
 
     print(f"[smoke] instance_id={args.instance_id}")
@@ -77,13 +79,17 @@ def main() -> int:
             tw.write("sandbox_started", {"image": sb._exec.image})
 
             # 5. Run the public suite. THIS IS THE LEAK-FREE CALL.
-            print(f"[smoke] running public test suite (collect-only, timeout={args.timeout_s}s)…")
-            tw.write("public_suite_start", {"dirs": list(view.test_directives.dirs)})
+            mode = "execute" if args.exec else "collect-only"
+            print(f"[smoke] running public test suite ({mode}, timeout={args.timeout_s}s)…")
+            tw.write("public_suite_start", {
+                "dirs": list(view.test_directives.dirs),
+                "mode": mode,
+            })
             t0 = time.perf_counter()
             res = sb.run_public_suite(
                 state_label="base",
                 timeout_s=args.timeout_s,
-                collect_only=True,
+                collect_only=not args.exec,
             )
             dur = time.perf_counter() - t0
             tw.write("public_suite_done", {
