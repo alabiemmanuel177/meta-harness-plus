@@ -333,14 +333,29 @@ def _run_one_instance(args: _WorkerArgs) -> _WorkerResult:
             n_files_indexed=0, error=f"{type(exc).__name__}: {exc}",
         )
         return out
-    out = _WorkerResult(
+    retrieval_only = _WorkerResult(
         instance_id=iid,
         retrieved=_ranked_files_from_retrieval(result),
         per_strategy=_ranked_files_per_strategy(result),
         n_files_indexed=result.n_files_indexed,
         error=None,
     )
-    _save_checkpoint(out, args.checkpoint_signature)
+    # Always persist the retrieval-only result (under retrieval_signature
+    # if available, else under the checkpoint_signature). This makes the
+    # retrieval reusable for future --rerank reruns with different LLM
+    # configs.
+    if args.retrieval_signature and args.retrieval_signature != args.checkpoint_signature:
+        _save_checkpoint(retrieval_only, args.retrieval_signature)
+    if not args.use_rerank:
+        _save_checkpoint(retrieval_only, args.checkpoint_signature)
+        return retrieval_only
+
+    # Fresh-retrieval rerank path: use the just-built retrieval result
+    # to feed the reranker. Same code path as the cached-retrieval
+    # case below — keeps logic consistent.
+    out = _run_rerank_from_cached_retrieval(args, retrieval_only)
+    if out.error is None:
+        _save_checkpoint(out, args.checkpoint_signature)
     return out
 
 
