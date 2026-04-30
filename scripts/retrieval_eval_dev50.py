@@ -50,6 +50,16 @@ OUT = PROJECT_ROOT / "docs" / "audits" / "dev50_retrieval_eval.md"
 CHECKPOINT_DIR = PROJECT_ROOT / "runs" / "v10_dev50_retr_eval" / "checkpoints"
 
 
+def _paths_for_split(split_path: pathlib.Path) -> tuple:
+    """Return (split_path, audit_out, checkpoint_dir) for a given split.
+    The script's defaults point at dev_50 for backward compat; --split
+    overrides everything via this helper."""
+    split_name = split_path.stem  # 'dev_50' / 'dev_100' / etc.
+    audit_out = PROJECT_ROOT / "docs" / "audits" / f"{split_name}_retrieval_eval.md"
+    ckpt = PROJECT_ROOT / "runs" / f"v10_{split_name}_retr_eval" / "checkpoints"
+    return split_path, audit_out, ckpt
+
+
 def _try_make_embedder(batch_size: int):
     """Return a LocalEmbedder if sentence-transformers is installed,
     else None. The eval still produces meaningful numbers from BM25
@@ -114,6 +124,7 @@ class _WorkerArgs:
     checkpoint_signature: str   # differentiates checkpoint dirs by flag combo
     use_rerank: bool = False
     retrieval_signature: str | None = None  # checkpoint key for retrieval-only data
+    checkpoint_dir: str | None = None  # absolute path; overrides module global for multi-worker spawn
 
 
 @dataclass
@@ -129,15 +140,18 @@ class _WorkerResult:
     rerank_duration_s: float = 0.0
 
 
-def _checkpoint_path(iid: str, signature: str) -> pathlib.Path:
+def _checkpoint_path(iid: str, signature: str, base_dir: pathlib.Path | None = None) -> pathlib.Path:
     """Per-instance checkpoint path. The signature differentiates runs
     with different flags (so --no-shortlist vs shortlisted runs don't
-    share checkpoints)."""
-    return CHECKPOINT_DIR / signature / f"{iid}.json"
+    share checkpoints). ``base_dir`` overrides the module global —
+    needed in spawn-mode worker processes where the parent's
+    main()-time reassignment of CHECKPOINT_DIR isn't visible."""
+    base = base_dir if base_dir is not None else CHECKPOINT_DIR
+    return base / signature / f"{iid}.json"
 
 
-def _load_checkpoint(iid: str, signature: str) -> _WorkerResult | None:
-    p = _checkpoint_path(iid, signature)
+def _load_checkpoint(iid: str, signature: str, base_dir: pathlib.Path | None = None) -> _WorkerResult | None:
+    p = _checkpoint_path(iid, signature, base_dir=base_dir)
     if not p.exists():
         return None
     try:
@@ -156,8 +170,8 @@ def _load_checkpoint(iid: str, signature: str) -> _WorkerResult | None:
     )
 
 
-def _save_checkpoint(res: _WorkerResult, signature: str) -> None:
-    p = _checkpoint_path(res.instance_id, signature)
+def _save_checkpoint(res: _WorkerResult, signature: str, base_dir: pathlib.Path | None = None) -> None:
+    p = _checkpoint_path(res.instance_id, signature, base_dir=base_dir)
     p.parent.mkdir(parents=True, exist_ok=True)
     p.write_text(json.dumps({
         "instance_id": res.instance_id,
@@ -285,8 +299,13 @@ def _run_one_instance(args: _WorkerArgs) -> _WorkerResult:
       2. Retrieval-only checkpoint at the no-rerank signature; if that
          exists, skip retrieval entirely and just run rerank.
     """
+    # Resolve checkpoint base from args (multi-worker safe — workers
+    # spawn fresh and don't inherit the parent's main()-time CHECKPOINT_DIR
+    # reassignment).
+    base_dir = pathlib.Path(args.checkpoint_dir) if args.checkpoint_dir else None
+
     # Tier 1: full checkpoint match.
-    cached = _load_checkpoint(args.instance_id, args.checkpoint_signature)
+    cached = _load_checkpoint(args.instance_id, args.checkpoint_signature, base_dir=base_dir)
     if cached is not None and cached.error is None:
         # If we wanted rerank but the cached has no rerank, fall through.
         if args.use_rerank and cached.reranked_files is None:
@@ -296,12 +315,12 @@ def _run_one_instance(args: _WorkerArgs) -> _WorkerResult:
 
     # Tier 2: retrieval-only checkpoint (rerun rerank only).
     if args.use_rerank and args.retrieval_signature is not None:
-        retr_cached = _load_checkpoint(args.instance_id, args.retrieval_signature)
+        retr_cached = _load_checkpoint(args.instance_id, args.retrieval_signature, base_dir=base_dir)
         if retr_cached is not None and retr_cached.error is None:
             # Skip retrieval; rerun rerank only.
             out = _run_rerank_from_cached_retrieval(args, retr_cached)
             if out.error is None:
-                _save_checkpoint(out, args.checkpoint_signature)
+                _save_checkpoint(out, args.checkpoint_signature, base_dir=base_dir)
             return out
 
     # Imports inside the worker so each process's site-packages cache
@@ -345,9 +364,9 @@ def _run_one_instance(args: _WorkerArgs) -> _WorkerResult:
     # retrieval reusable for future --rerank reruns with different LLM
     # configs.
     if args.retrieval_signature and args.retrieval_signature != args.checkpoint_signature:
-        _save_checkpoint(retrieval_only, args.retrieval_signature)
+        _save_checkpoint(retrieval_only, args.retrieval_signature, base_dir=base_dir)
     if not args.use_rerank:
-        _save_checkpoint(retrieval_only, args.checkpoint_signature)
+        _save_checkpoint(retrieval_only, args.checkpoint_signature, base_dir=base_dir)
         return retrieval_only
 
     # Fresh-retrieval rerank path: use the just-built retrieval result
@@ -355,7 +374,7 @@ def _run_one_instance(args: _WorkerArgs) -> _WorkerResult:
     # case below — keeps logic consistent.
     out = _run_rerank_from_cached_retrieval(args, retrieval_only)
     if out.error is None:
-        _save_checkpoint(out, args.checkpoint_signature)
+        _save_checkpoint(out, args.checkpoint_signature, base_dir=base_dir)
     return out
 
 
@@ -385,11 +404,31 @@ def main() -> int:
                     help="run Stage 1g LLM rerank after retrieval; uses "
                          "harness/config/models.yaml role=reranker (default "
                          "deepseek-chat). Reuses retrieval-only checkpoints.")
+    ap.add_argument("--split", type=str, default=str(DEV_50),
+                    help="path to a split JSON (default: splits/dev_50.json). "
+                         "Output audit path and checkpoint dir are derived "
+                         "from the split's filename.")
     args = ap.parse_args()
     use_traceback = args.include_traceback and not args.no_traceback
     use_rerank = args.rerank
 
-    dev = json.loads(DEV_50.read_text())
+    # Resolve paths from --split.
+    split_path = pathlib.Path(args.split)
+    if not split_path.is_absolute():
+        split_path = PROJECT_ROOT / split_path
+    _split_path, audit_out, checkpoint_dir = _paths_for_split(split_path)
+    # Re-bind module globals so checkpoint helpers + report writer use
+    # the split-specific paths. Worker subprocesses spawn fresh and
+    # re-import this module; their _paths_for_split is recomputed
+    # via _WorkerArgs.checkpoint_signature too.
+    global OUT, CHECKPOINT_DIR
+    OUT = audit_out
+    CHECKPOINT_DIR = checkpoint_dir
+    print(f"[retr-eval] split: {split_path.relative_to(PROJECT_ROOT)}")
+    print(f"[retr-eval] audit out: {OUT.relative_to(PROJECT_ROOT)}")
+    print(f"[retr-eval] checkpoint dir: {CHECKPOINT_DIR.relative_to(PROJECT_ROOT)}")
+
+    dev = json.loads(split_path.read_text())
     instances = dev["instances"]
     if args.limit is not None:
         instances = instances[: args.limit]
@@ -435,6 +474,7 @@ def main() -> int:
             checkpoint_signature=signature,
             use_rerank=use_rerank,
             retrieval_signature=retrieval_signature if use_rerank else None,
+            checkpoint_dir=str(checkpoint_dir),
         )
         for e in instances
     ]

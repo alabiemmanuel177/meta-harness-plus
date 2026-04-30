@@ -98,19 +98,9 @@
       "difficulty": "easy(fill)"
     },
     {
-      "instance_id": "django__django-11066",
-      "repo": "django/django",
-      "difficulty": "medium"
-    },
-    {
       "instance_id": "django__django-11099",
       "repo": "django/django",
       "difficulty": "easy(fill)"
-    },
-    {
-      "instance_id": "django__django-11099",
-      "repo": "django/django",
-      "difficulty": "medium"
     },
     {
       "instance_id": "django__django-11119",
@@ -118,19 +108,9 @@
       "difficulty": "easy(fill)"
     },
     {
-      "instance_id": "django__django-11119",
-      "repo": "django/django",
-      "difficulty": "medium"
-    },
-    {
       "instance_id": "django__django-11133",
       "repo": "django/django",
       "difficulty": "easy(fill)"
-    },
-    {
-      "instance_id": "django__django-11133",
-      "repo": "django/django",
-      "difficulty": "medium"
     },
     {
       "instance_id": "django__django-11163",
@@ -203,6 +183,21 @@
       "difficulty": "hard"
     },
     {
+      "instance_id": "django__django-11551",
+      "repo": "django/django",
+      "difficulty": "medium"
+    },
+    {
+      "instance_id": "django__django-11555",
+      "repo": "django/django",
+      "difficulty": "medium"
+    },
+    {
+      "instance_id": "django__django-11603",
+      "repo": "django/django",
+      "difficulty": "medium"
+    },
+    {
       "instance_id": "django__django-11728",
       "repo": "django/django",
       "difficulty": "hard"
@@ -211,6 +206,11 @@
       "instance_id": "django__django-11734",
       "repo": "django/django",
       "difficulty": "hard"
+    },
+    {
+      "instance_id": "django__django-11740",
+      "repo": "django/django",
+      "difficulty": "medium"
     },
     {
       "instance_id": "django__django-13516",
@@ -338,12 +338,12 @@
       "difficulty": "easy(fill)"
     },
     {
-      "instance_id": "pylint-dev__pylint-6528",
+      "instance_id": "pylint-dev__pylint-6903",
       "repo": "pylint-dev/pylint",
       "difficulty": "medium"
     },
     {
-      "instance_id": "pylint-dev__pylint-6903",
+      "instance_id": "pylint-dev__pylint-7080",
       "repo": "pylint-dev/pylint",
       "difficulty": "medium"
     },

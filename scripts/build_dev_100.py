@@ -107,24 +107,30 @@ def main() -> int:
         while sum(per_diff.values()) < quota:
             per_diff["medium"] += 1
 
+        # Track already-picked iids per repo to avoid double-counting
+        # when shortfall-fill draws from another difficulty bucket and
+        # then the main loop iterates that bucket later.
+        already_picked_in_repo: set[str] = set()
         for diff, want in per_diff.items():
             available = bucket[repo].get(diff, [])
-            picked_ids = available[:want]
+            picked_ids = [iid for iid in available if iid not in already_picked_in_repo][:want]
             for iid in picked_ids:
                 picked.append({"instance_id": iid, "repo": repo, "difficulty": diff})
-            if want > len(available):
-                shortfall = want - len(available)
+                already_picked_in_repo.add(iid)
+            if len(picked_ids) < want:
+                shortfall = want - len(picked_ids)
                 for alt_diff in ("medium", "hard", "easy"):
                     if alt_diff == diff:
                         continue
                     for iid in bucket[repo].get(alt_diff, []):
-                        if any(p["instance_id"] == iid for p in picked):
+                        if iid in already_picked_in_repo:
                             continue
                         picked.append({
                             "instance_id": iid,
                             "repo": repo,
                             "difficulty": diff + "(fill)",
                         })
+                        already_picked_in_repo.add(iid)
                         shortfall -= 1
                         if shortfall == 0:
                             break
@@ -132,7 +138,14 @@ def main() -> int:
                         break
 
     picked.sort(key=lambda p: p["instance_id"])
+    # Tighten: assert no in-list duplicates AND assert hit count.
+    seen: set[str] = set()
+    for p in picked:
+        if p["instance_id"] in seen:
+            raise AssertionError(f"duplicate in dev_100: {p['instance_id']}")
+        seen.add(p["instance_id"])
     assert len(picked) == 100, f"expected 100, got {len(picked)}"
+    assert len(seen) == 100, f"unique instance_ids: expected 100, got {len(seen)}"
 
     overlap = {p["instance_id"] for p in picked} & used_ids
     assert not overlap, f"dev_100 overlaps dev_50: {overlap}"
