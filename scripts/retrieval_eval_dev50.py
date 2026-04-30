@@ -47,6 +47,7 @@ from dataclasses import dataclass
 PROJECT_ROOT = pathlib.Path(__file__).resolve().parent.parent
 DEV_50 = PROJECT_ROOT / "splits" / "dev_50.json"
 OUT = PROJECT_ROOT / "docs" / "audits" / "dev50_retrieval_eval.md"
+CHECKPOINT_DIR = PROJECT_ROOT / "runs" / "v10_dev50_retr_eval" / "checkpoints"
 
 
 def _try_make_embedder(batch_size: int):
@@ -110,6 +111,7 @@ class _WorkerArgs:
     no_shortlist: bool
     no_embedding: bool
     batch_size: int
+    checkpoint_signature: str   # differentiates checkpoint dirs by flag combo
 
 
 @dataclass
@@ -122,13 +124,57 @@ class _WorkerResult:
     error: str | None
 
 
+def _checkpoint_path(iid: str, signature: str) -> pathlib.Path:
+    """Per-instance checkpoint path. The signature differentiates runs
+    with different flags (so --no-shortlist vs shortlisted runs don't
+    share checkpoints)."""
+    return CHECKPOINT_DIR / signature / f"{iid}.json"
+
+
+def _load_checkpoint(iid: str, signature: str) -> _WorkerResult | None:
+    p = _checkpoint_path(iid, signature)
+    if not p.exists():
+        return None
+    try:
+        d = json.loads(p.read_text())
+    except Exception:
+        return None
+    return _WorkerResult(
+        instance_id=d["instance_id"],
+        retrieved=d["retrieved"],
+        per_strategy=d["per_strategy"],
+        n_files_indexed=d["n_files_indexed"],
+        error=d.get("error"),
+    )
+
+
+def _save_checkpoint(res: _WorkerResult, signature: str) -> None:
+    p = _checkpoint_path(res.instance_id, signature)
+    p.parent.mkdir(parents=True, exist_ok=True)
+    p.write_text(json.dumps({
+        "instance_id": res.instance_id,
+        "retrieved": res.retrieved,
+        "per_strategy": res.per_strategy,
+        "n_files_indexed": res.n_files_indexed,
+        "error": res.error,
+    }))
+
+
 def _run_one_instance(args: _WorkerArgs) -> _WorkerResult:
     """Worker entry point. Each worker process imports the harness
     modules fresh, instantiates its own embedder (loads model into VRAM),
     starts its own Docker container, runs retrieval, and returns the
     result. PyTorch serializes CUDA calls across processes when they
     share a GPU; CPU/IO/container work overlaps naturally.
+
+    Checkpoints to disk after a successful run so a crash later in the
+    pipeline (e.g., scoring/reporting) doesn't waste the retrieval cost.
     """
+    # Check checkpoint first.
+    cached = _load_checkpoint(args.instance_id, args.checkpoint_signature)
+    if cached is not None and cached.error is None:
+        return cached
+
     # Imports inside the worker so each process's site-packages cache
     # warms up independently and we don't accidentally fork a partly-
     # initialized parent.
@@ -153,17 +199,20 @@ def _run_one_instance(args: _WorkerArgs) -> _WorkerResult:
                 skeleton=skeleton,
             )
     except Exception as exc:
-        return _WorkerResult(
+        out = _WorkerResult(
             instance_id=iid, retrieved=[], per_strategy={},
             n_files_indexed=0, error=f"{type(exc).__name__}: {exc}",
         )
-    return _WorkerResult(
+        return out
+    out = _WorkerResult(
         instance_id=iid,
         retrieved=_ranked_files_from_retrieval(result),
         per_strategy=_ranked_files_per_strategy(result),
         n_files_indexed=result.n_files_indexed,
         error=None,
     )
+    _save_checkpoint(out, args.checkpoint_signature)
+    return out
 
 
 def main() -> int:
@@ -208,6 +257,18 @@ def main() -> int:
     else:
         print("[retr-eval] embedding: SKIPPED (--no-embedding)")
 
+    # Checkpoint signature: identifies the flag combo so reruns with
+    # different flags don't reuse stale checkpoints.
+    sig_parts = [
+        "embed" if not args.no_embedding else "noembed",
+        "noshortlist" if args.no_shortlist else "shortlist",
+        "tb" if use_traceback else "notb",
+        f"bs{args.batch_size}",
+    ]
+    signature = "_".join(sig_parts)
+    print(f"[retr-eval] checkpoint signature: {signature}")
+    print(f"[retr-eval] checkpoint dir: {CHECKPOINT_DIR / signature}")
+
     # Build worker arg bundles.
     work = [
         _WorkerArgs(
@@ -216,6 +277,7 @@ def main() -> int:
             no_shortlist=args.no_shortlist,
             no_embedding=args.no_embedding,
             batch_size=args.batch_size,
+            checkpoint_signature=signature,
         )
         for e in instances
     ]
@@ -304,8 +366,17 @@ def main() -> int:
     )
     out.append("")
     out.append(f"- **Instances evaluated:** {report.n_instances}")
-    out.append(f"- **Embedding model:** "
-               f"{embedder.model_name if embedder else 'NONE (sentence-transformers not available)'}")
+    if args.no_embedding:
+        embedding_label = "NONE (--no-embedding)"
+    else:
+        try:
+            import sentence_transformers  # noqa: F401
+            from harness.embedding import DEFAULT_LOCAL_MODEL
+            embedding_label = f"{DEFAULT_LOCAL_MODEL} (batch={args.batch_size}, shortlist={'no' if args.no_shortlist else 'yes'})"
+        except ImportError:
+            embedding_label = "NONE (sentence-transformers not installed)"
+    out.append(f"- **Embedding model:** {embedding_label}")
+    out.append(f"- **Workers:** {args.workers}")
     out.append(f"- **Wall-clock:** {dur:.1f}s")
     out.append("")
     pct = lambda n, d: f"{100.0 * n / d:.1f}" if d else "n/a"
