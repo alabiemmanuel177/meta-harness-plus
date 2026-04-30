@@ -112,6 +112,8 @@ class _WorkerArgs:
     no_embedding: bool
     batch_size: int
     checkpoint_signature: str   # differentiates checkpoint dirs by flag combo
+    use_rerank: bool = False
+    retrieval_signature: str | None = None  # checkpoint key for retrieval-only data
 
 
 @dataclass
@@ -122,6 +124,9 @@ class _WorkerResult:
     per_strategy: dict
     n_files_indexed: int
     error: str | None
+    reranked_files: list | None = None  # [{file_path, final_score, rationale, ...}]
+    rerank_cost_usd: float = 0.0
+    rerank_duration_s: float = 0.0
 
 
 def _checkpoint_path(iid: str, signature: str) -> pathlib.Path:
@@ -145,6 +150,9 @@ def _load_checkpoint(iid: str, signature: str) -> _WorkerResult | None:
         per_strategy=d["per_strategy"],
         n_files_indexed=d["n_files_indexed"],
         error=d.get("error"),
+        reranked_files=d.get("reranked_files"),
+        rerank_cost_usd=d.get("rerank_cost_usd", 0.0),
+        rerank_duration_s=d.get("rerank_duration_s", 0.0),
     )
 
 
@@ -157,7 +165,109 @@ def _save_checkpoint(res: _WorkerResult, signature: str) -> None:
         "per_strategy": res.per_strategy,
         "n_files_indexed": res.n_files_indexed,
         "error": res.error,
+        "reranked_files": res.reranked_files,
+        "rerank_cost_usd": res.rerank_cost_usd,
+        "rerank_duration_s": res.rerank_duration_s,
     }))
+
+
+def _run_rerank_from_cached_retrieval(
+    args: _WorkerArgs, retrieval: _WorkerResult,
+) -> _WorkerResult:
+    """Build CandidateForRerank from a cached retrieval result and run
+    Stage 1g rerank. Skips the full retrieval re-run."""
+    from harness.dataset import load_verified_view
+    from harness.rerank import CandidateForRerank, RerankerError, RerankerInput, rerank
+    from harness.sandbox import Sandbox
+    from harness.skeleton import load_or_build_skeleton
+
+    iid = args.instance_id
+    try:
+        view = load_verified_view(iid)
+        # Need skeleton for one-line summaries in the rerank prompt.
+        with Sandbox(view, max_observation_chars=32_000_000) as sb:
+            skeleton = load_or_build_skeleton(view, sandbox=sb)
+
+        # Build per-strategy ranks from the cached path lists.
+        # Each strategy's list is in 1-indexed rank order.
+        per_path_ranks: dict[str, dict] = {}
+        for strategy_label, paths in retrieval.per_strategy.items():
+            if strategy_label == "aggregated":
+                # Skip — derived, not a primary strategy.
+                continue
+            for rank, path in enumerate(paths, start=1):
+                per_path_ranks.setdefault(path, {})[strategy_label] = rank
+
+        # Skeleton lookup for summaries.
+        skel_summary: dict[str, str] = {}
+        skel_lines: dict[str, int] = {}
+        for fs in skeleton.files:
+            cls_names = [c.name for c in fs.classes[:3]]
+            fn_names = [f.name for f in fs.functions[:2]]
+            bits = []
+            if cls_names:
+                bits.append("classes: " + ", ".join(cls_names))
+            if fn_names:
+                bits.append("functions: " + ", ".join(fn_names))
+            skel_summary[fs.path] = "; ".join(bits) or "(empty)"
+            max_line = 0
+            for c in fs.classes:
+                max_line = max(max_line, c.line_end)
+                for m in c.methods:
+                    max_line = max(max_line, m.line_end)
+            for f in fs.functions:
+                max_line = max(max_line, f.line_end)
+            skel_lines[fs.path] = max_line
+
+        # Build candidate list: union of every per-strategy list.
+        cands = [
+            CandidateForRerank(
+                file_path=path,
+                per_strategy_rank=ranks,
+                per_strategy_score={},  # scores not preserved in checkpoint
+                file_summary=skel_summary.get(path, ""),
+                n_lines=skel_lines.get(path, 0),
+            )
+            for path, ranks in per_path_ranks.items()
+        ]
+
+        rerank_input = RerankerInput(view=view, candidates=tuple(cands), top_k=10)
+        rerank_result = rerank(rerank_input)
+    except (RerankerError, Exception) as exc:
+        # Don't lose the retrieval data on rerank failure.
+        return _WorkerResult(
+            instance_id=iid,
+            retrieved=retrieval.retrieved,
+            per_strategy=retrieval.per_strategy,
+            n_files_indexed=retrieval.n_files_indexed,
+            error=f"rerank_failed: {type(exc).__name__}: {exc}",
+        )
+
+    reranked_dicts = [
+        {
+            "file_path": rf.file_path,
+            "final_score": rf.final_score,
+            "rationale": rf.rationale,
+            "upstream_signals": list(rf.upstream_signals),
+            "upstream_best_rank": rf.upstream_best_rank,
+        }
+        for rf in rerank_result.ranked_files
+    ]
+    # Add 'reranked' to per_strategy so downstream scoring + misses
+    # analysis treats it as just another strategy.
+    per_strategy_with_rerank = dict(retrieval.per_strategy)
+    per_strategy_with_rerank["reranked"] = [d["file_path"] for d in reranked_dicts]
+
+    return _WorkerResult(
+        instance_id=iid,
+        retrieved=[d["file_path"] for d in reranked_dicts],
+        per_strategy=per_strategy_with_rerank,
+        n_files_indexed=retrieval.n_files_indexed,
+        error=None,
+        reranked_files=reranked_dicts,
+        rerank_cost_usd=rerank_result.cost_usd,
+        rerank_duration_s=rerank_result.duration_s,
+    )
 
 
 def _run_one_instance(args: _WorkerArgs) -> _WorkerResult:
@@ -169,11 +279,30 @@ def _run_one_instance(args: _WorkerArgs) -> _WorkerResult:
 
     Checkpoints to disk after a successful run so a crash later in the
     pipeline (e.g., scoring/reporting) doesn't waste the retrieval cost.
+
+    Two-tier cache when --rerank is set:
+      1. Full checkpoint at the rerank signature (retrieval + rerank).
+      2. Retrieval-only checkpoint at the no-rerank signature; if that
+         exists, skip retrieval entirely and just run rerank.
     """
-    # Check checkpoint first.
+    # Tier 1: full checkpoint match.
     cached = _load_checkpoint(args.instance_id, args.checkpoint_signature)
     if cached is not None and cached.error is None:
-        return cached
+        # If we wanted rerank but the cached has no rerank, fall through.
+        if args.use_rerank and cached.reranked_files is None:
+            pass  # will run rerank below
+        else:
+            return cached
+
+    # Tier 2: retrieval-only checkpoint (rerun rerank only).
+    if args.use_rerank and args.retrieval_signature is not None:
+        retr_cached = _load_checkpoint(args.instance_id, args.retrieval_signature)
+        if retr_cached is not None and retr_cached.error is None:
+            # Skip retrieval; rerun rerank only.
+            out = _run_rerank_from_cached_retrieval(args, retr_cached)
+            if out.error is None:
+                _save_checkpoint(out, args.checkpoint_signature)
+            return out
 
     # Imports inside the worker so each process's site-packages cache
     # warms up independently and we don't accidentally fork a partly-
@@ -237,8 +366,13 @@ def main() -> int:
     ap.add_argument("--workers", type=int, default=1,
                     help="number of parallel worker processes; default 1 "
                          "(deterministic). 4 saturates CPU+IO on this hardware.")
+    ap.add_argument("--rerank", action="store_true",
+                    help="run Stage 1g LLM rerank after retrieval; uses "
+                         "harness/config/models.yaml role=reranker (default "
+                         "deepseek-chat). Reuses retrieval-only checkpoints.")
     args = ap.parse_args()
     use_traceback = args.include_traceback and not args.no_traceback
+    use_rerank = args.rerank
 
     dev = json.loads(DEV_50.read_text())
     instances = dev["instances"]
@@ -258,15 +392,21 @@ def main() -> int:
         print("[retr-eval] embedding: SKIPPED (--no-embedding)")
 
     # Checkpoint signature: identifies the flag combo so reruns with
-    # different flags don't reuse stale checkpoints.
-    sig_parts = [
+    # different flags don't reuse stale checkpoints. The retrieval part
+    # is the same regardless of --rerank, so we maintain BOTH a
+    # retrieval-only signature (for cache reuse) and a rerank signature.
+    sig_base = [
         "embed" if not args.no_embedding else "noembed",
         "noshortlist" if args.no_shortlist else "shortlist",
         "tb" if use_traceback else "notb",
         f"bs{args.batch_size}",
     ]
-    signature = "_".join(sig_parts)
+    retrieval_signature = "_".join(sig_base)
+    signature = retrieval_signature + ("_rerank" if use_rerank else "")
     print(f"[retr-eval] checkpoint signature: {signature}")
+    if use_rerank and retrieval_signature != signature:
+        print(f"[retr-eval] retrieval-only signature (for cache reuse): "
+              f"{retrieval_signature}")
     print(f"[retr-eval] checkpoint dir: {CHECKPOINT_DIR / signature}")
 
     # Build worker arg bundles.
@@ -278,6 +418,8 @@ def main() -> int:
             no_embedding=args.no_embedding,
             batch_size=args.batch_size,
             checkpoint_signature=signature,
+            use_rerank=use_rerank,
+            retrieval_signature=retrieval_signature if use_rerank else None,
         )
         for e in instances
     ]
