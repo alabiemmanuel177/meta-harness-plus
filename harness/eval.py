@@ -152,25 +152,50 @@ def _load_gold_touched_files(instance_ids: Iterable[str]) -> dict[str, set[str]]
     dataset and parse its touched files. THIS IS THE ONLY V10 PATH
     THAT READS THE PATCH FIELD.
     """
+    return load_eval_metadata(instance_ids).gold_touched_files
+
+
+@dataclass
+class EvalMetadata:
+    """Pre-loaded eval-time metadata for a set of instance ids.
+
+    Read once at the start of an eval run; pass via
+    ``evaluate_retrieval_recall(preloaded=...)`` to skip per-strategy
+    re-reads of the dataset jsonl. Gold patches are read from the
+    eval-only field (``patch``) — same firewall convention as the
+    inline reader.
+    """
+    gold_touched_files: dict[str, set[str]]
+    repo_per_instance: dict[str, str]
+
+
+def load_eval_metadata(instance_ids: Iterable[str]) -> EvalMetadata:
+    """Single-pass JSONL read returning gold-patch touched files +
+    per-instance repo, both keyed by instance_id. Replaces the prior
+    pair of helpers that each scanned the whole dataset.
+    """
     cache_path = (
         pathlib.Path(__file__).resolve().parent.parent
         / "meta_harness_plus" / "tasks" / "data" / "swebench_verified.jsonl"
     )
     wanted = set(instance_ids)
-    out: dict[str, set[str]] = {}
+    gold: dict[str, set[str]] = {}
+    repos: dict[str, str] = {}
     with cache_path.open() as fh:
         for line in fh:
             line = line.strip()
             if not line:
                 continue
             row = json.loads(line)
-            if row["instance_id"] not in wanted:
+            iid = row["instance_id"]
+            if iid not in wanted:
                 continue
-            # The eval-only patch read. The firewall test asserts no
-            # other harness/ module accesses this field.
+            # The eval-only patch read. Firewall asserts no other
+            # harness/ module accesses this field.
             gold_patch = row.get("patch", "") or ""
-            out[row["instance_id"]] = _gold_touched_files_from_patch(gold_patch)
-    return out
+            gold[iid] = _gold_touched_files_from_patch(gold_patch)
+            repos[iid] = row["repo"]
+    return EvalMetadata(gold_touched_files=gold, repo_per_instance=repos)
 
 
 @dataclass
@@ -198,6 +223,7 @@ class RetrievalRecallReport:
 def evaluate_retrieval_recall(
     *,
     retrieved_files_per_instance: dict,
+    preloaded: EvalMetadata | None = None,
 ) -> RetrievalRecallReport:
     """Compute top-1/top-5/top-10 file recall.
 
@@ -205,15 +231,21 @@ def evaluate_retrieval_recall(
         retrieved_files_per_instance: ``{instance_id: list_of_file_paths}``.
             The list is the retrieval pipeline's ranked candidates;
             top-K means the first K entries.
+        preloaded: optional pre-loaded ``EvalMetadata`` (gold + repo
+            lookups). When provided, skips the dataset jsonl read.
+            Use when running multiple ``evaluate_retrieval_recall``
+            calls back-to-back (per-strategy ablation) — load once,
+            pass to each.
 
     "Hit" semantics: top-K hits if at least one of the K retrieved
     files is in the gold touched-file set. (Lenient — any-of-gold;
     Phase 1 follow-up may switch to exact-match-of-all-gold.)
     """
     instance_ids = list(retrieved_files_per_instance.keys())
-    gold = _load_gold_touched_files(instance_ids)
-
-    repo_lookup = _load_repo_per_instance(instance_ids)
+    if preloaded is None:
+        preloaded = load_eval_metadata(instance_ids)
+    gold = preloaded.gold_touched_files
+    repo_lookup = preloaded.repo_per_instance
 
     per_instance: list[RetrievalRecallEntry] = []
     n_top1 = n_top5 = n_top10 = 0
@@ -252,22 +284,10 @@ def evaluate_retrieval_recall(
 
 def _load_repo_per_instance(instance_ids: Iterable[str]) -> dict[str, str]:
     """Load only the repo field per instance — non-oracle, used for
-    grouping the retrieval-eval results by repo in the report."""
-    cache_path = (
-        pathlib.Path(__file__).resolve().parent.parent
-        / "meta_harness_plus" / "tasks" / "data" / "swebench_verified.jsonl"
-    )
-    wanted = set(instance_ids)
-    out: dict[str, str] = {}
-    with cache_path.open() as fh:
-        for line in fh:
-            line = line.strip()
-            if not line:
-                continue
-            row = json.loads(line)
-            if row["instance_id"] in wanted:
-                out[row["instance_id"]] = row["repo"]
-    return out
+    grouping the retrieval-eval results by repo in the report.
+    Retained for backward compat; prefer load_eval_metadata for new
+    callers (single-pass for both gold + repo)."""
+    return load_eval_metadata(instance_ids).repo_per_instance
 
 
 def _normalize_path(path: str) -> str:
@@ -284,4 +304,6 @@ __all__ = [
     "evaluate_retrieval_recall",
     "RetrievalRecallReport",
     "RetrievalRecallEntry",
+    "EvalMetadata",
+    "load_eval_metadata",
 ]

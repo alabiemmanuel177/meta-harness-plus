@@ -3,18 +3,31 @@
 Per the Phase 1 stage 1b acceptance gate: report retrieval accuracy
 against the gold patch's touched files for each of the 50 instances
 in splits/dev_50.json. The eval is the only place V10 reads the
-``patch`` field; reads happen via ``harness.eval._load_gold_touched_files``,
+``patch`` field; reads happen via ``harness.eval.load_eval_metadata``,
 the firewall-allowed channel.
 
 Per-instance flow:
   1. Load InstanceView via the projection boundary.
   2. Start a Sandbox (memory 4 GB, observation cap 32 MB for big repos).
   3. Run ``run_stage_1b_retrieval`` (BM25 across 3 query strategies +
-     embedding if sentence-transformers is installed).
+     embedding if sentence-transformers is installed; +Stage 1c
+     traceback if --include-traceback).
   4. Aggregate the per-strategy candidates and emit a single ranked
-     list (the candidates are already ordered by upstream-signal
-     count + best-rank in retrieval.run_stage_1b_retrieval).
+     list.
   5. Call ``evaluate_retrieval_recall`` to score against the gold.
+
+Optimizations (commit 4b):
+  - --batch-size N: embedder batch size (default 256 for the 32 GB
+    AMD Radeon; safely under VRAM headroom).
+  - --workers N: parallel per-instance execution via
+    ProcessPoolExecutor. Each worker spins up its own Docker container
+    and embedder; PyTorch serializes the actual GPU calls cleanly so
+    CPU/IO work overlaps. Default 1 (deterministic); --workers 4 is
+    the make eval-fast target.
+  - Gold/repo lookups are pre-loaded once via
+    harness.eval.load_eval_metadata; per-strategy ablation calls
+    reuse the cache via the new ``preloaded=`` kwarg on
+    evaluate_retrieval_recall.
 
 Output: docs/audits/dev50_retrieval_eval.md.
 """
@@ -27,11 +40,8 @@ import pathlib
 import sys
 import time
 from collections import defaultdict
-
-from harness.dataset import load_verified_view
-from harness.eval import evaluate_retrieval_recall
-from harness.retrieval import run_stage_1b_retrieval
-from harness.sandbox import Sandbox
+from concurrent.futures import ProcessPoolExecutor, as_completed
+from dataclasses import dataclass
 
 
 PROJECT_ROOT = pathlib.Path(__file__).resolve().parent.parent
@@ -39,16 +49,20 @@ DEV_50 = PROJECT_ROOT / "splits" / "dev_50.json"
 OUT = PROJECT_ROOT / "docs" / "audits" / "dev50_retrieval_eval.md"
 
 
-def _try_make_embedder():
+def _try_make_embedder(batch_size: int):
     """Return a LocalEmbedder if sentence-transformers is installed,
     else None. The eval still produces meaningful numbers from BM25
-    alone; embedding lift is reported separately when available."""
+    alone; embedding lift is reported separately when available.
+
+    Each worker process calls this independently — fresh model load
+    per worker (they share the GPU; PyTorch serializes CUDA calls).
+    """
     try:
         import sentence_transformers  # noqa: F401
     except ImportError:
         return None
     from harness.embedding import LocalEmbedder
-    return LocalEmbedder()
+    return LocalEmbedder(default_batch_size=batch_size)
 
 
 def _ranked_files_from_retrieval(result) -> list[str]:
@@ -88,6 +102,70 @@ def _ranked_files_per_strategy(result) -> dict:
     return out
 
 
+@dataclass
+class _WorkerArgs:
+    """Picklable bundle for ProcessPoolExecutor work units."""
+    instance_id: str
+    use_traceback: bool
+    no_shortlist: bool
+    no_embedding: bool
+    batch_size: int
+
+
+@dataclass
+class _WorkerResult:
+    """Picklable per-instance result returned by workers."""
+    instance_id: str
+    retrieved: list
+    per_strategy: dict
+    n_files_indexed: int
+    error: str | None
+
+
+def _run_one_instance(args: _WorkerArgs) -> _WorkerResult:
+    """Worker entry point. Each worker process imports the harness
+    modules fresh, instantiates its own embedder (loads model into VRAM),
+    starts its own Docker container, runs retrieval, and returns the
+    result. PyTorch serializes CUDA calls across processes when they
+    share a GPU; CPU/IO/container work overlaps naturally.
+    """
+    # Imports inside the worker so each process's site-packages cache
+    # warms up independently and we don't accidentally fork a partly-
+    # initialized parent.
+    from harness.dataset import load_verified_view
+    from harness.retrieval import run_stage_1b_retrieval
+    from harness.sandbox import Sandbox
+    from harness.skeleton import load_or_build_skeleton
+
+    iid = args.instance_id
+    embedder = None if args.no_embedding else _try_make_embedder(args.batch_size)
+    try:
+        view = load_verified_view(iid)
+        with Sandbox(view, max_observation_chars=32_000_000) as sb:
+            skeleton = None
+            if args.use_traceback:
+                skeleton = load_or_build_skeleton(view, sandbox=sb)
+            result = run_stage_1b_retrieval(
+                view, sb,
+                embedder=embedder,
+                embedding_use_shortlist=not args.no_shortlist,
+                include_traceback=args.use_traceback,
+                skeleton=skeleton,
+            )
+    except Exception as exc:
+        return _WorkerResult(
+            instance_id=iid, retrieved=[], per_strategy={},
+            n_files_indexed=0, error=f"{type(exc).__name__}: {exc}",
+        )
+    return _WorkerResult(
+        instance_id=iid,
+        retrieved=_ranked_files_from_retrieval(result),
+        per_strategy=_ranked_files_per_strategy(result),
+        n_files_indexed=result.n_files_indexed,
+        error=None,
+    )
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--limit", type=int, default=None,
@@ -104,6 +182,12 @@ def main() -> int:
                          "signals from issue text and includes them in candidate aggregation")
     ap.add_argument("--no-traceback", action="store_true",
                     help="explicit ablation flag — disable traceback even if it would otherwise run")
+    ap.add_argument("--batch-size", type=int, default=256,
+                    help="embedder batch size; default 256 (safe on 32 GB GPU). "
+                         "Drop to 64 for CPU runs.")
+    ap.add_argument("--workers", type=int, default=1,
+                    help="number of parallel worker processes; default 1 "
+                         "(deterministic). 4 saturates CPU+IO on this hardware.")
     args = ap.parse_args()
     use_traceback = args.include_traceback and not args.no_traceback
 
@@ -111,58 +195,88 @@ def main() -> int:
     instances = dev["instances"]
     if args.limit is not None:
         instances = instances[: args.limit]
-    print(f"[retr-eval] {len(instances)} instances from dev_50")
-
-    embedder = None if args.no_embedding else _try_make_embedder()
-    if embedder is None:
-        print("[retr-eval] embedding: SKIPPED (sentence-transformers not installed)")
+    print(f"[retr-eval] {len(instances)} instances from dev_50; "
+          f"workers={args.workers} batch_size={args.batch_size}")
+    if not args.no_embedding:
+        # Quick check that sentence-transformers is available in this env;
+        # the workers will repeat the check independently.
+        try:
+            import sentence_transformers  # noqa: F401
+            print(f"[retr-eval] embedding: BAAI/bge-large-en-v1.5 (default)")
+        except ImportError:
+            print("[retr-eval] embedding: SKIPPED (sentence-transformers not installed)")
     else:
-        print(f"[retr-eval] embedding: {embedder.model_name}")
+        print("[retr-eval] embedding: SKIPPED (--no-embedding)")
+
+    # Build worker arg bundles.
+    work = [
+        _WorkerArgs(
+            instance_id=e["instance_id"],
+            use_traceback=use_traceback,
+            no_shortlist=args.no_shortlist,
+            no_embedding=args.no_embedding,
+            batch_size=args.batch_size,
+        )
+        for e in instances
+    ]
 
     retrieved_per_instance: dict[str, list[str]] = {}
     per_strategy_retrieved: dict[str, dict[str, list[str]]] = {}
     n_files_indexed_per_instance: dict[str, int] = {}
     failed: list[tuple[str, str]] = []
-
     t0 = time.perf_counter()
-    for i, entry in enumerate(instances):
-        iid = entry["instance_id"]
-        print(f"[retr-eval] [{i + 1}/{len(instances)}] {iid} … ", end="", flush=True)
-        try:
-            view = load_verified_view(iid)
-            with Sandbox(view, max_observation_chars=32_000_000) as sb:
-                # If traceback is requested, build the skeleton first so
-                # the matcher has the candidate-path universe.
-                skeleton = None
-                if use_traceback:
-                    from harness.skeleton import load_or_build_skeleton
-                    skeleton = load_or_build_skeleton(view, sandbox=sb)
-                result = run_stage_1b_retrieval(
-                    view, sb,
-                    embedder=embedder,
-                    embedding_use_shortlist=not args.no_shortlist,
-                    include_traceback=use_traceback,
-                    skeleton=skeleton,
-                )
-        except Exception as exc:
-            failed.append((iid, f"{type(exc).__name__}: {exc}"))
-            print(f"FAIL: {type(exc).__name__}")
-            continue
-        retrieved_per_instance[iid] = _ranked_files_from_retrieval(result)
-        per_strategy_retrieved[iid] = _ranked_files_per_strategy(result)
-        n_files_indexed_per_instance[iid] = result.n_files_indexed
-        print(f"OK n_files={result.n_files_indexed} candidates={len(result.candidates)}")
+
+    if args.workers <= 1:
+        # Serial path — preserves the original single-process flow.
+        for i, w in enumerate(work):
+            print(f"[retr-eval] [{i + 1}/{len(work)}] {w.instance_id} … ",
+                  end="", flush=True)
+            res = _run_one_instance(w)
+            if res.error:
+                failed.append((res.instance_id, res.error))
+                print(f"FAIL: {res.error}")
+                continue
+            retrieved_per_instance[res.instance_id] = res.retrieved
+            per_strategy_retrieved[res.instance_id] = res.per_strategy
+            n_files_indexed_per_instance[res.instance_id] = res.n_files_indexed
+            print(f"OK n_files={res.n_files_indexed} candidates={len(res.retrieved)}")
+    else:
+        # Parallel path — spawn N workers, each with its own embedder.
+        # 'spawn' context to avoid fork issues with torch.
+        import multiprocessing as mp
+        ctx = mp.get_context("spawn")
+        with ProcessPoolExecutor(max_workers=args.workers, mp_context=ctx) as pool:
+            futures = {pool.submit(_run_one_instance, w): w.instance_id for w in work}
+            done = 0
+            for fut in as_completed(futures):
+                done += 1
+                res = fut.result()
+                if res.error:
+                    failed.append((res.instance_id, res.error))
+                    print(f"[retr-eval] [{done}/{len(work)}] {res.instance_id} FAIL: {res.error}")
+                    continue
+                retrieved_per_instance[res.instance_id] = res.retrieved
+                per_strategy_retrieved[res.instance_id] = res.per_strategy
+                n_files_indexed_per_instance[res.instance_id] = res.n_files_indexed
+                print(f"[retr-eval] [{done}/{len(work)}] {res.instance_id} "
+                      f"OK n_files={res.n_files_indexed} candidates={len(res.retrieved)}")
+
     dur = time.perf_counter() - t0
     print(f"[retr-eval] retrieval done in {dur:.1f}s — "
           f"{len(retrieved_per_instance)} OK, {len(failed)} failed")
 
-    # Score against gold.
+    # Score against gold. Pre-load metadata ONCE so the per-strategy
+    # ablation doesn't re-read the dataset for each strategy.
     print("[retr-eval] scoring against gold patch (eval-only path)…")
+    from harness.eval import load_eval_metadata, evaluate_retrieval_recall
+    preloaded_meta = load_eval_metadata(retrieved_per_instance.keys())
+
     report = evaluate_retrieval_recall(
         retrieved_files_per_instance=retrieved_per_instance,
+        preloaded=preloaded_meta,
     )
 
-    # Per-strategy ablation: score each strategy alone.
+    # Per-strategy ablation: score each strategy alone (reuses cache).
     strategy_reports = {}
     if per_strategy_retrieved:
         strategy_keys = list(next(iter(per_strategy_retrieved.values())).keys())
@@ -173,6 +287,7 @@ def main() -> int:
             }
             strategy_reports[sk] = evaluate_retrieval_recall(
                 retrieved_files_per_instance=per_iid,
+                preloaded=preloaded_meta,
             )
 
     # Render report.

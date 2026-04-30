@@ -68,6 +68,7 @@ class LocalEmbedder(EmbedderProtocol):
         *,
         device: str | None = None,
         cache_dir: Optional[str] = None,
+        default_batch_size: int = 64,
     ):
         self.model_name = model_name
         # Auto-pick GPU if available; fall back to CPU. Explicit device=
@@ -84,6 +85,7 @@ class LocalEmbedder(EmbedderProtocol):
                 device = "cpu"
         self.device = device
         self.cache_dir = cache_dir
+        self.default_batch_size = default_batch_size
         self._model = None
 
     def _ensure_model(self):
@@ -106,18 +108,23 @@ class LocalEmbedder(EmbedderProtocol):
         self,
         texts: list[str],
         *,
-        batch_size: int = 64,
+        batch_size: int | None = None,
         truncate_chars: int | None = DEFAULT_DOC_TRUNC_CHARS,
     ) -> list[list[float]]:
         """Embed a list of documents.
 
-        ``truncate_chars`` (default 4096) caps each document's length
-        before tokenization. The bge-large-en-v1.5 max sequence length
-        is 512 tokens (~2K chars); truncating to 4K chars covers a
-        comfortable header (imports, class defs) on most files. None
-        disables truncation.
+        ``batch_size`` (default: self.default_batch_size = 64) controls
+        the model.encode batch dimension. On the 32 GB AMD card we run
+        eval at 256; CPU runs stay at 64.
+
+        ``truncate_chars`` (default 2048) caps each document's length
+        before tokenization. bge-large-en-v1.5's max sequence is 512
+        tokens (~2K chars), so truncation is lossless for embedding
+        quality.
         """
         model = self._ensure_model()
+        if batch_size is None:
+            batch_size = self.default_batch_size
         if truncate_chars is not None:
             texts = [t[:truncate_chars] if len(t) > truncate_chars else t for t in texts]
         embs = model.encode(

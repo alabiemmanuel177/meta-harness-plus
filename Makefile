@@ -45,6 +45,16 @@ smoke-strict: firewall
 	$(PYTHON) scripts/smoke_phase0.py
 	@echo "[smoke-strict] OK"
 
+eval-fast: firewall
+	@echo "[eval-fast] dev-50 retrieval eval, GPU + 4 parallel workers + batch 256"
+	$(PYTHON) scripts/retrieval_eval_dev50.py \
+		--workers 4 --batch-size 256 \
+		--no-shortlist --include-traceback
+
+eval-bm25-only: firewall
+	@echo "[eval-bm25-only] dev-50 retrieval eval, BM25 only (no embedding, no traceback)"
+	$(PYTHON) scripts/retrieval_eval_dev50.py --no-embedding
+
 verify-images:
 	$(PYTHON) scripts/verify_images.py
 
