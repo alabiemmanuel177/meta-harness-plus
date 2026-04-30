@@ -46,9 +46,13 @@ smoke-strict: firewall
 	@echo "[smoke-strict] OK"
 
 eval-fast: firewall
-	@echo "[eval-fast] dev-50 retrieval eval, GPU + 4 parallel workers + batch 256"
+	@echo "[eval-fast] dev-50 retrieval eval, GPU + 2 parallel workers + batch 256"
+	@echo "[eval-fast]   NOTE: --workers 4 crashed the host on 2026-04-30 (30 GB RAM,"
+	@echo "[eval-fast]   4 × bge-large + 4 × Docker memory_gb=4 + 4 × Python = ~25 GB);"
+	@echo "[eval-fast]   --workers 2 is the verified-safe parallel target. Can override:"
+	@echo "[eval-fast]     PYTHONPATH=. .venv/bin/python3 scripts/retrieval_eval_dev50.py --workers N ..."
 	$(PYTHON) scripts/retrieval_eval_dev50.py \
-		--workers 4 --batch-size 256 \
+		--workers 2 --batch-size 256 \
 		--no-shortlist --include-traceback
 
 eval-bm25-only: firewall
