@@ -1,0 +1,41 @@
+# V10 model role mapping. Per V10_DESIGN.md §11.2: V10 is model-agnostic
+# at the call site; this YAML is the only place a model name appears
+# in business logic. To swap models for a role, change ONE line here —
+# no source edits needed.
+#
+# Env-driven overrides: each role honors a $V10_<ROLE>_MODEL env var.
+# Example: V10_RERANKER_MODEL=claude-sonnet-4-5 ./scripts/run_eval.py
+
+roles:
+  # Phase 1 stage 1g — LLM rerank of aggregated candidates.
+  # Default: deepseek-chat (cheap; ~$0.05 per dev-50 instance at typical
+  # 30-candidate prompts). Anthropic Sonnet/Opus available for ablation.
+  reranker: deepseek-chat
+
+  # Phase 2 — reproduction-test generator (writes pytest from issue text).
+  # Phase 0 placeholder; not used yet.
+  repro_gen: deepseek-chat
+
+  # Phase 3 pipeline path (one-shot patch generation).
+  patch_gen_pipeline: deepseek-chat
+
+  # Phase 3 agent path (multi-turn ACI on hard instances).
+  # Default Opus per V10_DESIGN.md §3.4.
+  patch_gen_agent: claude-opus-4-7
+
+  # Phase 5 reviewer escalation (when 3 selectors disagree).
+  reviewer_escalation: claude-opus-4-7
+
+# Provider routing — clients.py reads model name to dispatch.
+# Anything starting with 'claude' goes to anthropic; 'deepseek' goes
+# to the OpenAI-compatible endpoint at https://api.deepseek.com/v1.
+# Add new providers by extending harness/llm/clients.py:_route_model.
+
+# Cost estimates (USD per 1M tokens) — used by harness/cost.py for
+# tracking. NOT for routing.
+prices:
+  deepseek-chat:           {input: 0.27, output: 1.10}
+  deepseek-reasoner:       {input: 0.55, output: 2.19}
+  claude-sonnet-4-5:       {input: 3.00, output: 15.00}
+  claude-sonnet-4-6:       {input: 3.00, output: 15.00}
+  claude-opus-4-7:         {input: 15.00, output: 75.00}

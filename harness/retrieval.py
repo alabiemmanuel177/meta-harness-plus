@@ -192,6 +192,8 @@ class RetrievalResult:
     embedding_hits: list               # list[EmbeddingHit]
     n_files_indexed: int
     traceback_hits: list = field(default_factory=list)  # list[TracebackFrame]; populated when include_traceback=True
+    reranked_files: tuple = ()         # tuple[RankedFile, ...] populated when rerank=True
+    rerank_signal: object = None       # RerankerOutput when rerank=True; else None
 
 
 # ---------------------------------------------------------------------------
@@ -209,6 +211,8 @@ def run_stage_1b_retrieval(
     embedding_use_shortlist: bool = True,
     include_traceback: bool = False,
     skeleton=None,
+    rerank: bool = False,
+    rerank_top_k: int = 5,
     trajectory_writer=None,
 ) -> RetrievalResult:
     """Run BM25 across all 3 query strategies + embedding (if embedder
@@ -379,12 +383,124 @@ def run_stage_1b_retrieval(
         )
     )
 
+    # Stage 1g rerank — runs AFTER aggregation. Per V10_DESIGN.md §9
+    # the aggregator destroys top-1 signal; rerank sees per-strategy
+    # ranks intact via CandidateForRerank.
+    reranked = ()
+    rerank_signal = None
+    if rerank:
+        from harness.rerank import (
+            CandidateForRerank,
+            RerankerInput,
+            rerank as run_rerank,
+        )
+        # Build the candidate set: top-30 from aggregation + union of
+        # top-10 per strategy. This catches files that aggregation
+        # buries but ARE rank-1 in some strategy (the user's specific
+        # request: "first_paragraph-rank-1 files that aggregation
+        # loses still reach the reranker").
+        merged_paths: list[str] = []
+        seen: set[str] = set()
+        for c in aggregated[:30]:
+            if c["file_path"] not in seen:
+                seen.add(c["file_path"])
+                merged_paths.append(c["file_path"])
+        for strategy_hits in bm25_hits_per_strategy.values():
+            for sig in strategy_hits[:10]:
+                if sig.file_path not in seen:
+                    seen.add(sig.file_path)
+                    merged_paths.append(sig.file_path)
+        for sig in embedding_hits[:10]:
+            if sig.file_path not in seen:
+                seen.add(sig.file_path)
+                merged_paths.append(sig.file_path)
+
+        # Build CandidateForRerank for each merged path.
+        skel_summary_by_path: dict[str, str] = {}
+        skel_lines_by_path: dict[str, int] = {}
+        if skeleton is not None:
+            for fs in skeleton.files:
+                # Compose a one-line summary: top-3 class names + top-2
+                # function names. Cheap, useful for the reranker.
+                cls_names = [c.name for c in fs.classes[:3]]
+                fn_names = [f.name for f in fs.functions[:2]]
+                bits = []
+                if cls_names:
+                    bits.append("classes: " + ", ".join(cls_names))
+                if fn_names:
+                    bits.append("functions: " + ", ".join(fn_names))
+                skel_summary_by_path[fs.path] = "; ".join(bits) or "(empty)"
+                # n_lines: max method line_end seen, fallback to 0.
+                max_line = 0
+                for c in fs.classes:
+                    max_line = max(max_line, c.line_end)
+                    for m in c.methods:
+                        max_line = max(max_line, m.line_end)
+                for f in fs.functions:
+                    max_line = max(max_line, f.line_end)
+                skel_lines_by_path[fs.path] = max_line
+
+        rerank_candidates = []
+        per_path_strategies: dict[str, dict[str, dict]] = {}
+        for c in aggregated:
+            per_path_strategies[c["file_path"]] = {
+                "best_rank": c["upstream_best_rank"],
+                "bm25_max_score": c["bm25_max_score"],
+                "embedding_max_sim": c["embedding_max_sim"],
+            }
+
+        # Re-derive per-strategy ranks from the underlying signal lists
+        # (aggregation collapsed bm25 strategies into one bucket; rerank
+        # wants the per-strategy detail).
+        per_path_per_strategy_rank: dict[str, dict] = {}
+        per_path_per_strategy_score: dict[str, dict] = {}
+        for strategy, hits in bm25_hits_per_strategy.items():
+            label = f"bm25_{strategy}"
+            for sig in hits:
+                per_path_per_strategy_rank.setdefault(sig.file_path, {})[label] = sig.rank
+                per_path_per_strategy_score.setdefault(sig.file_path, {})[label] = sig.score
+        for sig in embedding_hits:
+            per_path_per_strategy_rank.setdefault(sig.file_path, {})["embedding"] = sig.rank
+            per_path_per_strategy_score.setdefault(sig.file_path, {})["embedding"] = sig.cosine_similarity
+        # Traceback: assign rank from the signal's frame_index (last
+        # frame = rank 1). Multi-match: same frame, different files
+        # share the rank order they were emitted in.
+        if traceback_signals:
+            n_frames = max((s.frame_index for s in traceback_signals), default=0) + 1
+            for s in traceback_signals:
+                # Distance from last frame (0 = last); lower = higher priority.
+                distance = (n_frames - 1) - s.frame_index
+                rank = distance * 10 + 1  # rough rank
+                per_path_per_strategy_rank.setdefault(s.file_path, {})["traceback"] = rank
+
+        for path in merged_paths:
+            ranks = per_path_per_strategy_rank.get(path, {})
+            scores = per_path_per_strategy_score.get(path, {})
+            rerank_candidates.append(CandidateForRerank(
+                file_path=path,
+                per_strategy_rank=ranks,
+                per_strategy_score=scores,
+                file_summary=skel_summary_by_path.get(path, ""),
+                n_lines=skel_lines_by_path.get(path, 0),
+            ))
+
+        rerank_input = RerankerInput(
+            view=view,
+            candidates=tuple(rerank_candidates),
+            top_k=rerank_top_k * 2,  # ask for 10 in case top-5 is the headline
+        )
+        rerank_result = run_rerank(rerank_input, trajectory_writer=trajectory_writer)
+        reranked = rerank_result.ranked_files
+        rerank_signal = rerank_result.signal
+
     return RetrievalResult(
         candidates=tuple(aggregated),
         bm25_hits_per_strategy=bm25_hits_per_strategy,
         embedding_hits=embedding_hits,
         traceback_hits=traceback_signals,
         n_files_indexed=len(paths),
+        reranked_files=reranked,
+        rerank_signal=rerank_signal,
     )
 
 
