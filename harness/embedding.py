@@ -66,10 +66,22 @@ class LocalEmbedder(EmbedderProtocol):
         self,
         model_name: str = DEFAULT_LOCAL_MODEL,
         *,
-        device: str = "cpu",
+        device: str | None = None,
         cache_dir: Optional[str] = None,
     ):
         self.model_name = model_name
+        # Auto-pick GPU if available; fall back to CPU. Explicit device=
+        # override still wins (Phase 0+ runs may want device='cpu' for
+        # deterministic comparison).
+        if device is None:
+            try:
+                import torch
+                if torch.cuda.is_available():
+                    device = "cuda"
+                else:
+                    device = "cpu"
+            except ImportError:
+                device = "cpu"
         self.device = device
         self.cache_dir = cache_dir
         self._model = None
