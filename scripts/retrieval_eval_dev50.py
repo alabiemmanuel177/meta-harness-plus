@@ -20,10 +20,12 @@ Optimizations (commit 4b):
   - --batch-size N: embedder batch size (default 256 for the 32 GB
     AMD Radeon; safely under VRAM headroom).
   - --workers N: parallel per-instance execution via
-    ProcessPoolExecutor. Each worker spins up its own Docker container
-    and embedder; PyTorch serializes the actual GPU calls cleanly so
-    CPU/IO work overlaps. Default 1 (deterministic); --workers 4 is
-    the make eval-fast target.
+    ThreadPoolExecutor (commit 11c). All workers share a single
+    GPUEmbeddingService that serializes GPU access through a lock;
+    the multi-PROCESS path (commit 4b) was reverted because AMD ROCm
+    deadlocks on concurrent multi-process kernel launches. Default 1
+    (deterministic); --workers 4 is the post-11d make eval-fast
+    target if dev_100 reverification matches the serial baseline.
   - Gold/repo lookups are pre-loaded once via
     harness.eval.load_eval_metadata; per-strategy ablation calls
     reuse the cache via the new ``preloaded=`` kwarg on
@@ -40,7 +42,7 @@ import pathlib
 import sys
 import time
 from collections import defaultdict
-from concurrent.futures import ProcessPoolExecutor, as_completed
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 
 
@@ -284,12 +286,22 @@ def _run_rerank_from_cached_retrieval(
     )
 
 
-def _run_one_instance(args: _WorkerArgs) -> _WorkerResult:
-    """Worker entry point. Each worker process imports the harness
-    modules fresh, instantiates its own embedder (loads model into VRAM),
-    starts its own Docker container, runs retrieval, and returns the
-    result. PyTorch serializes CUDA calls across processes when they
-    share a GPU; CPU/IO/container work overlaps naturally.
+def _run_one_instance(
+    args: _WorkerArgs, embedding_service=None,
+) -> _WorkerResult:
+    """Worker entry point.
+
+    Commit 11c: workers are threads, not processes; the
+    ``embedding_service`` (a single GPUEmbeddingService instantiated
+    by the orchestrator) is shared across threads and serializes the
+    GPU calls through a lock. Non-GPU work (Docker exec, file dump,
+    BM25, traceback parse, reranker LLM call, JSON checkpoint write)
+    overlaps freely.
+
+    If ``embedding_service`` is None, the worker creates a one-shot
+    LocalEmbedder + service for itself — preserves the serial
+    (workers=1) path's old shape for callers that haven't been
+    updated.
 
     Checkpoints to disk after a successful run so a crash later in the
     pipeline (e.g., scoring/reporting) doesn't waste the retrieval cost.
@@ -332,7 +344,18 @@ def _run_one_instance(args: _WorkerArgs) -> _WorkerResult:
     from harness.skeleton import load_or_build_skeleton
 
     iid = args.instance_id
-    embedder = None if args.no_embedding else _try_make_embedder(args.batch_size)
+
+    # Resolve the embedding service: shared (preferred, parallel path)
+    # or one-shot per worker (serial / legacy path).
+    if args.no_embedding:
+        service = None
+    elif embedding_service is not None:
+        service = embedding_service
+    else:
+        from harness.embedding import GPUEmbeddingService
+        local = _try_make_embedder(args.batch_size)
+        service = GPUEmbeddingService(local) if local is not None else None
+
     try:
         view = load_verified_view(iid)
         with Sandbox(view, max_observation_chars=32_000_000) as sb:
@@ -341,7 +364,7 @@ def _run_one_instance(args: _WorkerArgs) -> _WorkerResult:
                 skeleton = load_or_build_skeleton(view, sandbox=sb)
             result = run_stage_1b_retrieval(
                 view, sb,
-                embedder=embedder,
+                embedding_service=service,
                 embedding_use_shortlist=not args.no_shortlist,
                 include_traceback=args.use_traceback,
                 skeleton=skeleton,
@@ -398,8 +421,11 @@ def main() -> int:
                     help="embedder batch size; default 256 (safe on 32 GB GPU). "
                          "Drop to 64 for CPU runs.")
     ap.add_argument("--workers", type=int, default=1,
-                    help="number of parallel worker processes; default 1 "
-                         "(deterministic). 4 saturates CPU+IO on this hardware.")
+                    help="number of parallel worker threads; default 1. "
+                         "Threads share one GPUEmbeddingService (commit 11c) "
+                         "so the GPU only ever sees one in-flight call. "
+                         "Tested up to 12 (V7-style); the optimal N for "
+                         "test_500 is set by commit 11e tuning.")
     ap.add_argument("--rerank", action="store_true",
                     help="run Stage 1g LLM rerank after retrieval; uses "
                          "harness/config/models.yaml role=reranker (default "
@@ -485,12 +511,24 @@ def main() -> int:
     failed: list[tuple[str, str]] = []
     t0 = time.perf_counter()
 
+    # One shared GPU service for the entire run; workers serialize on
+    # its lock for the embedding step but progress independently on
+    # I/O and the reranker LLM call. None when --no-embedding.
+    shared_service = None
+    if not args.no_embedding:
+        from harness.embedding import GPUEmbeddingService
+        local = _try_make_embedder(args.batch_size)
+        if local is not None:
+            shared_service = GPUEmbeddingService(local)
+
     if args.workers <= 1:
-        # Serial path — preserves the original single-process flow.
+        # Serial path — same as the threaded path with max_workers=1,
+        # but kept as a separate branch so a serial run produces the
+        # original line-buffered progress output ([N/M] iid … OK …).
         for i, w in enumerate(work):
             print(f"[retr-eval] [{i + 1}/{len(work)}] {w.instance_id} … ",
                   end="", flush=True)
-            res = _run_one_instance(w)
+            res = _run_one_instance(w, embedding_service=shared_service)
             if res.error:
                 failed.append((res.instance_id, res.error))
                 print(f"FAIL: {res.error}")
@@ -500,12 +538,16 @@ def main() -> int:
             n_files_indexed_per_instance[res.instance_id] = res.n_files_indexed
             print(f"OK n_files={res.n_files_indexed} candidates={len(res.retrieved)}")
     else:
-        # Parallel path — spawn N workers, each with its own embedder.
-        # 'spawn' context to avoid fork issues with torch.
-        import multiprocessing as mp
-        ctx = mp.get_context("spawn")
-        with ProcessPoolExecutor(max_workers=args.workers, mp_context=ctx) as pool:
-            futures = {pool.submit(_run_one_instance, w): w.instance_id for w in work}
+        # Parallel path — ThreadPoolExecutor with one shared
+        # GPUEmbeddingService (commit 11c). All threads live in the
+        # same Python process so the GPU only ever sees calls from
+        # one process; the service's lock further serializes the
+        # actual model.encode call. CPU/IO/network work overlaps.
+        with ThreadPoolExecutor(max_workers=args.workers) as pool:
+            futures = {
+                pool.submit(_run_one_instance, w, embedding_service=shared_service): w.instance_id
+                for w in work
+            }
             done = 0
             for fut in as_completed(futures):
                 done += 1
