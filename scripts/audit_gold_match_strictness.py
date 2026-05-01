@@ -1,14 +1,15 @@
 """Audit the gold-patch matcher's strictness.
 
-Per the long-horizon batch spec (commit 6a): before trusting 98% top-10
-as the headline, verify the matcher's "hit" semantics aren't leaking
-lenient matches that inflate the score.
+Per the long-horizon batch spec (commit 6a, generalized in commit 8b
+to cover dev_100): before trusting top-10 / top-1 as a headline,
+verify the matcher's "hit" semantics aren't leaking lenient matches
+that inflate the score.
 
-For each dev_50 instance:
+For each instance in --split:
   1. Load gold-patch touched files via the eval-only path
      (harness.eval.load_eval_metadata).
   2. Load the cached rerank result (top-10) from
-     runs/v10_dev50_retr_eval/checkpoints/embed_noshortlist_tb_bs256_rerank/.
+     runs/<split-runname>/checkpoints/<rerank-signature>/<iid>.json.
   3. For each "hit" claimed at top-K (K ∈ {1, 5, 10}), classify the
      match by type:
        - exact:      gold_file == retrieved_file (literal equality)
@@ -19,16 +20,18 @@ For each dev_50 instance:
                      but NEITHER endswith holds
        - none:       not actually a hit (shouldn't happen)
 
-  Output: docs/audits/gold_match_strictness.md.
+  Output: docs/audits/gold_match_strictness[_<split-name>].md.
 
-  Hard-stop threshold (per spec): if >20% of hits at top-10 are
+  Hard-stop threshold (per 6a spec): if >20% of hits at top-10 are
   non-exact (anything except `exact` or `normalized`), the eval is
   using a lenient matcher and the headline must be redone with strict
-  matching.
+  matching. Commit 8b tightens this to: ≥95% strict at top-10 to PASS,
+  <90% strict triggers a HARD STOP.
 """
 
 from __future__ import annotations
 
+import argparse
 import json
 import pathlib
 from collections import Counter
@@ -36,15 +39,35 @@ from pathlib import PurePosixPath
 
 
 PROJECT_ROOT = pathlib.Path(__file__).resolve().parent.parent
-DEV_50 = PROJECT_ROOT / "splits" / "dev_50.json"
-RERANK_CHECKPOINT_DIR = (
-    PROJECT_ROOT
-    / "runs"
-    / "v10_dev50_retr_eval"
-    / "checkpoints"
-    / "embed_noshortlist_tb_bs256_rerank"
-)
-OUT = PROJECT_ROOT / "docs" / "audits" / "gold_match_strictness.md"
+
+# Legacy: the dev_50 run uses a non-standard run-dir name (no
+# underscore between "dev" and "50"). Newer splits follow the standard
+# v10_<stem>_retr_eval pattern.
+_LEGACY_RUN_DIR = {
+    "dev_50": "v10_dev50_retr_eval",
+}
+
+DEFAULT_RERANK_SIGNATURE = "embed_noshortlist_tb_bs256_rerank"
+
+
+def _paths_for_split(
+    split_path: pathlib.Path,
+    rerank_signature: str = DEFAULT_RERANK_SIGNATURE,
+) -> tuple[pathlib.Path, pathlib.Path]:
+    """Return (rerank_checkpoint_dir, audit_out) for the given split."""
+    split_name = split_path.stem
+    run_dir = _LEGACY_RUN_DIR.get(split_name, f"v10_{split_name}_retr_eval")
+    checkpoint_dir = (
+        PROJECT_ROOT / "runs" / run_dir / "checkpoints" / rerank_signature
+    )
+    if split_name == "dev_50":
+        out = PROJECT_ROOT / "docs" / "audits" / "gold_match_strictness.md"
+    else:
+        out = (
+            PROJECT_ROOT / "docs" / "audits"
+            / f"gold_match_strictness_{split_name}.md"
+        )
+    return checkpoint_dir, out
 
 
 def _classify_match(gold: str, retrieved: str) -> str:
@@ -80,7 +103,31 @@ def main() -> int:
     # eval's logic.
     from harness.eval import load_eval_metadata
 
-    dev = json.loads(DEV_50.read_text())
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--split", default="splits/dev_50.json",
+        help="Path to the split JSON whose rerank checkpoints to audit.",
+    )
+    parser.add_argument(
+        "--rerank-signature", default=DEFAULT_RERANK_SIGNATURE,
+        help=f"Subdir of checkpoints/ holding rerank results (default: {DEFAULT_RERANK_SIGNATURE}).",
+    )
+    args = parser.parse_args()
+
+    split_path = pathlib.Path(args.split)
+    if not split_path.is_absolute():
+        split_path = PROJECT_ROOT / split_path
+    rerank_checkpoint_dir, out_path = _paths_for_split(
+        split_path, rerank_signature=args.rerank_signature,
+    )
+    print(f"[audit] split: {split_path.relative_to(PROJECT_ROOT)}")
+    print(f"[audit] rerank checkpoints: {rerank_checkpoint_dir.relative_to(PROJECT_ROOT)}")
+    print(f"[audit] output: {out_path.relative_to(PROJECT_ROOT)}")
+    if not rerank_checkpoint_dir.is_dir():
+        print(f"[audit] FAIL: rerank checkpoint dir not found: {rerank_checkpoint_dir}")
+        return 2
+
+    dev = json.loads(split_path.read_text())
     instances = dev["instances"]
     instance_ids = [e["instance_id"] for e in instances]
 
@@ -97,7 +144,7 @@ def main() -> int:
     # Per-instance breakdown for the audit table.
     rows: list[dict] = []
     for iid in instance_ids:
-        ckpt_path = RERANK_CHECKPOINT_DIR / f"{iid}.json"
+        ckpt_path = rerank_checkpoint_dir / f"{iid}.json"
         if not ckpt_path.exists():
             print(f"[audit] WARN: no rerank checkpoint for {iid}; skipping")
             continue
@@ -143,13 +190,14 @@ def main() -> int:
         })
 
     # Build the markdown report.
-    OUT.parent.mkdir(parents=True, exist_ok=True)
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    split_label = split_path.stem.replace("_", "-").capitalize()
     out: list[str] = []
-    out.append("# Gold-patch matcher strictness audit (commit 6a)")
+    out.append(f"# Gold-patch matcher strictness audit ({split_label})")
     out.append("")
     out.append(
         "Generated by `scripts/audit_gold_match_strictness.py`. For each "
-        "dev_50 instance, classifies every claimed hit at top-K by the "
+        f"{split_label.lower()} instance, classifies every claimed hit at top-K by the "
         "tightest match type that holds:"
     )
     out.append("")
@@ -175,7 +223,7 @@ def main() -> int:
     out.append(f"## Coverage")
     out.append("")
     out.append(f"- Instances audited: {len(rows)}")
-    out.append(f"- Total dev_50 instances: {len(instance_ids)}")
+    out.append(f"- Total {split_path.stem} instances: {len(instance_ids)}")
     out.append("")
 
     # Headline distribution
@@ -249,8 +297,8 @@ def main() -> int:
         out.append(f"| `{r['iid']}` | {cells[0]} | {cells[1]} | {cells[2]} |")
     out.append("")
 
-    OUT.write_text("\n".join(out))
-    print(f"[audit] wrote {OUT.relative_to(PROJECT_ROOT)}")
+    out_path.write_text("\n".join(out) + "\n")
+    print(f"[audit] wrote {out_path.relative_to(PROJECT_ROOT)}")
     for k in K_VALUES:
         c = k_match_counts[k]
         strict = c.get("exact", 0) + c.get("normalized", 0)

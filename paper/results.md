@@ -26,6 +26,13 @@ Embedding model: BAAI/bge-large-en-v1.5 (batch 256). Reranker:
 DeepSeek-chat (per-strategy-rank features visible in the prompt;
 ~$0.05/instance).
 
+**Match-strictness audit (commit 8b, `docs/audits/gold_match_strictness_dev_100.md`):**
+all 98 top-10 hits and all 97 top-5 hits are exact-or-normalized matches under
+`harness.eval._normalize_path` — 100% strict. At top-1, 84/86 of the audit's
+lenient-classifier hits are strict; the 2 non-strict are basename matches that
+the production matcher correctly rejects, so the published 84% top-1 is the
+*strict* number, not inflated by lenient matching.
+
 ### Per-strategy ablation on dev_100
 
 | Strategy | Top-1 | Top-5 | Top-10 |
