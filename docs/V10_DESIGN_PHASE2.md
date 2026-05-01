@@ -46,10 +46,13 @@ The reasoning is the same as the V8 leak: V8 used the eval verdict in selection.
 
 ## 3. Repro generator architecture
 
-### 3.1 Inputs (firewall enforced)
+### 3.1 Inputs (firewall enforced; revised per §8.1)
 
-- `InstanceView` — the same frozen dataclass Phase 1 uses. No `gold_patch`, no `test_patch`, no `FAIL_TO_PASS`. The repro generator's prompt is built from `view.problem_statement` + `view.repo_skeleton` + `view.test_directives` only.
-- Optionally: the Phase 1 reranked top-K files (from `RerankerOutput.ranked_files`). This is allowed because those files are derived from the issue text, not the gold. The generator may peek at the top-K to ground its repro in the right module.
+- `InstanceView` — the same frozen dataclass Phase 1 uses. No `gold_patch`, no `test_patch`, no `FAIL_TO_PASS`. The repro generator's prompt is built from `view.problem_statement` + `view.test_directives` only — **NOT** the full `view.repo_skeleton`.
+- **`RankedFile[]` (Phase 1 reranked top-K, K=10 default)** + **AST snippets of those K files** — function signatures and class headers only, no bodies. This is the file context the generator gets. Rationale: the full skeleton inflates the prompt to ~500K tokens on django, breaking the "cheap sub-agent" cost model; AST snippets give the generator enough structural visibility to write valid imports and target methods without bloating the prompt.
+- **Widening on retry (bounded).** If attempt 0's reject reason indicates the bug isn't reachable from K=10, attempt 1 is re-prompted with `widen=True` — top-30 files with the same AST-snippet treatment. No further widening past attempt 1.
+
+**Patch-generator-context-superset constraint (firewall implication).** Whatever files the repro generator sees for instance `i`, the Phase 3 patch generator MUST also see for the same instance. This is enforced as a runtime assertion in Phase 3's context-build path: `assert set(repro_context_files_for(i)).issubset(set(patch_context_files_for(i)))`. The constraint guarantees that any repro the generator writes is structurally satisfiable by the patch generator — no asymmetric context can make the repro impossible to pass. The assertion fires at context-build time, before any LLM call, so violations are caught cheaply.
 
 ### 3.2 Output: `ReproTestCase` (frozen typed dataclass)
 
@@ -112,13 +115,54 @@ Concrete flow:
 
 1. Generator emits `ReproTestCase` (attempt 0).
 2. Sandbox starts at `base_commit`. Test code is `write_file`'d to `<test_dirs>[0]/<test_filename>` (default the first declared test dir).
-3. Run the specific test via `Sandbox.run_repro_test(target_test_id)` — a NEW sandbox method that runs ONE test by selector. **This method validates the selector against forbidden tokens** (case-insensitive substring match per V10_DESIGN.md §12.5) so a generator-emitted selector containing a leak token would be refused at the sandbox boundary.
+3. Run the specific test via `Sandbox.run_repro_test(target_test_id)` — a NEW sandbox method that runs ONE test by selector. **The forbidden-token guard at this layer is INFORMATIONAL ONLY (per §8.4)**: a substring match on `target_test_id` or `test_code` logs a `WARNING`-level structured event but does NOT block. The actual contamination prevention happens at the input layer — the generator's prompt is constructed from firewall-clean fields only, so it cannot embed tokens it never read. If the output guard fires, it's a real bug to investigate, not a routine retry.
 4. Capture exit code + stdout. Three terminal states:
    - **fails-at-base** ✓ — the test failed (i.e., the bug is reproduced). Trust it as a signal.
    - **passes-at-base** ✗ — the test doesn't exercise the bug. Discard.
    - **errors** ✗ — import error, syntax error, missing fixture. Discard.
-5. If discard: re-prompt the generator with the test output as context, ask for an improved attempt. Up to **N=3** attempts total (attempt 0, 1, 2).
+5. If discard: re-prompt the generator with the test output as context, ask for an improved attempt. Up to **N=3** attempts total (attempt 0, 1, 2). Attempt 1 may set `widen=True` per §3.1 if attempt 0's reject reason indicates the bug isn't reachable from the K=10 candidate set.
 6. After 3 fails: emit `ReproStatus.NO_REPRO`. The instance proceeds without a repro signal.
+
+**Per-attempt instrumentation (must ship in commit 7c, not added later — per §8.2):**
+every generation attempt is logged to a per-instance JSONL trace file
+under `runs/<run-name>/repro_trace/<instance_id>.jsonl`, with one row
+per attempt:
+
+```json
+{
+  "attempt_index": 0,                      // 0..N-1
+  "time_to_result_s": 12.3,                // gen + verify wall
+  "base_commit_fail_status": "fails-at-base",  // fails-at-base | passes-at-base | errors
+  "post_patch_pass_status": "unknown",     // see §8.5; firewall keeps this 'unknown' in V0
+  "generator_stated_reason": "test that POST creates a User without strip()",
+  "reject_reason": null,                   // null on accept; "import-error" / "passes-at-base" / etc. on retry
+  "input_tokens": 4321,
+  "output_tokens": 234,
+  "cost_usd": 0.045,
+  "widen_flag": false                      // whether this attempt used widen=True
+}
+```
+
+This data drives the dev_100 → N=2-vs-N=3 decision in §8.2 and is surfaced in the §7e coverage audit. Decision lands AFTER the full dev_100 run, NOT on dev_50 noise.
+
+**Per-instance cost cap (per §8.6):**
+Phase 2's orchestrator instantiates a `harness.cost.CostTracker` with
+`cap_usd=0.30` per instance. Between attempts, it consults
+`tracker.hard_cap_reached`; if true, generation stops and emits
+`ReproStatus.NO_REPRO_BUDGET`. The instance proceeds to Phase 3
+without a repro signal. This bounds Phase 2 spend on test_500 to
+$150 ceiling (typical: $50-75; most instances succeed at attempt 0
+or 1). The cap is independent of Phase 3's $35/instance ceiling
+(V10_DESIGN.md §10) — Phase 2 is a sub-agent.
+
+**Broken-repro handling (per §8.5):**
+A repro that fails at base AND fails after the gold patch is
+"useless but not contaminating." Phase 5 selection aggregates multiple
+signals; constant-fail repros wash out in the aggregation. We do NOT
+attempt a self-fix sub-agent (avoids dependency loop with Phase 3).
+The §7e audit measures, post-hoc against the gold patch in the
+eval-only path, what fraction of accepted repros are noisy in
+retrospect — pure measurement, no production action.
 
 `Sandbox.run_repro_test` is the new sandbox method:
 
@@ -131,10 +175,15 @@ class Sandbox:
         test_id: str,            # pytest selector like "...::test_xxx"
         timeout_s: int = 60,
     ) -> ExecResult:
-        """Run ONE pytest test inside the container. Validates test_id
-        against FORBIDDEN_TOKENS so a generator-emitted selector with
-        a leak token (e.g., 'fail_to_pass_repro') is refused at the
-        sandbox boundary, not at submission time."""
+        """Run ONE pytest test inside the container. Per §8.4, the
+        substring scan against FORBIDDEN_TOKENS at this layer is
+        INFORMATIONAL ONLY — a hit logs a WARNING-level structured
+        event for the operator dashboard but does NOT refuse to run.
+        Actual contamination prevention is at the input layer: the
+        generator's prompt is built from firewall-clean InstanceView
+        fields, so it cannot embed tokens it never read. Calibrate
+        the substring rule against the 12 Verified repos' real test
+        names before shipping (see §8.4 calibration step)."""
 ```
 
 ### 3.5 ReproSignal (the artifact selectors see)
@@ -152,17 +201,18 @@ class ReproSignal:
 
 This already exists in `harness/views.py` from Phase 0. Phase 2 wires the producer; the consumer (Phase 5 selector) is unchanged.
 
-### 3.6 Property tests (scoped per the pushback in V10_DESIGN.md §3.3)
+### 3.6 Property tests — REMOVED from Phase 2 (per §8.3)
 
-The original brief's Hypothesis property tests get **demoted to tie-break-only** based on the existing pushback. Phase 2 produces at most **2** Hypothesis properties per instance, alongside the main repro. They are recorded in `ReproSignal.property_results` as a separate field, and selectors only consult them when other signals tie.
+Hypothesis property tests are **out of scope for Phase 2**. The
+section that previously specified them here is removed; the
+`ReproSignal` schema does not carry property-test fields. If a future
+Phase 5 selection-layer audit shows tie-frequency justifies properties
+as a tie-breaker, they can be added then under a separate component,
+not under the Phase 2 design.
 
-Concretely:
-
-- Generator is asked to emit 2 invariants the patched function should satisfy (e.g., for a sorting bug: `sorted(xs) is monotonically non-decreasing`).
-- Hypothesis runs each invariant with default settings (max_examples=50). Pass/fail recorded.
-- These signals don't need to fail at base — they're invariants, not bug repros. They DO need to pass after a correct fix.
-
-If the generator produces no useful properties (rationale: "the bug doesn't lend itself to a property"), record `property_count=0` and skip. Don't force properties on bugs that don't have them.
+The repro test (§3.4) is the primary signal; the negative test
+(§3.7) catches over-broad patches at low cost. Those two are the
+full Phase 2 V0 surface.
 
 ### 3.7 Negative test (optional, scoped)
 
@@ -254,48 +304,202 @@ The bigger cost is **wall-clock per instance**: each attempt does a full sandbox
 Per V10_DESIGN.md split discipline, Phase 2 isn't done until:
 
 1. **dev_50 repro coverage:** ≥60% of instances produce a `fails-at-base` repro within 3 attempts. Below 60%, the signal is too sparse to weight in selection.
-2. **Property test rate:** ≥30% of instances produce ≥1 valid property. Below 30%, drop properties from the V0 design.
-3. **Sandbox `run_repro_test` validates selectors:** the existing case-insensitive forbidden-token guard catches at least one synthetic leak attempt in tests.
-4. **Firewall test passes:** no Phase 3 module imports `harness.repro`.
-5. **dev-100 repro coverage:** ≥55% (some degradation expected on held-out).
-6. **Cost on dev-50:** ≤$2 actual spend (vs $0.75 estimate; 2.5× headroom for unexpected retry rates).
+2. **Firewall input-layer test passes:** no Phase 3 module imports `harness.repro`; AND the generator's prompt-build path is unit-tested to refuse a synthetic InstanceView with planted forbidden tokens (per §8.4 — guard is at INPUT layer, not output).
+3. **Forbidden-token substring rule calibrated against real test names:** before shipping, spot-check the substring rule against the actual test files in the 12 Verified repos. If the rule trips on a legitimate existing test name, narrow it (per §8.4).
+4. **Patch-generator-context-superset assertion in place** for Phase 3 (per §8.1): runtime check that `repro_context_files ⊆ patch_context_files` for every instance.
+5. **dev-100 repro coverage:** ≥55% (some degradation expected on held-out). dev_100 is also where the N=2-vs-N=3 decision lands (per §8.2).
+6. **Cost on dev-50:** ≤$2 actual spend (vs $0.75 estimate; 2.5× headroom for unexpected retry rates). The per-instance cost cap (§8.6) of $0.30 enforces this; total spend on dev_50 is bounded at $15 even under worst-case retry rates.
+
+Property tests are NOT part of the gate (per §8.3 — out of scope for Phase 2).
+Broken-repro filtering (per §8.5) is NOT part of the gate — the §7e audit measures it post-hoc; production accepts the noise.
 
 If (1) drops below 50% even after prompt iteration, the design needs rethinking. If (2) drops below 20%, properties are dropped from V0 entirely.
 
 ---
 
-## 8. Open design questions for review
+## 8. Design questions — resolved (commit 7a → review pass)
 
-These are the four points I want explicit ack on before any code lands.
+The four questions originally posed in this section, plus two additional
+questions surfaced during the review pass, with the resolutions that
+will be reflected in the implementation commits 7b/7c/7d/7e.
 
-### 8.1 Should `harness.repro` see the Phase 1 reranked file list?
+### 8.1 What context does the repro generator see? — REVISED
 
-**Pro:** the generator grounds its repro in the right module. The localizer's top-K is already derived from the issue text, so it's not a leak.
+**Resolved:** the generator gets `RankedFile[]` (Phase 1 top-K, K=10
+default) **plus AST snippets of those K files** — function signatures
+and class headers only, no bodies. The full `RepoSkeleton` is **NOT**
+passed.
 
-**Con:** if Phase 1's localizer is wrong, the repro generator inherits the wrong context. We may want the repro generator to look at the WHOLE skeleton, not just top-K.
+Why the revision (the original recommendation was "RankedFile[] + full
+RepoSkeleton, generator decides"):
 
-**Recommendation:** pass `RankedFile[]` *and* `RepoSkeleton`. Generator decides what to use.
+  - **Cost.** On a django instance the skeleton is ~2500 file entries
+    × ~200 chars ≈ 500K tokens. That inflates per-instance generator
+    cost from cents to dollars and makes the "cheap sub-agent" framing
+    untrue.
+  - **Asymmetry risk.** If the repro generator references files outside
+    the localized set, the patch generator (Phase 3) might not have
+    those files in its context, producing a repro that's
+    structurally unsatisfiable by the patch generator. The repro must
+    target files the patch generator can also see.
 
-### 8.2 What's the verification window?
+**Constraint to enforce in Phase 3:** the patch generator's context
+for instance `i` must be a **superset** of the repro generator's
+context for the same `i`. Wired as a runtime assertion in Phase 3's
+context-build path; see §3.1 for the constraint statement.
 
-The brief says:
-> Up to N=3 attempts; if it never fails, mark "no repro" and proceed without it.
+**Widening on retry:** if the first attempt fails verification and
+the generator's reject reason indicates the bug isn't reachable from
+the K=10 set, attempt 1 is re-prompted with `widen=True` — top-30
+files with the same AST-snippet treatment. Bounded; no further
+widening past attempt 1. The widening is operator-instrumented (logged
+in §3.4 retry telemetry) so we can see whether widening helps.
 
-**Question:** are 3 attempts the right N? More attempts = more cost + possible overfitting; fewer = lower coverage. The pushback in V10_DESIGN.md §3.3 said the generator's failures are a real signal, not just "try again."
+### 8.2 What's the verification window? — RESOLVED with instrumentation requirement
 
-**Recommendation:** start with N=3, instrument the actual fail-rate distribution, tune. If most useful repros come from attempts 0-1 and attempt 2 is mostly noise, drop to N=2.
+**Resolved:** start with **N=3** attempts. Tune to N=2 only if the
+dev_100 attempt-by-attempt data shows attempts 2-3 produce
+near-zero usable repros.
 
-### 8.3 Are property tests worth the complexity?
+**Hard requirement (revised):** the per-attempt instrumentation
+**ships in commit 7c** (the retry-loop commit), not added later.
+Specifically every repro-generation attempt logs:
 
-The pushback already demoted them to tie-break only. **Question:** at tie-break-only, is the engineering overhead worth it? Selectors at tie-break would consult them <10% of the time.
+  - `attempt_index` (0..N-1)
+  - `time_to_result_s` (gen + verify wall)
+  - `base_commit_fail_status` (fails-at-base / passes-at-base / errors)
+  - `post_patch_pass_status` — when measurable (see §8.5; for V10 V0
+    this is recorded as `unknown` because the gold patch is firewalled)
+  - `generator_stated_reason` — one-line "why this test"
+  - `reject_reason` — if the attempt was rejected and re-prompted
 
-**Recommendation:** skip properties in V0. Add later if the dev_50 selection layer (Phase 5) shows that ties are common AND properties differentiate them. Otherwise it's premature complexity.
+That data is what tells us whether N=3 was the right number, AND it's
+paper material: "we measured repro generation success rate at N=1, 2,
+3 and found X% / Y% / Z% of usable repros come from each attempt
+respectively." The decision on N=2 vs N=3 lands AFTER dev_100 runs,
+not on dev_50 noise.
 
-### 8.4 What does `Sandbox.run_repro_test` block?
+### 8.3 Property tests — REMOVED from Phase 2 (not deferred)
 
-The case-insensitive forbidden-token guard blocks selectors that mention `fail_to_pass`, `pass_to_pass`, `test_patch`, etc. **But:** what if the generator emits a test name like `test_validates_pass_to_pass_resolution`? That's a meaningful test name with `pass_to_pass` substring, but it's NOT pulling from oracle data — it's coincidental.
+**Resolved:** property tests via Hypothesis are **out of scope for
+Phase 2**. Not "deferred" — removed entirely from this design.
 
-**Recommendation:** the guard fires on substring match (over-flag), and we accept the false positive rate. Generator gets re-prompted on the rare collision; pragmatic. Document the over-flag behavior in the firewall section.
+Why the strengthening (the original recommendation was "skip in V0,
+add later if Phase 5 shows tie-frequency justifies it"):
+
+  - Property tests via Hypothesis are a known cost trap in the
+    literature: high generation time, many vacuous-or-over-specific
+    invariants, low signal-to-noise.
+  - The repro test alone is the primary signal; adding properties
+    creates engineering complexity without clear payoff.
+  - Negative tests (catching over-broad patches that delete
+    functionality) are the more useful complement at lower cost —
+    those stay in Phase 2 V0 (§3.7).
+
+If a future Phase 5 selection-layer eval shows tie-frequency justifies
+properties as a tie-breaker, they can be added then as a separate
+component, NOT under the Phase 2 design. §3.6 is removed.
+
+### 8.4 Forbidden-token guard semantics — REVISED (do NOT block at output)
+
+**Resolved:** the substring guard is **input-layer enforcement**, not
+output-layer. The original recommendation (substring match on test
+output, accept over-flag, retry on collision) is rejected.
+
+The corrected design:
+
+  - **Input layer.** Forbidden tokens (`fail_to_pass`, `pass_to_pass`,
+    `test_patch`, etc.) are blocked from reaching the generator's
+    *prompt*. This is where the actual contamination threat lives:
+    the generator embeds tokens IT READ from oracle data. If we
+    ensure the generator never sees the tokens, it can't embed them
+    by accident.
+  - **Output layer.** The substring scan on the generated test code
+    becomes **informational / alert-only**, not blocking. Logged at
+    `WARNING` level when it fires, with a structured event surfaced
+    to the operator dashboard. The eval continues — the guard is no
+    longer in the retry loop.
+  - **Why this matters.** Substring-blocking on output forces a
+    retry on legitimate test names like
+    `test_pass_to_pass_resolution` (a real test name in the wild —
+    e.g., Django's URL resolver tests). On 500 instances the
+    "rare collision" gets retried often enough to silently inflate
+    cost.
+  - **If the output guard fires:** that's a real bug worth
+    investigating. Either the input firewall has a hole, or the
+    generator's substring distribution is genuinely weird. Investigate;
+    don't paper over with retries.
+
+**Calibration step required before shipping (commit 7b):** spot-check
+the substring rule against the actual test files in the 12 SWE-bench
+Verified repos. If any legitimate existing test name in those repos
+would trip the guard, the rule is wrong and needs narrower terms or
+context-aware matching. This is a one-time pre-flight, owned by the
+implementation in 7b.
+
+### 8.5 (NEW) How are broken repros — fail-at-base AND fail-after-patch — handled?
+
+**Resolved:** option (b) — accept the limitation, document it,
+let Phase 5 selection filter via downstream signals.
+
+The problem: a generated test can fail at base_commit (passes the
+must-fail-at-base gate) AND fail after the gold patch is applied,
+because the test is just broken (wrong assertion, wrong import,
+exercises the wrong code path). Such a repro has zero discrimination
+value — it always fails, so it can't tell good patches from bad.
+
+Two paths considered:
+
+  - **(a) Self-fix sub-agent.** Add a sub-agent that tries to write
+    a patch sufficient to make the repro pass; only accept the repro
+    if some patch can pass it. Rejected: this adds a second LLM
+    call's worth of cost and complexity to every attempt, and is
+    architecturally a dependency loop (Phase 2 needs Phase 3-style
+    capability before Phase 3 exists).
+  - **(b) Accept the noise.** A repro that always fails is a useless
+    signal but **not a contamination risk**. Phase 5's selection
+    layer aggregates multiple signals (repro pass/fail, public-suite
+    pass count, multi-selector vote); a repro that always fails
+    contributes constant-zero signal and washes out in the
+    aggregation. Worst case: the broken repro adds slight noise to
+    Phase 5's tie-breaking, never inverts a correct decision.
+
+We take **(b)**. The `ReproSignal.status` schema does NOT distinguish
+"always fails (broken)" from "fails at base only (signal)" because
+the patch generator can't see the post-patch result without breaching
+the firewall. The dev_100 measurements (commit 7e) report what
+fraction of accepted repros are noisy in retrospect (post-hoc, against
+the gold patch in the eval-only path) so we can quantify the cost
+of accepting (b).
+
+Documented as a known limitation in §3.4 and surfaced in the eval
+audit alongside the headline pass rate.
+
+### 8.6 (NEW) What's the per-instance cost cap on Phase 2?
+
+**Resolved:** **$0.30/instance hard cap** on Phase 2 reproduction-
+generation spend, enforced by the generator orchestrator. If the
+running spend on instance `i` reaches $0.30 mid-attempt, the
+generator stops and emits `ReproStatus.NO_REPRO_BUDGET`. The
+instance proceeds to Phase 3 without a repro signal.
+
+Cost model:
+
+  - Stage 1g rerank costs $0.0024/instance (DeepSeek) on dev_100.
+  - Repro generator at N=3 attempts × ~$0.05/attempt budget = $0.15
+    typical, with worst-case headroom for retry escalation.
+  - $0.30/instance × 500 instances = $150 ceiling for the full
+    test_500 run; in practice we expect ~$50-75 because most
+    instances succeed at attempt 0 or 1.
+
+The cap is in the same shape as Phase 3's $35/instance hard ceiling
+(V10_DESIGN.md §10). Phase 2's cap is much smaller because the
+generator is a sub-agent, not the patch-gen agent.
+
+The cap is enforced via `harness.cost.CostTracker` (already exists
+from Phase 0); Phase 2's orchestrator instantiates one with
+`cap_usd=0.30` and consults `tracker.hard_cap_reached` between
+attempts. See §3.4 for the integration point.
 
 ---
 
@@ -307,18 +511,53 @@ The case-insensitive forbidden-token guard blocks selectors that mention `fail_t
 
 ---
 
-## 10. Acceptance gate for THIS DESIGN DOC
+## 10. Acceptance gate for THIS DESIGN DOC — RESOLVED
 
 Per the long-horizon batch spec (commit 7a):
 > Stop after 7a — design doc only, no code yet. I want to review the design before any Phase 2 code lands.
 
-This doc is the entire commit 7a. **No code in `harness/repro.py`, no code in `tests/test_repro.py`, no changes to `harness/sandbox.py`** until the design is acked.
+The four open questions originally in §8 plus two surfaced during the
+review pass have been **resolved as of the design-revision pass**
+(this commit). The resolved positions are baked into the architectural
+sections above (§3.1, §3.4, §3.6, §3.7) and itemized in §8.1–§8.6.
 
-The four open questions in §8 are the ones I want explicit answers on:
+Resolution summary:
 
-1. Should the repro generator see Phase 1 reranked top-K (recommended: yes, plus the full skeleton)?
-2. Is N=3 attempts right (recommended: start there, instrument)?
-3. Property tests in V0 (recommended: skip)?
-4. Forbidden-token over-flag in `run_repro_test` (recommended: accept, document)?
+  1. **§8.1 — Generator context.** RankedFile[] (top-K=10) + AST
+     snippets only; NOT the full skeleton (cost). Widening to top-30
+     allowed on retry attempt 1. Patch-generator-context-superset
+     constraint enforced as runtime assertion in Phase 3.
+  2. **§8.2 — Verification window.** N=3 attempts. Per-attempt
+     instrumentation ships in 7c (NOT added later). Decision on N=2-
+     vs-N=3 lands AFTER dev_100, not on dev_50 noise.
+  3. **§8.3 — Property tests.** Removed from Phase 2 entirely (not
+     deferred). §3.6 reflects the removal.
+  4. **§8.4 — Forbidden-token guard.** Input-layer enforcement
+     (block forbidden tokens from reaching generator's prompt).
+     Output-layer scan is informational/alert-only, NOT blocking.
+     Substring rule must be calibrated against real test names in
+     the 12 Verified repos before shipping.
+  5. **§8.5 (new) — Broken-repro handling.** Accept the noise; rely
+     on Phase 5 selection to filter via downstream signals. Documented
+     as known limitation. §7e audit measures the noise rate post-hoc.
+  6. **§8.6 (new) — Per-instance cost cap.** $0.30/instance enforced
+     by `harness.cost.CostTracker`. Test_500 ceiling: $150; expected
+     $50-75.
 
-Once acked, Phase 2 implementation lands as commits 7b (generator + sandbox method), 7c (must-fail-at-base verification + retry loop), 7d (firewall test for cross-phase imports), 7e (dev_50 coverage measurement).
+Phase 2 implementation lands in this commit order:
+
+  - **7b** — generator + sandbox method (`harness/repro.py` +
+    `harness.sandbox.run_repro_test`). Includes the §8.4 input-layer
+    firewall and the §8.4 calibration spot-check on the 12 repos.
+  - **7c** — must-fail-at-base verification + retry loop, **with
+    instrumentation** (per-attempt JSONL trace per §3.4 / §8.2) and
+    the §8.6 cost cap integration.
+  - **7d** — firewall tests: (a) no Phase 3 module imports
+    `harness.repro`; (b) generator prompt-build refuses a synthetic
+    InstanceView with planted forbidden tokens.
+  - **7e** — dev_50 coverage measurement + post-hoc broken-repro
+    audit (per §8.5, eval-only path against gold).
+
+The acceptance gate for landing 7b is: this design doc reflects the
+six resolutions above (it does, as of this commit), AND the user
+signs off on the diff.
