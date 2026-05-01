@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import hashlib
 import os
+import threading
 from dataclasses import dataclass
 from typing import Optional
 
@@ -151,6 +152,64 @@ class LocalEmbedder(EmbedderProtocol):
 
 
 # ---------------------------------------------------------------------------
+# GPU embedding service — thread-safe wrapper for parallel orchestrators
+# ---------------------------------------------------------------------------
+
+
+class GPUEmbeddingService(EmbedderProtocol):
+    """Thread-safe wrapper around a single ``LocalEmbedder``.
+
+    Why this exists: V10's parallel eval (commit 11c) runs a
+    ``ThreadPoolExecutor`` over instances. The instance worker is mostly
+    I/O- and CPU-bound (sandbox setup, file dump, BM25, traceback
+    parse, reranker call), but the embedding step touches the GPU. The
+    AMD ROCm post-mortem (V10_DESIGN.md §9, 2026-04-30) showed that
+    multi-PROCESS GPU contention deadlocks the card. A single-process
+    multi-threaded design avoids the multi-process trap, but multiple
+    Python threads racing into ``model.encode`` would still produce
+    interleaved kernel launches.
+
+    The fix is the simplest one that works: serialize the actual GPU
+    call behind a ``threading.Lock``. The model is loaded once into
+    VRAM; every thread that wants to embed waits its turn. The non-GPU
+    work (file I/O, BM25, reranker LLM call) runs concurrently because
+    those threads aren't holding the lock. CPython's GIL makes this
+    safe — and ``model.encode`` releases the GIL inside the C++/CUDA
+    kernel call, so blocking on the embedding lock doesn't starve the
+    other threads from progressing on their I/O.
+
+    Future optimization: an internal queue + multi-instance batching
+    (3 instances at batch=768 instead of 3 separate batch=256 calls).
+    Out of scope for commit 11a — the lock alone gives us the
+    correctness + no-hang guarantee. Promote if microbenchmarks show
+    >2x speedup.
+    """
+
+    def __init__(self, embedder: LocalEmbedder):
+        self._embedder = embedder
+        self._lock = threading.Lock()
+        self.model_name = embedder.model_name
+
+    def embed_documents(
+        self,
+        texts: list[str],
+        *,
+        batch_size: int | None = None,
+        truncate_chars: int | None = LocalEmbedder.DEFAULT_DOC_TRUNC_CHARS,
+    ) -> list[list[float]]:
+        with self._lock:
+            return self._embedder.embed_documents(
+                texts,
+                batch_size=batch_size,
+                truncate_chars=truncate_chars,
+            )
+
+    def embed_query(self, text: str) -> list[float]:
+        with self._lock:
+            return self._embedder.embed_query(text)
+
+
+# ---------------------------------------------------------------------------
 # Remote embedder (opt-in via config)
 # ---------------------------------------------------------------------------
 
@@ -275,6 +334,7 @@ __all__ = [
     "EmbeddingResult",
     "EmbedderProtocol",
     "LocalEmbedder",
+    "GPUEmbeddingService",
     "RemoteOpenAIEmbedder",
     "cosine_similarities_to",
     "retrieve_by_embedding",
