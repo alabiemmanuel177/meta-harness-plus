@@ -71,37 +71,82 @@ flip table at `docs/audits/rerank_variance_dev100.md`.)
    DeepSeek ≈ $1.20, Sonnet ≈ $20. Net delta is ~$19 for the +2-3pp
    top-1 lift.
 
-## Recommendation
+## Recommendation (revised in commit 13a)
 
-**Ship test_500 with Sonnet-4.5 as the reranker.** Three reasons:
+**Run test_500 twice — DeepSeek as the headline, Sonnet as the
+ablation.** Two runs, sequenced:
 
-  - The +2-3pp top-1 lift is real and reproducible (the 4-5
-    Sonnet-rescued instances repeat between Sonnet runs and across
-    DeepSeek runs).
-  - Total reranker cost on test_500 ≈ $20. Within the §11 cost
-    budget; ~6% of a single test_500 run's worst-case overall budget.
-  - Top-10 (the upstream-recall metric Phase 1 cared about most)
-    is identical at 98% in all configurations — Sonnet is upside-only
-    on top-1, no risk to the headline acceptance gate.
+  1. **test_500 headline run with DeepSeek-chat.**
+       - Reproducibility: 12a showed 0 flips on dev_100 across two
+         reruns. The headline is a single number with no error bars
+         needed.
+       - Cost: ~$1.20.
+       - Wall-clock: ~24 hr at workers=1 (per the 8c preflight, scaled
+         from dev_100's 24 min × 5).
+       - This is the number we publish as the V10 V1 result.
 
-**Run test_500 once** (not multi-run for variance bars). Two reasons:
+  2. **test_500 ablation run with Sonnet-4.5.**
+       - Lift: +2-3pp on dev_100 top-1, replicable across two Sonnet
+         runs and the same instances rescued in both DeepSeek runs.
+       - Cost: ~$20.
+       - Wall-clock: ~48 hr at workers=1 (Sonnet API latency was 1.7×
+         DeepSeek's on dev_100; 24 hr × 1.7 ≈ 40 hr; 48 hr is the
+         rounded ceiling).
+       - This becomes a paper-section table row: "DeepSeek baseline
+         vs Sonnet ablation" so reviewers see the full picture.
 
-  - DeepSeek showed 0 top-K flips across reruns; Sonnet showed 1
-    top-1 flip (~1pp wobble). A single Sonnet run carries an implicit
-    ±1pp on top-1 and ±0pp on top-5/10. That is small enough to
-    report as a single number with a footnote.
-  - Each test_500 Sonnet run is ~3.6 hr wall-clock at workers=1
-    (extrapolating from dev_100's 43 min × 5 / 60). Multi-run inflates
-    that to a full overnight cycle for a ±1pp confidence bar that
-    doesn't change any decision.
+### Why two runs and not one Sonnet run
 
-**Hedge plan if Sonnet API rate-limits or fails mid-run:** the
-`--reranker-model deepseek-chat` flag swaps the model with no other
-changes. Per-instance checkpoints under
+The 12c original recommendation (commit `4cdb097`) was "ship Sonnet
+as the headline." Revised on review because:
+
+  - Phase 1 top-1 doesn't directly equal Phase 3 pipeline pass rate.
+    Phase 3 will pick from the ranked file list and try to generate a
+    patch; whether it picks rank 1 vs rank 5 depends on patch-gen
+    behavior we haven't measured yet. The +2-3pp Sonnet lift on
+    *retrieval top-1* may or may not translate to +2-3pp on
+    *pipeline pass rate* downstream.
+  - Reporting both runs lets reviewers see the full evidence chain.
+    If Phase 3 picks rank-1 aggressively, Sonnet wins; if it widens
+    the candidate set, DeepSeek's rank-5 lifts more (97% top-5 vs
+    Sonnet's 98% top-5 — only +1pp gap).
+  - Cost is bounded: $1.20 + $20 = $21.20 total. Well under the
+    §11 budget for the test_500 run.
+  - Wall-clock allows it: total ~72 hr serial, fits in a long
+    weekend; can interleave the two runs (they don't share GPU
+    state — DeepSeek + retrieval cache from headline run feeds
+    directly into Sonnet ablation by signature swap).
+
+### Hedge plan (unchanged from the original 12c recommendation)
+
+If either run rate-limits or fails mid-flight: the
+`--reranker-model` flag swaps the model with no other changes.
+Per-instance checkpoints under
 `runs/v10_test_500_*/checkpoints/embed_…_rerank_<model>` mean a
 mixed-model run is recoverable — restart with the other model and
 the previously-completed rerank checkpoints carry over (they're
 keyed on signature, which includes the model suffix).
+
+### Considered alternative: Sonnet-only headline
+
+The original 12c recommendation was "ship test_500 with Sonnet
+as the headline, single run, $20." Three things tilted the revision
+back toward DeepSeek as the published number:
+
+  - The +2-3pp Sonnet lift is on top-1 ONLY; top-10 is identical.
+    If Phase 3 ends up using top-K with K > 1, the lift is much
+    smaller or zero.
+  - Sonnet has ±1pp self-variance (12b's 86 vs 87 top-1 across two
+    runs). DeepSeek has 0pp self-variance. The published headline
+    is more reproducible if it's the deterministic option.
+  - The Sonnet number is still useful as the upper-bound ablation
+    in the paper, just not as the published headline. Running both
+    captures the full picture without committing to the more
+    expensive model on incomplete downstream evidence.
+
+The Sonnet-only path remains cheaper ($20 single run) and is the
+right call IF subsequent evidence shows Phase 3 picks rank-1 hard.
+That evidence does not yet exist.
 
 ## What we are NOT recommending
 
@@ -135,11 +180,18 @@ keyed on signature, which includes the model suffix).
   - 12b sonnet_run1:    $4.00
   - 12b sonnet_run2:    $3.97
   - 12c (this doc):     $0.00 (pure prose)
+  - 13a (this revision): $0.00 (pure prose)
   - **Total: $8.21** of the spec's $50 cap.
+
+## Projected cost on test_500 (with revised plan)
+
+  - DeepSeek headline run: ~$1.20 (500 × $0.0024)
+  - Sonnet ablation run:   ~$20.00 (500 × $0.04)
+  - **Total: ~$21.20** for a complete test_500 evidence package.
 
 ## Next gates (unchanged by this batch)
 
   1. **Phase 2 design ack** on `docs/V10_DESIGN_PHASE2.md` — still
      the next thing blocking Phase 2 code.
   2. **Test_500 launch** — gated on Phase 2 design ack landing AND
-     a sign-off on this decision doc.
+     a sign-off on this decision doc (revised in 13a).
