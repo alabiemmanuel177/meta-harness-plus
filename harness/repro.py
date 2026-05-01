@@ -9,9 +9,18 @@ Per docs/V10_DESIGN_PHASE2.md (commits 7a + 19c7f27 design revision):
     (logs WARNING, does NOT block).
   - Output: ReproTestCase frozen dataclass (§3.2).
 
-Commit 17a covers the single-attempt generator + ReproTestCase schema
-+ Sandbox.run_repro_test method. The retry loop, instrumentation, and
-$0.30/instance cost cap land in commit 17b.
+Commit 17a covered the single-attempt generator + ReproTestCase schema
++ Sandbox.run_repro_test method.
+
+Commit 17b adds:
+  - ReproRejectReason enum (controlled vocabulary for reject reasons).
+  - ReproAttemptTraceRow dataclass with V0 schema enforcement
+    (post_patch_pass_status MUST be "unknown" — V0 cannot see the
+    gold patch per §8.5).
+  - generate_with_retry orchestrator: must-fail-at-base verification,
+    N=3 retry loop, deterministic widen-on-retry, $0.30/instance cost
+    cap (§8.6) checked BETWEEN attempts only.
+  - JSONL instrumentation per §3.4.
 
 The generator uses harness.llm.clients.complete_chat with
 role="repro_generator" — never a hardcoded model name. The model
@@ -21,10 +30,14 @@ agnosticism unit test (commit 16a) enforces this structurally.
 from __future__ import annotations
 
 import ast
+import dataclasses
 import json
 import logging
+import pathlib
 import re
+import time
 from dataclasses import dataclass
+from enum import Enum
 
 from harness.localization_signals import RankedFile
 from harness.views import (
@@ -469,10 +482,405 @@ def generate_repro_attempt(
     )
 
 
+# ---------------------------------------------------------------------------
+# Commit 17b: retry loop + instrumentation + cost cap
+# ---------------------------------------------------------------------------
+
+
+class ReproRejectReason(Enum):
+    """Controlled vocabulary for why an attempt was rejected. Lets the
+    coverage audit (commit 17d) drive the N=2-vs-N=3 decision via
+    structured queries instead of free-form string greps.
+
+    Values map to the verifier's terminal states (PASSES_AT_BASE /
+    IMPORT_ERROR / SYNTAX_ERROR / TIMEOUT) plus generator-side failure
+    modes (OUTPUT_TOKEN_OVERFLOW / FIREWALL_VIOLATION / OTHER) and
+    the success state (ACCEPTED).
+    """
+
+    ACCEPTED = "accepted"
+    PASSES_AT_BASE = "passes_at_base"
+    IMPORT_ERROR = "import_error"
+    SYNTAX_ERROR = "syntax_error"
+    TIMEOUT = "timeout"
+    OUTPUT_TOKEN_OVERFLOW = "output_token_overflow"
+    FIREWALL_VIOLATION = "firewall_violation"
+    OTHER = "other"
+
+
+# Per §8.5, V0 has no way to inspect the post-patch state without
+# breaching the gold-patch firewall. The trace row schema enforces
+# this: post_patch_pass_status MUST be the literal string "unknown".
+V0_POST_PATCH_PASS_STATUS = "unknown"
+
+
+@dataclass(frozen=True)
+class ReproAttemptTraceRow:
+    """One JSONL row per attempt actually made. Per §3.4.
+
+    Schema enforcement:
+      - post_patch_pass_status MUST equal V0_POST_PATCH_PASS_STATUS
+        ("unknown") in V0 — see §8.5. Constructing a row with any
+        other value raises ValueError. This is structural prevention
+        of a gold-patch firewall breach.
+      - reject_reason MUST be a valid ReproRejectReason value. Free-
+        form rejection details go in reject_reason_detail.
+    """
+
+    instance_id: str
+    attempt_index: int
+    time_to_result_s: float
+    base_commit_fail_status: str          # 'fails-at-base' | 'passes-at-base' | 'errors'
+    post_patch_pass_status: str           # MUST be 'unknown' in V0
+    generator_stated_reason: str          # one-line "why this test"
+    reject_reason: str                    # ReproRejectReason value
+    reject_reason_detail: str             # free-form when reason==OTHER
+    input_tokens: int
+    output_tokens: int
+    cost_usd: float
+    widen_flag: bool
+
+    def __post_init__(self) -> None:
+        if not self.instance_id:
+            raise ValueError("ReproAttemptTraceRow.instance_id required")
+        if self.attempt_index < 0:
+            raise ValueError(
+                f"ReproAttemptTraceRow.attempt_index must be >= 0, "
+                f"got {self.attempt_index}"
+            )
+        if self.post_patch_pass_status != V0_POST_PATCH_PASS_STATUS:
+            raise ValueError(
+                f"V0 must use post_patch_pass_status="
+                f"{V0_POST_PATCH_PASS_STATUS!r} (got "
+                f"{self.post_patch_pass_status!r}). Real post-patch "
+                f"verification would breach the gold-patch firewall "
+                f"per V10_DESIGN_PHASE2.md §8.5."
+            )
+        if self.base_commit_fail_status not in (
+            "fails-at-base", "passes-at-base", "errors"
+        ):
+            raise ValueError(
+                f"base_commit_fail_status invalid: "
+                f"{self.base_commit_fail_status!r}"
+            )
+        # Validate reject_reason is a valid enum value.
+        try:
+            ReproRejectReason(self.reject_reason)
+        except ValueError as exc:
+            raise ValueError(
+                f"reject_reason must be a valid ReproRejectReason "
+                f"value, got {self.reject_reason!r}"
+            ) from exc
+
+
+def widen_for_next_attempt(prev_reject_reason: ReproRejectReason) -> bool:
+    """Per §8.1 widen logic: deterministic on the prior reject reason.
+    Widening (top-10 → top-30 candidate set) helps when the bug isn't
+    reachable from the narrower set; it doesn't help when the issue
+    is generator quality.
+    """
+    return prev_reject_reason in (
+        ReproRejectReason.PASSES_AT_BASE,
+        ReproRejectReason.IMPORT_ERROR,
+    )
+
+
+def _classify_verify_result(exit_code: int, output: str) -> tuple[ReproRejectReason, str]:
+    """Map a pytest exit + output to a ReproRejectReason.
+
+    pytest exit codes:
+      0 = all tests passed (NOT what we want — bug not reproduced)
+      1 = some tests failed (THIS is success — bug reproduced at base)
+      2 = test execution errored (collection / import / syntax)
+      3-5 = various pytest internals / no tests collected
+
+    Returns (reason, detail_string).
+    """
+    out = output or ""
+    out_lower = out.lower()
+    if exit_code == 1:
+        return ReproRejectReason.ACCEPTED, ""
+    if exit_code == 0:
+        return ReproRejectReason.PASSES_AT_BASE, "test passed at base — does not reproduce bug"
+    if "syntaxerror" in out_lower:
+        return ReproRejectReason.SYNTAX_ERROR, out[:500]
+    if "importerror" in out_lower or "modulenotfounderror" in out_lower:
+        return ReproRejectReason.IMPORT_ERROR, out[:500]
+    if exit_code == 124 or "timed out" in out_lower or "timeout" in out_lower:
+        return ReproRejectReason.TIMEOUT, out[:500]
+    return ReproRejectReason.OTHER, out[:500]
+
+
+def _verify_repro_at_base(sandbox, case: ReproTestCase, *, timeout_s: float = 60.0) -> tuple[ReproRejectReason, str, str, float]:
+    """Run the generated test inside the sandbox at base_commit.
+    Returns (reject_reason, detail, base_commit_fail_status,
+    duration_s).
+
+    base_commit_fail_status is the §3.4 short-form label
+    ('fails-at-base' / 'passes-at-base' / 'errors').
+    """
+    test_dir = sandbox.view.test_directives.dirs[0].rstrip("/")
+    test_path = f"{test_dir}/{case.test_filename.lstrip('/')}"
+
+    t_start = time.perf_counter()
+
+    write_res = sandbox.write_file(test_path, case.test_code)
+    if write_res.exit_code != 0:
+        elapsed = time.perf_counter() - t_start
+        return (
+            ReproRejectReason.OTHER,
+            f"write_failed: {(write_res.stderr or '')[:200]}",
+            "errors",
+            elapsed,
+        )
+
+    run_res = sandbox.run_repro_test(
+        test_id=case.target_test_id,
+        test_code=case.test_code,
+        timeout_s=timeout_s,
+    )
+    elapsed = time.perf_counter() - t_start
+
+    output = (run_res.stdout or "") + "\n" + (run_res.stderr or "")
+    reason, detail = _classify_verify_result(run_res.exit_code, output)
+
+    if reason is ReproRejectReason.ACCEPTED:
+        base_label = "fails-at-base"
+    elif reason is ReproRejectReason.PASSES_AT_BASE:
+        base_label = "passes-at-base"
+    else:
+        base_label = "errors"
+
+    return reason, detail, base_label, elapsed
+
+
+def _trace_path_for(run_dir: str | pathlib.Path, instance_id: str) -> pathlib.Path:
+    return pathlib.Path(run_dir) / "repro_trace" / f"{instance_id}.jsonl"
+
+
+def write_trace_row(
+    run_dir: str | pathlib.Path,
+    instance_id: str,
+    row: ReproAttemptTraceRow,
+) -> pathlib.Path:
+    """Append one JSONL row to runs/<run-name>/repro_trace/<instance_id>.jsonl.
+
+    Cross-contamination defense: row.instance_id MUST match the run's
+    instance_id passed in. Mismatch raises ValueError.
+    """
+    if row.instance_id != instance_id:
+        raise ValueError(
+            f"trace-row instance_id={row.instance_id!r} doesn't match "
+            f"run instance_id={instance_id!r}. Cross-instance "
+            f"contamination defense per V10_DESIGN_PHASE2.md §3.4."
+        )
+    p = _trace_path_for(run_dir, instance_id)
+    p.parent.mkdir(parents=True, exist_ok=True)
+    with p.open("a") as f:
+        f.write(json.dumps(dataclasses.asdict(row)) + "\n")
+    return p
+
+
+# ---------------------------------------------------------------------------
+# Retry-loop orchestrator
+# ---------------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class GenerateWithRetryResult:
+    """Outcome of generate_with_retry."""
+
+    status: str                          # ReproStatus value
+    case: ReproTestCase | None           # set iff status==USABLE
+    attempts_made: int                   # 1..N (rows in the JSONL trace)
+    total_cost_usd: float
+    final_reject_reason: ReproRejectReason | None  # last reason seen
+
+
+def _price_for(model: str) -> dict:
+    from harness.llm.clients import price_for_model
+    return price_for_model(model)
+
+
+def _cost_for_chat(model: str, input_tokens: int, output_tokens: int) -> float:
+    p = _price_for(model)
+    return (input_tokens * p["input"] + output_tokens * p["output"]) / 1_000_000.0
+
+
+def generate_with_retry(
+    *,
+    view: InstanceView,
+    ranked_files: list[RankedFile],
+    sandbox,
+    run_dir: str | pathlib.Path,
+    n_attempts: int = 3,
+    cost_cap_usd: float = 0.30,
+    verify_timeout_s: float = 60.0,
+) -> GenerateWithRetryResult:
+    """Generate a repro test with up to ``n_attempts`` retries.
+
+    Per V10_DESIGN_PHASE2.md §3.4 (verification + retry), §8.2 (N=3
+    + instrumentation), §8.5 (broken-repro acceptance), §8.6 (cost
+    cap = $0.30 / instance).
+
+    Cost-cap semantics (per the 17b spec):
+      - Checked BETWEEN attempts only, never mid-API-call.
+      - If an in-flight attempt would push spend over cap, let it
+        complete and check before the next attempt. The API call is
+        already paid for; killing wastes it and corrupts the trace.
+      - When the cap fires, returns status=ReproStatus.NO_REPRO_BUDGET
+        with the actual attempt count and total spend.
+
+    JSONL trace per attempt actually made lands at
+    ``runs/<run-name>/repro_trace/<instance_id>.jsonl``. Even
+    budget-stopped runs produce trace rows for attempts that DID
+    complete.
+    """
+    from harness.cost import CostTracker
+
+    tracker = CostTracker(instance_id=view.instance_id, cap_usd=cost_cap_usd)
+
+    last_reject: ReproRejectReason | None = None
+    last_case: ReproTestCase | None = None
+
+    for attempt_idx in range(n_attempts):
+        # Cost cap check — between attempts only.
+        if tracker.hard_cap_reached:
+            log.info(
+                "[repro-retry] instance=%s budget cap reached after "
+                "%d attempts (spent $%.4f); emitting NO_REPRO_BUDGET",
+                view.instance_id, attempt_idx, tracker.total_usd,
+            )
+            return GenerateWithRetryResult(
+                status=ReproStatus.NO_REPRO_BUDGET,
+                case=None,
+                attempts_made=attempt_idx,
+                total_cost_usd=tracker.total_usd,
+                final_reject_reason=last_reject,
+            )
+
+        widen = (attempt_idx > 0) and (
+            last_reject is not None and widen_for_next_attempt(last_reject)
+        )
+
+        # Attempt: generate + verify. We let the attempt complete
+        # even if it pushes over the cap (cost is already paid).
+        attempt_t_start = time.perf_counter()
+        try:
+            case = generate_repro_attempt(
+                view=view,
+                ranked_files=ranked_files,
+                sandbox=sandbox,
+                attempt_index=attempt_idx,
+                widen=widen,
+            )
+        except ReproGeneratorError as exc:
+            elapsed = time.perf_counter() - attempt_t_start
+            # Generation itself failed — usually firewall or unparseable
+            # JSON. Record it and decide whether to retry.
+            msg = str(exc)
+            if "input-firewall" in msg:
+                reason = ReproRejectReason.FIREWALL_VIOLATION
+            elif "missing keys" in msg or "non-empty" in msg or "not valid JSON" in msg:
+                reason = ReproRejectReason.OUTPUT_TOKEN_OVERFLOW
+            else:
+                reason = ReproRejectReason.OTHER
+            row = ReproAttemptTraceRow(
+                instance_id=view.instance_id,
+                attempt_index=attempt_idx,
+                time_to_result_s=elapsed,
+                base_commit_fail_status="errors",
+                post_patch_pass_status=V0_POST_PATCH_PASS_STATUS,
+                generator_stated_reason="(generation failed before output)",
+                reject_reason=reason.value,
+                reject_reason_detail=msg[:500],
+                input_tokens=0,
+                output_tokens=0,
+                cost_usd=0.0,
+                widen_flag=widen,
+            )
+            write_trace_row(run_dir, view.instance_id, row)
+            last_reject = reason
+            # Firewall violation is fatal for this instance — won't fix
+            # itself by retrying. Bail.
+            if reason is ReproRejectReason.FIREWALL_VIOLATION:
+                return GenerateWithRetryResult(
+                    status=ReproStatus.NO_REPRO,
+                    case=None,
+                    attempts_made=attempt_idx + 1,
+                    total_cost_usd=tracker.total_usd,
+                    final_reject_reason=last_reject,
+                )
+            continue
+
+        # Track LLM cost for this attempt.
+        cost_usd = _cost_for_chat(
+            case.generator_model,
+            case.generator_input_tokens,
+            case.generator_output_tokens,
+        )
+        tracker.record(
+            stage="repro_gen",
+            model=case.generator_model,
+            input_tokens=case.generator_input_tokens,
+            output_tokens=case.generator_output_tokens,
+        )
+
+        # Verify must-fail-at-base.
+        verify_reason, detail, base_label, verify_elapsed = _verify_repro_at_base(
+            sandbox, case, timeout_s=verify_timeout_s,
+        )
+        elapsed = time.perf_counter() - attempt_t_start
+
+        row = ReproAttemptTraceRow(
+            instance_id=view.instance_id,
+            attempt_index=attempt_idx,
+            time_to_result_s=elapsed,
+            base_commit_fail_status=base_label,
+            post_patch_pass_status=V0_POST_PATCH_PASS_STATUS,
+            generator_stated_reason=case.rationale,
+            reject_reason=verify_reason.value,
+            reject_reason_detail=detail,
+            input_tokens=case.generator_input_tokens,
+            output_tokens=case.generator_output_tokens,
+            cost_usd=cost_usd,
+            widen_flag=widen,
+        )
+        write_trace_row(run_dir, view.instance_id, row)
+
+        if verify_reason is ReproRejectReason.ACCEPTED:
+            return GenerateWithRetryResult(
+                status=ReproStatus.USABLE,
+                case=case,
+                attempts_made=attempt_idx + 1,
+                total_cost_usd=tracker.total_usd,
+                final_reject_reason=verify_reason,
+            )
+
+        last_reject = verify_reason
+        last_case = case
+
+    # Exhausted N attempts without acceptance.
+    return GenerateWithRetryResult(
+        status=ReproStatus.NO_REPRO,
+        case=None,
+        attempts_made=n_attempts,
+        total_cost_usd=tracker.total_usd,
+        final_reject_reason=last_reject,
+    )
+
+
 __all__ = [
     "ReproTestCase",
     "ReproStatus",
     "ReproGeneratorError",
+    "ReproRejectReason",
+    "ReproAttemptTraceRow",
+    "GenerateWithRetryResult",
+    "V0_POST_PATCH_PASS_STATUS",
     "check_output_substring_hits",
     "generate_repro_attempt",
+    "generate_with_retry",
+    "widen_for_next_attempt",
+    "write_trace_row",
 ]
