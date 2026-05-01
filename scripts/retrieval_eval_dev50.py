@@ -127,6 +127,7 @@ class _WorkerArgs:
     use_rerank: bool = False
     retrieval_signature: str | None = None  # checkpoint key for retrieval-only data
     checkpoint_dir: str | None = None  # absolute path; overrides module global for multi-worker spawn
+    reranker_model: str | None = None  # override harness/config/models.yaml role=reranker
 
 
 @dataclass
@@ -248,7 +249,7 @@ def _run_rerank_from_cached_retrieval(
         ]
 
         rerank_input = RerankerInput(view=view, candidates=tuple(cands), top_k=10)
-        rerank_result = rerank(rerank_input)
+        rerank_result = rerank(rerank_input, model_override=args.reranker_model)
     except (RerankerError, Exception) as exc:
         # Don't lose the retrieval data on rerank failure.
         return _WorkerResult(
@@ -427,15 +428,36 @@ def main() -> int:
                          "Tested up to 12 (V7-style); the optimal N for "
                          "test_500 is set by commit 11e tuning.")
     ap.add_argument("--signature-suffix", type=str, default="",
-                    help="Append a suffix to the checkpoint signature, "
-                         "forcing a fresh run that does not reuse existing "
-                         "checkpoints. Used by the 11d parallel verification "
-                         "to keep its results separate from the serial "
-                         "baseline checkpoints (e.g. '_w4').")
+                    help="Append a suffix to the RERANK checkpoint signature, "
+                         "forcing a fresh rerank pass while reusing cached "
+                         "retrieval results (cheap, only LLM cost). Used by "
+                         "the 12a rerank-variance measurement (e.g. "
+                         "'_det_run2'). Does NOT suffix the retrieval "
+                         "signature, so Tier-2 cache still hits.")
+    ap.add_argument("--retrieval-signature-suffix", type=str, default="",
+                    help="Append a suffix to the RETRIEVAL checkpoint "
+                         "signature too, forcing fresh retrieval. Used by "
+                         "the 11d parallel verification (e.g. '_w4') to "
+                         "verify upstream-signal correctness. Most callers "
+                         "should leave this empty.")
     ap.add_argument("--rerank", action="store_true",
                     help="run Stage 1g LLM rerank after retrieval; uses "
                          "harness/config/models.yaml role=reranker (default "
                          "deepseek-chat). Reuses retrieval-only checkpoints.")
+    ap.add_argument("--reranker-model", type=str, default=None,
+                    help="override the reranker model name (default reads "
+                         "harness/config/models.yaml role=reranker). "
+                         "Examples: 'claude-sonnet-4-5', 'deepseek-chat'. "
+                         "Used by 12b ablation; the chosen model must "
+                         "have a price entry in harness.llm.clients for "
+                         "cost reporting.")
+    ap.add_argument("--audit-suffix", type=str, default="",
+                    help="append a suffix to the audit doc filename "
+                         "(default: write to docs/audits/<split>_retrieval_eval.md). "
+                         "Example: --audit-suffix _sonnet writes to "
+                         "docs/audits/<split>_retrieval_eval_sonnet.md "
+                         "so multiple model runs don't overwrite the "
+                         "canonical audit.")
     ap.add_argument("--split", type=str, default=str(DEV_50),
                     help="path to a split JSON (default: splits/dev_50.json). "
                          "Output audit path and checkpoint dir are derived "
@@ -449,6 +471,8 @@ def main() -> int:
     if not split_path.is_absolute():
         split_path = PROJECT_ROOT / split_path
     _split_path, audit_out, checkpoint_dir = _paths_for_split(split_path)
+    if args.audit_suffix:
+        audit_out = audit_out.with_name(audit_out.stem + args.audit_suffix + audit_out.suffix)
     # Re-bind module globals so checkpoint helpers + report writer use
     # the split-specific paths. Worker subprocesses spawn fresh and
     # re-import this module; their _paths_for_split is recomputed
@@ -489,8 +513,10 @@ def main() -> int:
     ]
     retrieval_signature = "_".join(sig_base)
     signature = retrieval_signature + ("_rerank" if use_rerank else "")
+    if args.retrieval_signature_suffix:
+        retrieval_signature = retrieval_signature + args.retrieval_signature_suffix
+        signature = signature + args.retrieval_signature_suffix
     if args.signature_suffix:
-        retrieval_signature = retrieval_signature + args.signature_suffix
         signature = signature + args.signature_suffix
     print(f"[retr-eval] checkpoint signature: {signature}")
     if use_rerank and retrieval_signature != signature:
@@ -510,6 +536,7 @@ def main() -> int:
             use_rerank=use_rerank,
             retrieval_signature=retrieval_signature if use_rerank else None,
             checkpoint_dir=str(checkpoint_dir),
+            reranker_model=args.reranker_model,
         )
         for e in instances
     ]
