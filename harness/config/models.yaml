@@ -5,26 +5,46 @@
 #
 # Env-driven overrides: each role honors a $V10_<ROLE>_MODEL env var.
 # Example: V10_RERANKER_MODEL=claude-sonnet-4-5 ./scripts/run_eval.py
+#
+# Role-naming convention (commit 16a audit): one role per logical
+# function. Legacy short names (repro_gen, patch_gen_pipeline, etc.)
+# were renamed to the longer form to make their purpose unambiguous
+# in code and config diffs. Phase 2/3/5 stub roles are pre-committed
+# here so future implementations can't accidentally hardcode a model;
+# they have to use the role label.
 
 roles:
   # Phase 1 stage 1g — LLM rerank of aggregated candidates.
-  # Default: deepseek-chat (cheap; ~$0.05 per dev-50 instance at typical
-  # 30-candidate prompts). Anthropic Sonnet/Opus available for ablation.
+  # Default: deepseek-chat (cheap; ~$0.0024 per dev_100 instance,
+  # observed across two reruns; Anthropic Sonnet/Opus available
+  # for ablation via V10_RERANKER_MODEL env override).
   reranker: deepseek-chat
 
-  # Phase 2 — reproduction-test generator (writes pytest from issue text).
-  # Phase 0 placeholder; not used yet.
-  repro_gen: deepseek-chat
+  # Phase 2 (commit 7b/7c, design at docs/V10_DESIGN_PHASE2.md):
+  # repro_generator writes the failing pytest from the issue text;
+  # repro_verifier is the optional second-pass check (re-prompt
+  # path on attempts 1+ within the N=3 retry loop, per §3.4).
+  repro_generator: deepseek-chat
+  repro_verifier:  deepseek-chat
 
-  # Phase 3 pipeline path (one-shot patch generation).
-  patch_gen_pipeline: deepseek-chat
+  # Phase 3 (V10_DESIGN.md §3.4):
+  # patch_generator_pipeline = single-shot patch generation;
+  # patch_generator_agent    = agentic patch generation with tool use;
+  # patch_minimizer          = Phase 6 reduction (single-fix pruner).
+  # All default to deepseek-chat as the cheap baseline. The design
+  # intent is to swap patch_generator_agent to claude-opus-4-7 once
+  # Phase 3 lands and the agent path is proved. Until then, deepseek
+  # everywhere keeps the routing layer honest.
+  patch_generator_pipeline: deepseek-chat
+  patch_generator_agent:    deepseek-chat
+  patch_minimizer:          deepseek-chat
 
-  # Phase 3 agent path (multi-turn ACI on hard instances).
-  # Default Opus per V10_DESIGN.md §3.4.
-  patch_gen_agent: claude-opus-4-7
-
-  # Phase 5 reviewer escalation (when 3 selectors disagree).
-  reviewer_escalation: claude-opus-4-7
+  # Phase 5 (V10_DESIGN.md §3.6):
+  # selection_reviewer            = chooses among K candidate patches;
+  # selection_escalation_reviewer = Opus-tier when the primary reviewer
+  #                                 is uncertain.
+  selection_reviewer:            deepseek-chat
+  selection_escalation_reviewer: claude-opus-4-7
 
 # Provider routing — clients.py reads model name to dispatch.
 # Anything starting with 'claude' goes to anthropic; 'deepseek' goes
