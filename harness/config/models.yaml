@@ -43,8 +43,11 @@ roles:
   # selection_reviewer            = chooses among K candidate patches;
   # selection_escalation_reviewer = Opus-tier when the primary reviewer
   #                                 is uncertain.
+  # Per docs/MODEL_SWAP_PLAN.md (commit 16b): dev-time defaults are
+  # locked to deepseek-chat across all roles. The leaderboard
+  # mixed-model config swaps these via env vars at run-time, NOT here.
   selection_reviewer:            deepseek-chat
-  selection_escalation_reviewer: claude-opus-4-7
+  selection_escalation_reviewer: deepseek-chat
 
 # Provider routing — clients.py reads model name to dispatch.
 # Anything starting with 'claude' goes to anthropic; 'deepseek' goes

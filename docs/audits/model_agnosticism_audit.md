@@ -95,7 +95,7 @@ After this commit, `harness/config/models.yaml` defines:
 | `patch_generator_agent` | `deepseek-chat` | 3 (stub; design intent: swap to opus when Phase 3 lands) |
 | `patch_minimizer` | `deepseek-chat` | 3 (stub) |
 | `selection_reviewer` | `deepseek-chat` | 5 (stub) |
-| `selection_escalation_reviewer` | `claude-opus-4-7` | 5 (stub) |
+| `selection_escalation_reviewer` | `deepseek-chat` | 5 (stub; was `claude-opus-4-7`, locked to DeepSeek in commit 16b per `docs/MODEL_SWAP_PLAN.md`) |
 
 Every role used by `complete_chat` callers in V10 is mapped. Every
 mapped model has a price entry under `prices:`. **No unmapped
