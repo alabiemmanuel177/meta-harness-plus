@@ -23,8 +23,12 @@ Hardware: AMD Radeon AI PRO R9700 (gfx1201, 32 GB VRAM) + ROCm 6.4
 multi-process GPU-Hang verdict on this AMD card).
 
 Embedding model: BAAI/bge-large-en-v1.5 (batch 256). Reranker:
-DeepSeek-chat (per-strategy-rank features visible in the prompt;
-~$0.05/instance).
+DeepSeek-chat at temperature 0 (per-strategy-rank features visible
+in the prompt). Per-instance cost calibrated from actual checkpoint
+totals: **$0.0024/inst** (the earlier ~$0.05/inst estimate was the
+ceiling; observed cost is much lower because the rerank prompt is
+~3-5K input / ~200 output tokens, well below the conservative
+estimate).
 
 **Match-strictness audit (commit 8b, `docs/audits/gold_match_strictness_dev_100.md`):**
 all 98 top-10 hits and all 97 top-5 hits are exact-or-normalized matches under
@@ -33,15 +37,29 @@ lenient-classifier hits are strict; the 2 non-strict are basename matches that
 the production matcher correctly rejects, so the published 84% top-1 is the
 *strict* number, not inflated by lenient matching.
 
-**Reproducibility footnote (commit 11d, `docs/audits/parallel_dev100_negative.md`):**
-upstream retrieval signals (BM25, embedding, aggregation) are bit-deterministic
-across reruns — verified by re-running 15 instances under a fresh thread-parallel
-path and comparing checkpoints (15/15 match on every upstream layer). The Stage
-1g reranker is DeepSeek-chat at temperature 0, which has well-known API-level
-non-determinism (server-side load balancing across replicas). 6/15 instances
-showed a different rerank top-10 ordering than the original serial run despite
-identical inputs. The 84% / 97% / 98% dev_100 numbers therefore carry an
-implicit ±1-2pp band from rerank API variance; the upstream is rock-solid.
+**Reproducibility (commit 12a, `docs/audits/rerank_variance_dev100.md`):**
+two independent dev_100 runs of the same DeepSeek-chat reranker at
+temperature 0 produce **bit-identical headline numbers** (84/97/98 top-1/5/10)
+with **zero hit/miss flips** at any K across 100 instances. The reranker DOES
+produce different top-10 orderings between runs (~40% of instances; first
+documented in commit 11d), but the reordering is purely WITHIN the top-K window
+and never crosses the K boundary on this dev split. The published 84/97/98 is
+reproducible to **±0pp** under DeepSeek; the earlier 11d footnote that the
+numbers carry "implicit ±1-2pp" was overstated and is superseded.
+
+**Reranker model substitution (commit 12b,
+`docs/audits/dev_100_retrieval_eval_sonnet.md`):**
+swapping DeepSeek-chat for Sonnet-4.5 (two runs each, temperature 0) lifts
+top-1 from 84% to **86-87%** (+2 to +3pp), top-5 from 97% to 98% (+1pp),
+ties top-10 at 98%. The lift is robust: the same six instances flip from
+DeepSeek-miss to Sonnet-hit at top-1 across both DeepSeek runs and both
+Sonnet runs. Sonnet has slight self-variance (±1pp top-1); DeepSeek has none.
+Sonnet costs 16-17× more per instance ($0.04 vs $0.0024). For test_500 we
+ship DeepSeek-chat as the published headline because the +2-3pp top-1 lift
+may not propagate to Phase 3 pipeline pass rate (Phase 3 hasn't been built
+yet) and DeepSeek's bit-stable result is more reproducible. The Sonnet
+ablation runs as a separate row alongside the headline. Decision rationale
+in `docs/audits/test500_reranker_decision.md` (commit 13a).
 
 ### Per-strategy ablation on dev_100
 

@@ -1,10 +1,12 @@
 # Phase 1 — Hierarchical localization
 
-> **Status: drafty.** This is the working draft of the Phase 1 paper
-> section, written immediately after the dev_100 acceptance run. Tone
-> is forensic; numbers cite their producing commit SHA and the audit
-> file under `docs/audits/`. Final-form prose comes after test_500.
-> Open TODOs are flagged inline with `[TODO]`.
+> **Status: drafty, but TODO-free.** This is the working draft of the
+> Phase 1 paper section. Tone is forensic; numbers cite their
+> producing commit SHA and the audit file under `docs/audits/`.
+> Final-form prose comes after test_500. The 8d-era `[TODO]` on
+> reranker ablation is resolved by commits 12a/12b (DeepSeek
+> reproducibility + Sonnet swap); see "Reproducibility of the rerank
+> step" and "Reranker model substitution" sections below.
 
 ## Setup
 
@@ -167,12 +169,53 @@ and 97 top-5 hits are exact-or-normalized; 84/86 top-1 (97.7 %) are
 strict, with 2 basename-only matches that the production matcher
 correctly *rejects*. The 84 % top-1 number is the strict count.
 
-[TODO] re-run dev_50 and dev_100 with the reranker swapped to
-`claude-sonnet-4-6` and `claude-opus-4-6` to quantify the
-model-substitution delta before test_500. The pipeline is
-model-agnostic at the Stage 1g call site (`harness.rerank.rerank`,
-single `complete_chat` call); this is a configuration change in
-`harness/config/models.yaml`, not a code change.
+### Reproducibility of the rerank step (commit `1773616`)
+
+Two independent dev_100 runs of the same DeepSeek-chat reranker at
+temperature 0 produce **bit-identical headline numbers** (84/97/98
+top-1/5/10) with **zero hit/miss flips** on any of K = 1, 5, 10. The
+reranker DOES produce different top-10 orderings between runs (~40 %
+of instances; documented in `docs/audits/parallel_dev100_negative.md`,
+commit `6947131`), but the reordering stays inside the top-K window
+without crossing the K boundary. The dev_100 headline is reproducible
+to ±0pp under DeepSeek; we report it as a single number, not a band.
+Audit: `docs/audits/rerank_variance_dev100.md`.
+
+### Reranker model substitution (commit `17efb38`)
+
+We ablated the Stage 1g reranker by swapping DeepSeek-chat for
+Sonnet-4.5 (two runs each, temperature 0, otherwise identical
+configuration):
+
+| Reranker | Run 1 (top-1/5/10) | Run 2 (top-1/5/10) | $/inst |
+|---|---|---|---|
+| `deepseek-chat` (default) | 84 / 97 / 98 | 84 / 97 / 98 | $0.0024 |
+| `claude-sonnet-4-5` | 86 / 98 / 98 | 87 / 98 / 98 | $0.0400 |
+
+Sonnet beats DeepSeek by **+2 to +3pp top-1, +1pp top-5, ties at
+top-10**. The lift is robust: the same six instances flip from
+DeepSeek-miss to Sonnet-hit at top-1 across both DeepSeek runs and
+both Sonnet runs (`astropy__astropy-13236`,
+`astropy__astropy-14369`, `django__django-11728`,
+`pydata__xarray-4094`, `pytest-dev__pytest-5787`,
+`sphinx-doc__sphinx-11445`). Sonnet has slight self-variance
+(±1pp top-1 across two runs); DeepSeek has none.
+
+Sonnet costs 16-17× more per instance ($0.04 vs $0.0024). For the
+test_500 headline run we ship DeepSeek-chat (commit `a81c103`,
+`docs/audits/test500_reranker_decision.md`); Sonnet runs as a
+separate ablation row. Reasoning: (1) Phase 1 top-1 may not equal
+Phase 3 pipeline pass rate — the +2-3pp lift on retrieval top-1 is
+not yet known to propagate downstream; (2) DeepSeek's bit-stable
+headline is more reproducible than Sonnet's ±1pp wobble for a
+published number; (3) reporting both runs preserves the evidence
+without committing to the more expensive model based on incomplete
+downstream signal.
+
+We did **not** ablate Opus-4.7. Top-10 is saturated at 98% in every
+configuration; Opus would lift top-1 but is 5× Sonnet's cost (~$100
+on test_500). Opus is reserved for the patch-gen agent path
+(Phase 3) where it actually affects the headline pass rate.
 
 ## Per-repo breakdown (dev_100)
 
@@ -240,8 +283,10 @@ favor it at our current scale.
 ### What we *don't* claim
 
 - We do **not** claim Stage 1g would lift top-1 by +50pp with a
-  weaker reranker. The DeepSeek-chat result is the only one we've
-  measured; Opus / Sonnet ablations are listed as `[TODO]` above.
+  weaker reranker. We measured DeepSeek-chat (84% top-1, +50pp over
+  the best individual upstream strategy) and Sonnet-4.5 (86-87%
+  top-1) at temperature 0 — both produce the +50pp-class lift.
+  Cheaper models (Haiku, GPT-4o-mini class) were not ablated.
 - We do **not** claim 1d / 1e / 1f are useless. They are unhelpful
   *given our current retrieval base*. If test_500 reveals a
   different miss profile (gold file in NO upstream strategy), Stage
@@ -266,10 +311,35 @@ this repo:
   let any reviewer re-score offline without re-running retrieval.
 - Audits in `docs/audits/`:
   - `dev_100_retrieval_eval.md` — the headline numbers.
-  - `gold_match_strictness_dev_100.md` — match-type audit.
+  - `gold_match_strictness_dev_100.md` — match-type audit (98 / 97
+    of the top-10 / top-5 hits are exact-or-normalized; 84/86 of the
+    audit-classifier's top-1 hits are strict — production reports
+    the strict count).
+  - `rerank_variance_dev100.md` — pairwise top-K flip analysis
+    across 4 rerank runs (2 DeepSeek + 2 Sonnet). DeepSeek is
+    bit-stable (0 flips); Sonnet has ±1pp self-variance.
   - `phase1_stages_1d_1e_1f_decision.md` — the skip rationale.
   - `test500_preflight.md` — wall-clock and cost projection for
-    the headline run.
+    the test_500 two-run plan.
+  - `test500_reranker_decision.md` — DeepSeek-as-headline rationale.
+  - `test500_launch_readiness.md` — pre-launch gate verification.
+
+### Variance methodology
+
+We report dev_100 numbers from a SINGLE DeepSeek run. The
+single-run report is justified by the variance audit
+(`docs/audits/rerank_variance_dev100.md`): two independent DeepSeek
+runs at temperature 0 produce zero hit/miss flips on top-1, top-5,
+or top-10 across 100 instances. Ordering noise within the top-K
+window does not cross the K boundary, so ±0pp at all reported K.
+Sonnet, when ablated, shows ±1pp self-variance on top-1 — small
+enough to footnote, not large enough to drive multi-run reporting.
+
+For test_500 we will run BOTH DeepSeek (headline) and Sonnet
+(ablation) once each. The DeepSeek number is the published
+acceptance result; the Sonnet row sits beside it in the paper as
+the upper-bound model-substitution data point. Per
+`docs/audits/test500_reranker_decision.md`.
 
 The `v10-phase-1-complete` git tag (annotated, on commit
 `652b26f`) is the canonical Phase 1 freeze point.
