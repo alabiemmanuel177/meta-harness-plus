@@ -426,6 +426,12 @@ def main() -> int:
                          "so the GPU only ever sees one in-flight call. "
                          "Tested up to 12 (V7-style); the optimal N for "
                          "test_500 is set by commit 11e tuning.")
+    ap.add_argument("--signature-suffix", type=str, default="",
+                    help="Append a suffix to the checkpoint signature, "
+                         "forcing a fresh run that does not reuse existing "
+                         "checkpoints. Used by the 11d parallel verification "
+                         "to keep its results separate from the serial "
+                         "baseline checkpoints (e.g. '_w4').")
     ap.add_argument("--rerank", action="store_true",
                     help="run Stage 1g LLM rerank after retrieval; uses "
                          "harness/config/models.yaml role=reranker (default "
@@ -483,6 +489,9 @@ def main() -> int:
     ]
     retrieval_signature = "_".join(sig_base)
     signature = retrieval_signature + ("_rerank" if use_rerank else "")
+    if args.signature_suffix:
+        retrieval_signature = retrieval_signature + args.signature_suffix
+        signature = signature + args.signature_suffix
     print(f"[retr-eval] checkpoint signature: {signature}")
     if use_rerank and retrieval_signature != signature:
         print(f"[retr-eval] retrieval-only signature (for cache reuse): "
@@ -554,13 +563,14 @@ def main() -> int:
                 res = fut.result()
                 if res.error:
                     failed.append((res.instance_id, res.error))
-                    print(f"[retr-eval] [{done}/{len(work)}] {res.instance_id} FAIL: {res.error}")
+                    print(f"[retr-eval] [{done}/{len(work)}] {res.instance_id} FAIL: {res.error}", flush=True)
                     continue
                 retrieved_per_instance[res.instance_id] = res.retrieved
                 per_strategy_retrieved[res.instance_id] = res.per_strategy
                 n_files_indexed_per_instance[res.instance_id] = res.n_files_indexed
                 print(f"[retr-eval] [{done}/{len(work)}] {res.instance_id} "
-                      f"OK n_files={res.n_files_indexed} candidates={len(res.retrieved)}")
+                      f"OK n_files={res.n_files_indexed} candidates={len(res.retrieved)}",
+                      flush=True)
 
     dur = time.perf_counter() - t0
     print(f"[retr-eval] retrieval done in {dur:.1f}s — "

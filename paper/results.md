@@ -33,6 +33,16 @@ lenient-classifier hits are strict; the 2 non-strict are basename matches that
 the production matcher correctly rejects, so the published 84% top-1 is the
 *strict* number, not inflated by lenient matching.
 
+**Reproducibility footnote (commit 11d, `docs/audits/parallel_dev100_negative.md`):**
+upstream retrieval signals (BM25, embedding, aggregation) are bit-deterministic
+across reruns — verified by re-running 15 instances under a fresh thread-parallel
+path and comparing checkpoints (15/15 match on every upstream layer). The Stage
+1g reranker is DeepSeek-chat at temperature 0, which has well-known API-level
+non-determinism (server-side load balancing across replicas). 6/15 instances
+showed a different rerank top-10 ordering than the original serial run despite
+identical inputs. The 84% / 97% / 98% dev_100 numbers therefore carry an
+implicit ±1-2pp band from rerank API variance; the upstream is rock-solid.
+
 ### Per-strategy ablation on dev_100
 
 | Strategy | Top-1 | Top-5 | Top-10 |
