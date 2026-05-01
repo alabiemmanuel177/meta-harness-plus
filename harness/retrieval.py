@@ -205,6 +205,7 @@ def run_stage_1b_retrieval(
     view: InstanceView,
     sandbox,
     *,
+    embedding_service=None,
     embedder=None,
     bm25_top_k: int = BM25_TOP_K_PER_QUERY,
     embedding_top_k: int = EMBEDDING_TOP_K,
@@ -215,13 +216,33 @@ def run_stage_1b_retrieval(
     rerank_top_k: int = 5,
     trajectory_writer=None,
 ) -> RetrievalResult:
-    """Run BM25 across all 3 query strategies + embedding (if embedder
-    provided) and aggregate candidates with per-signal attribution.
+    """Run BM25 across all 3 query strategies + embedding (if a service
+    or embedder is provided) and aggregate candidates with per-signal
+    attribution.
 
     Returns a ``RetrievalResult`` carrying the typed signal lists. If
     ``trajectory_writer`` is given, signals are also written to the
     trajectory log via ``write_signal``.
+
+    Embedding plumbing (commit 11b):
+      - ``embedding_service``: a ``GPUEmbeddingService`` shared across
+        worker threads in the parallel orchestrator. The preferred
+        argument going forward.
+      - ``embedder``: a raw ``LocalEmbedder``. Backward-compat path —
+        if set without ``embedding_service``, gets wrapped in a service
+        internally so the embedding call site is uniform.
+
+    Passing both raises ``TypeError`` (callers should pick one).
     """
+    if embedding_service is not None and embedder is not None:
+        raise TypeError(
+            "run_stage_1b_retrieval: pass embedding_service= OR embedder=, "
+            "not both. embedder= is the deprecated single-thread path; "
+            "embedding_service= is the GPU-shared path for ThreadPool workers."
+        )
+    if embedding_service is None and embedder is not None:
+        from harness.embedding import GPUEmbeddingService
+        embedding_service = GPUEmbeddingService(embedder)
     paths, contents = _read_repo_files(sandbox)
     if not paths:
         return RetrievalResult(
@@ -281,7 +302,7 @@ def run_stage_1b_retrieval(
     # true upper bound — if the gold file is at BM25 rank 250, the
     # shortlist hides it from embedding and we'd be measuring BM25.
     embedding_hits: list[EmbeddingHit] = []
-    if embedder is not None:
+    if embedding_service is not None:
         if embedding_use_shortlist:
             # Build the shortlist from union of BM25 top-N across strategies.
             shortlist_paths: list[str] = []
@@ -306,7 +327,7 @@ def run_stage_1b_retrieval(
         if embed_paths:
             from harness.embedding import retrieve_by_embedding
             results = retrieve_by_embedding(
-                embedder,
+                embedding_service,
                 file_paths=embed_paths,
                 file_contents=embed_contents,
                 query=view.problem_statement,
@@ -318,7 +339,7 @@ def run_stage_1b_retrieval(
                     file_path=r.file_path,
                     cosine_similarity=r.cosine_similarity,
                     rank=r.rank,
-                    model=getattr(embedder, "model_name", "unknown"),
+                    model=getattr(embedding_service, "model_name", "unknown"),
                     chunk_basis="whole_file",
                 )
                 embedding_hits.append(sig)
