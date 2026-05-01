@@ -16,6 +16,7 @@ Better to overflag and tune down than miss.
 
 from __future__ import annotations
 
+import logging
 import time
 from contextlib import contextmanager
 from dataclasses import dataclass
@@ -358,6 +359,43 @@ class Sandbox:
         """
         _assert_no_forbidden_token(code, label="run_repro.code")
         return self._exec.run_python(code, timeout_s=timeout_s)
+
+    def run_repro_test(
+        self,
+        *,
+        test_id: str,
+        test_code: str | None = None,
+        timeout_s: float = 60.0,
+    ) -> ExecResult:
+        """Run ONE pytest test by selector. Per V10_DESIGN_PHASE2.md
+        §8.4, the substring scan on test_id + test_code is
+        INFORMATIONAL (logs WARNING-level structured event on match;
+        does NOT block). Real contamination prevention happens at
+        the input layer — the generator's prompt is built from
+        firewall-clean InstanceView fields only, so it cannot embed
+        tokens it never read.
+
+        Args:
+          test_id: pytest selector, e.g.
+            "tests/test_repro_v10_xxx.py::test_<name>". Caller has
+            already written the test file via ``write_file``.
+          test_code: optional source for the output-layer
+            informational scan. When provided, a substring hit logs
+            a WARNING. Pass when you have it; omit for already-on-
+            disk runs.
+          timeout_s: per-test wall clock, default 60 s.
+        """
+        from harness.repro import check_output_substring_hits
+        hits = check_output_substring_hits(test_code or "", test_id)
+        if hits:
+            logging.getLogger("harness.sandbox").warning(
+                "[run_repro_test] instance=%s informational substring "
+                "match on tokens=%s in test_id=%r. Per V10_DESIGN_PHASE2.md "
+                "§8.4 this is logged, NOT blocked; investigate input firewall.",
+                self._view.instance_id, hits, test_id,
+            )
+        cmd = f"cd /testbed && python -m pytest {_q(test_id)} -xvs --no-header"
+        return self._exec.run(cmd, timeout_s=timeout_s)
 
 
 def _q(s: str) -> str:

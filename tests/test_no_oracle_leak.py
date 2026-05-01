@@ -49,6 +49,7 @@ FIREWALL_INFRA_FILES = {
     HARNESS_ROOT / "views.py",      # defines FORBIDDEN_TOKENS
     HARNESS_ROOT / "sandbox.py",    # defines _FORBIDDEN_TOKENS for runtime guard
     HARNESS_ROOT / "eval.py",       # post-submission grader; reads run_evaluation
+    HARNESS_ROOT / "repro.py",      # implements §8.4 input-firewall + output-guard
 }
 # Test files may name forbidden tokens (they're the firewall test).
 TEST_FILES_ALLOWED = {
