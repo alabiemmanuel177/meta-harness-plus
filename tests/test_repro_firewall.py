@@ -65,8 +65,12 @@ def _walk_harness_py() -> list[pathlib.Path]:
 
 
 # Forward-looking allowlist of paths that COULD become Phase 3 modules.
+# Two shapes (per the V10_DESIGN_PHASE3.md §3.5 module layout):
+#   - Flat: harness/<name>.py for legacy compatibility (Phase 4/5 may
+#     land flat).
+#   - Subdir: harness/patch_gen/*.py (the Phase 3 layout).
 # When any of these lands, the test starts enforcing.
-PHASE_3_MODULE_CANDIDATES = (
+PHASE_3_MODULE_BASENAMES = (
     "patch_generator.py",
     "patch_gen.py",
     "patch.py",
@@ -78,9 +82,34 @@ PHASE_3_MODULE_CANDIDATES = (
     "selection.py",         # Phase 5
     "selector.py",
 )
+PHASE_3_PACKAGE_DIRS = (
+    "patch_gen",
+)
+# Backward-compat alias used by older callers.
+PHASE_3_MODULE_CANDIDATES = PHASE_3_MODULE_BASENAMES
 
 
-def _imports_harness_repro(py_path: pathlib.Path) -> bool:
+def _phase3_module_paths() -> list[pathlib.Path]:
+    """Return every existing Phase 3 module path under harness/, both
+    flat (harness/<name>.py) and subdir (harness/patch_gen/*.py)."""
+    found: list[pathlib.Path] = []
+    for name in PHASE_3_MODULE_BASENAMES:
+        p = HARNESS / name
+        if p.exists():
+            found.append(p)
+    for d in PHASE_3_PACKAGE_DIRS:
+        pkg = HARNESS / d
+        if pkg.is_dir():
+            for p in pkg.rglob("*.py"):
+                if "__pycache__" in p.parts:
+                    continue
+                found.append(p)
+    return found
+
+
+def _imports_module(py_path: pathlib.Path, module_name: str) -> bool:
+    """True iff py_path has any import statement that resolves to
+    ``module_name`` or any submodule under ``module_name.*``."""
     try:
         tree = ast.parse(py_path.read_text())
     except SyntaxError:
@@ -88,37 +117,104 @@ def _imports_harness_repro(py_path: pathlib.Path) -> bool:
     for node in ast.walk(tree):
         if isinstance(node, ast.Import):
             for alias in node.names:
-                if alias.name == "harness.repro" or alias.name.startswith("harness.repro."):
+                if alias.name == module_name or alias.name.startswith(module_name + "."):
                     return True
         elif isinstance(node, ast.ImportFrom):
             mod = node.module or ""
-            if mod == "harness.repro" or mod.startswith("harness.repro."):
+            if mod == module_name or mod.startswith(module_name + "."):
                 return True
     return False
 
 
+def _imports_harness_repro(py_path: pathlib.Path) -> bool:
+    return _imports_module(py_path, "harness.repro")
+
+
 def test_no_phase3_module_imports_harness_repro():
-    """Forward-looking gate. Today there are no Phase 3 modules under
-    harness/; the test enumerates the candidate paths and asserts
-    none of them import harness.repro. When Phase 3 lands at any of
-    these paths, the test starts enforcing the contamination rule."""
-    found: list[pathlib.Path] = []
+    """Forward-looking gate (still forward-looking for Phase 4/5; live
+    for the Phase 3 patch_gen package per V10_DESIGN_PHASE3.md §2.1
+    rule 1). Walks every Phase 3 module path under harness/ and asserts
+    none import harness.repro."""
+    found = _phase3_module_paths()
     violators: list[str] = []
-    for name in PHASE_3_MODULE_CANDIDATES:
-        candidate = HARNESS / name
-        if candidate.exists():
-            found.append(candidate)
-            if _imports_harness_repro(candidate):
-                violators.append(str(candidate.relative_to(PROJECT_ROOT)))
+    for p in found:
+        if _imports_harness_repro(p):
+            violators.append(str(p.relative_to(PROJECT_ROOT)))
     print(
-        f"[firewall-test:phase3] scanned {len(PHASE_3_MODULE_CANDIDATES)} "
-        f"candidate paths; found {len(found)} that exist: "
-        f"{[str(p.relative_to(PROJECT_ROOT)) for p in found]}"
+        f"[firewall-test:phase3] scanned {len(found)} Phase 3 module paths: "
+        f"{sorted(str(p.relative_to(PROJECT_ROOT)) for p in found)}"
     )
     assert not violators, (
         "These Phase 3 modules import harness.repro — that's a "
-        "contamination-rule violation per §7:\n  "
+        "contamination-rule violation per V10_DESIGN_PHASE3.md §2.1 rule 1:\n  "
         + "\n  ".join(violators)
+    )
+
+
+def test_no_phase3_module_imports_harness_eval():
+    """Per V10_DESIGN_PHASE3.md §2.1 rule 2: NO module under harness.patch_gen
+    (or future Phase 4/5 modules) imports harness.eval. Eval verdicts
+    are post-submission grader output; selection NEVER reads them."""
+    found = _phase3_module_paths()
+    violators: list[str] = []
+    for p in found:
+        if _imports_module(p, "harness.eval"):
+            violators.append(str(p.relative_to(PROJECT_ROOT)))
+    assert not violators, (
+        "These Phase 3 modules import harness.eval — that's the V8-style "
+        "selection-side leak class per V10_DESIGN.md §2 + V10_DESIGN_PHASE3.md "
+        "§2.1 rule 2:\n  " + "\n  ".join(violators)
+    )
+
+
+def test_no_phase3_module_imports_harness_memory():
+    """Per V10_DESIGN_PHASE3.md §2.1 rule 5: cross-instance memory is
+    OFF in V0. No Phase 3 module imports anything from a hypothetical
+    harness.memory.* submodule (placeholder for Bet #6 future work).
+    The directory may not exist yet — the test is forward-looking."""
+    found = _phase3_module_paths()
+    violators: list[str] = []
+    for p in found:
+        if _imports_module(p, "harness.memory"):
+            violators.append(str(p.relative_to(PROJECT_ROOT)))
+    assert not violators, (
+        "These Phase 3 modules import harness.memory — cross-instance "
+        "memory is forbidden in V0 per V10_DESIGN_PHASE3.md §2.1 rule 5:\n  "
+        + "\n  ".join(violators)
+    )
+
+
+def test_phase3_context_superset_assertion_present():
+    """Per V10_DESIGN_PHASE3.md §2.1 rule 3 + §2.2: every prompt-build
+    path under harness.patch_gen must funnel through
+    ``harness.patch_gen.context.build_patch_gen_context_with_superset_check``.
+
+    AST scan: every harness.patch_gen module that calls
+    ``complete_chat`` (the LLM call surface) must also reference
+    ``build_patch_gen_context_with_superset_check`` somewhere. This
+    catches refactors that silently drop the assertion.
+    """
+    pkg = HARNESS / "patch_gen"
+    if not pkg.is_dir():
+        # Phase 3 hasn't landed yet — test is forward-looking.
+        return
+    violators: list[str] = []
+    for p in pkg.rglob("*.py"):
+        if "__pycache__" in p.parts:
+            continue
+        try:
+            src = p.read_text()
+        except Exception:
+            continue
+        if "complete_chat" not in src:
+            continue
+        if "build_patch_gen_context_with_superset_check" not in src:
+            violators.append(str(p.relative_to(PROJECT_ROOT)))
+    assert not violators, (
+        "These harness.patch_gen modules call complete_chat() but do not "
+        "reference build_patch_gen_context_with_superset_check — they "
+        "may bypass the patch-generator-context-superset assertion per "
+        "V10_DESIGN_PHASE3.md §2.1 rule 3:\n  " + "\n  ".join(violators)
     )
 
 
