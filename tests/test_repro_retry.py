@@ -326,6 +326,85 @@ def test_classify_verify_other_fallthrough():
 
 
 # ---------------------------------------------------------------------------
+# 4b. Path resolution (commit 17d bug fix)
+# ---------------------------------------------------------------------------
+
+
+def test_resolve_test_path_does_not_double_prepend_test_dir():
+    """If model emits a path that already starts with the test_dir,
+    don't prepend it again. Bug observed in 17d smoke run on
+    astropy__astropy-12907 (model emitted 'astropy/modeling/tests/x.py'
+    with test_dir 'astropy/'; verifier produced 'astropy/astropy/...').
+    """
+    from harness.repro import _resolve_test_path
+
+    out = _resolve_test_path("astropy/modeling/tests/test_repro.py", ("astropy/",))
+    assert out == "astropy/modeling/tests/test_repro.py"
+
+
+def test_resolve_test_path_with_explicit_subpath_kept_as_is():
+    """A model-emitted full repo-relative path that doesn't start with
+    the declared test_dir is still trusted (it contains a path
+    separator, so we treat it as already repo-relative)."""
+    from harness.repro import _resolve_test_path
+
+    out = _resolve_test_path("tests/regression/test_repro.py", ("astropy/",))
+    assert out == "tests/regression/test_repro.py"
+
+
+def test_resolve_test_path_bare_basename_prepends_test_dir():
+    """Model emitted just the filename — fall back to the first
+    declared test_dir."""
+    from harness.repro import _resolve_test_path
+
+    out = _resolve_test_path("test_repro.py", ("tests/",))
+    assert out == "tests/test_repro.py"
+
+
+def test_resolve_test_path_strips_leading_slash():
+    from harness.repro import _resolve_test_path
+
+    out = _resolve_test_path("/tests/test_repro.py", ("tests/",))
+    assert out == "tests/test_repro.py"
+
+
+def test_resolve_test_path_handles_test_dir_with_trailing_slash():
+    """test_directives.dirs entries usually end with '/'. Make sure
+    the comparison normalizes both sides."""
+    from harness.repro import _resolve_test_path
+
+    out = _resolve_test_path("tests/sub/test_x.py", ("tests/",))
+    assert out == "tests/sub/test_x.py"
+
+
+def test_normalize_target_test_id_keeps_test_name_uses_resolved_path():
+    """The model's target_test_id may point at the wrong path (e.g.,
+    an existing file the model hallucinated as the destination). The
+    test code was written to ``resolved_test_path`` — pytest must
+    look there. Keep the model's '::test_name' suffix."""
+    from harness.repro import _normalize_target_test_id
+
+    out = _normalize_target_test_id(
+        "astropy/modeling/tests/test_separable.py::test_nested",
+        "astropy/modeling/tests/test_repro_v10_xxx.py",
+    )
+    assert out == "astropy/modeling/tests/test_repro_v10_xxx.py::test_nested"
+
+
+def test_normalize_target_test_id_handles_missing_double_colon():
+    """If the model omitted '::test_name' entirely, fall back to the
+    path alone — pytest will collect every test in the file, which is
+    fine for a single-test file."""
+    from harness.repro import _normalize_target_test_id
+
+    out = _normalize_target_test_id(
+        "tests/test_repro.py",
+        "tests/test_repro.py",
+    )
+    assert out == "tests/test_repro.py"
+
+
+# ---------------------------------------------------------------------------
 # 5. End-to-end retry loop with mocked LLM + sandbox
 # ---------------------------------------------------------------------------
 

@@ -317,6 +317,10 @@ The test must:
     fixtures defined elsewhere, stub them inline.
   - Target the smallest reproducible scenario, not a comprehensive
     test of the affected feature.
+  - Live in a NEW file under one of the repo's test directories.
+    Pick a filename that does not already exist in the repo —
+    typically `<test_dir>/test_repro_v10_<short-slug>.py`. Do not
+    add the test to an existing file.
 
 You will be given:
   - the issue text,
@@ -328,11 +332,16 @@ You will be given:
 Output ONLY a JSON object. No prose, no markdown fences.
 
   {
-    "test_filename": "<test_dir>/test_repro_v10_<short-slug>.py",
+    "test_filename": "<repo-relative path, e.g. astropy/modeling/tests/test_repro_v10_xxx.py>",
     "test_code": "<full pytest source>",
     "target_test_id": "<test_filename>::test_<descriptive_name>",
     "rationale": "<1-2 sentence rationale>"
   }
+
+`test_filename` must be a path RELATIVE to the repo root and must end
+in `.py`. `target_test_id` must be `<test_filename>::test_<name>`
+where `test_<name>` is the name of the single function inside the
+file that reproduces the bug.
 """
 
 
@@ -611,6 +620,55 @@ def _classify_verify_result(exit_code: int, output: str) -> tuple[ReproRejectRea
     return ReproRejectReason.OTHER, out[:500]
 
 
+def _resolve_test_path(test_filename: str, test_dirs: tuple[str, ...]) -> str:
+    """Resolve the model-emitted test_filename to a path relative to
+    /testbed (the container's working directory).
+
+    The model sometimes emits a bare basename ("test_repro.py") and
+    sometimes a full relative path ("astropy/modeling/tests/x.py").
+    We don't want to prepend the test_dir blindly — that produces
+    duplicates like "astropy/astropy/modeling/tests/x.py".
+
+    Resolution rule:
+      - Strip any leading "/" so the result is always relative.
+      - If the path already starts with one of the declared test_dirs
+        (with or without trailing slash), use it as-is.
+      - If the path contains a "/" (any path separator), trust it
+        as a full repo-relative path and use it as-is.
+      - Otherwise (bare basename), prepend the first declared
+        test_dir.
+    """
+    rel = test_filename.lstrip("/")
+    for d in test_dirs:
+        d_norm = d.rstrip("/")
+        if d_norm and (rel == d_norm or rel.startswith(d_norm + "/")):
+            return rel
+    if "/" in rel:
+        return rel
+    if not test_dirs:
+        return rel
+    return f"{test_dirs[0].rstrip('/')}/{rel}"
+
+
+def _normalize_target_test_id(target_test_id: str, resolved_test_path: str) -> str:
+    """Ensure target_test_id's path component matches the actually-
+    written test file. The model occasionally emits a target_test_id
+    pointing at an existing test file (hallucinating that its
+    generated test will be added to that file). The harness wrote
+    the test code to ``resolved_test_path``; pytest must look there.
+
+    Strategy: keep the model's "::test_name" suffix (the generator's
+    chosen test function name lives there), but force the path to
+    ``resolved_test_path``.
+    """
+    if "::" not in target_test_id:
+        # Model omitted "::test_name" — fall back to the path alone.
+        # Pytest will collect every test in the file, which is fine.
+        return resolved_test_path
+    test_name = target_test_id.split("::", 1)[1]
+    return f"{resolved_test_path}::{test_name}"
+
+
 def _verify_repro_at_base(sandbox, case: ReproTestCase, *, timeout_s: float = 60.0) -> tuple[ReproRejectReason, str, str, float]:
     """Run the generated test inside the sandbox at base_commit.
     Returns (reject_reason, detail, base_commit_fail_status,
@@ -619,8 +677,9 @@ def _verify_repro_at_base(sandbox, case: ReproTestCase, *, timeout_s: float = 60
     base_commit_fail_status is the §3.4 short-form label
     ('fails-at-base' / 'passes-at-base' / 'errors').
     """
-    test_dir = sandbox.view.test_directives.dirs[0].rstrip("/")
-    test_path = f"{test_dir}/{case.test_filename.lstrip('/')}"
+    test_dirs = sandbox.view.test_directives.dirs
+    test_path = _resolve_test_path(case.test_filename, test_dirs)
+    test_id = _normalize_target_test_id(case.target_test_id, test_path)
 
     t_start = time.perf_counter()
 
@@ -635,7 +694,7 @@ def _verify_repro_at_base(sandbox, case: ReproTestCase, *, timeout_s: float = 60
         )
 
     run_res = sandbox.run_repro_test(
-        test_id=case.target_test_id,
+        test_id=test_id,
         test_code=case.test_code,
         timeout_s=timeout_s,
     )
