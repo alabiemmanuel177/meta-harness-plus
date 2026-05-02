@@ -80,11 +80,16 @@ def test_runtime_guard_substring_matches_camelcase() -> None:
         _assert_no_forbidden_token("FailToPass", label="test")
 
 
-def test_runtime_guard_blocks_resolved_token() -> None:
-    """V8's leak: 'resolved' as a kwarg or value must trip the guard."""
+def test_runtime_guard_blocks_fail_to_pass_token() -> None:
+    """The classic leak: a kwarg or string value mentioning a SWE-bench
+    dataset field name. The substring guard fires at the sandbox
+    boundary. (Replaces the prior 'resolved'-token test; per commit
+    17c the bare-word 'resolved' was dropped from FORBIDDEN_TOKENS
+    because it's not a real dataset field and over-blocked legitimate
+    English usage.)"""
     with pytest.raises(OracleLeakError):
         _assert_no_forbidden_token(
-            "candidate.resolved == True",
+            "candidate.fail_to_pass == True",
             label="test.selector",
         )
 

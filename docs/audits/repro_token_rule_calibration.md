@@ -5,8 +5,8 @@ Per V10_DESIGN_PHASE2.md §8.4 calibration step: before shipping the input-layer
 ## Scope
 
 - Repos scanned: 12
-- Test functions/methods inspected: 43831
-- FORBIDDEN_TOKENS: ['fail_to_pass', 'pass_to_pass', 'test_patch', 'hints_text', 'hints', 'gold_patch', 'resolved']
+- Test functions/methods inspected: 44122
+- FORBIDDEN_TOKENS: ['fail_to_pass', 'pass_to_pass', 'test_patch', 'hints_text', 'gold_patch']
 
 ## Verdict
 

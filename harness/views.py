@@ -27,10 +27,21 @@ FORBIDDEN_TOKENS: tuple[str, ...] = (
     "pass_to_pass",
     "test_patch",
     "hints_text",
-    "hints",
     "gold_patch",
-    "resolved",
 )
+# Per V10_DESIGN_PHASE2.md §8.4 calibration (commit 17a) and the
+# 17c firewall-test pass: bare English words like ``hints`` and
+# ``resolved`` were dropped from FORBIDDEN_TOKENS. Reasoning:
+#   1. They aren't actual SWE-bench dataset field names. The real
+#      field is ``hints_text`` (compound; still in the list); there
+#      is no column literally named ``resolved`` in
+#      swebench_verified.jsonl.
+#   2. Under word-boundary matching they would trip on legitimate
+#      English usage in issue text ("any hints would be appreciated",
+#      "once this is resolved") — over-block with no security gain.
+#   3. The compound form ``hints_text`` catches the actual leak
+#      vector (someone copying the JSON column name) under
+#      word-boundary matching.
 
 
 class ForbiddenFieldError(TypeError):
