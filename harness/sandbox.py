@@ -117,15 +117,27 @@ class Sandbox:
     ):
         self._view = view
         # Pro instances ship a ``dockerhub_tag`` on the view; the image
-        # lives at ``jefzda/sweap-images:{tag}``. Verified instances
-        # leave the tag empty, in which case DockerShellExecutor derives
-        # the legacy ``swebench/sweb.eval.x86_64.*`` name from instance_id.
+        # lives at ``jefzda/sweap-images:{tag}`` and uses workdir ``/app``
+        # with a non-empty ENTRYPOINT. Verified instances leave the tag
+        # empty, use ``/testbed``, and have an empty ENTRYPOINT.
+        # We harmonize the two: in Pro mode we override the entrypoint
+        # to ``sleep`` so ``sleep infinity`` keeps the container alive,
+        # and we symlink ``/testbed -> /app`` post-start so the existing
+        # /testbed-hardcoded probes (skeleton, retrieval, sandbox) keep
+        # working without further changes.
         image_override: str | None = None
-        if view.dockerhub_tag:
+        entrypoint_override: str | None = None
+        workdir = "/testbed"
+        self._is_pro = bool(view.dockerhub_tag)
+        if self._is_pro:
             image_override = f"jefzda/sweap-images:{view.dockerhub_tag}"
+            entrypoint_override = "sleep"
+            workdir = "/app"
         self._exec = DockerShellExecutor(
             instance_id=view.instance_id,
             image=image_override,
+            workdir=workdir,
+            entrypoint_override=entrypoint_override,
             memory_gb=memory_gb,
             cpus=cpus,
             no_network=no_network,
@@ -150,6 +162,11 @@ class Sandbox:
 
     def start(self) -> None:
         self._exec.start()
+        if self._is_pro:
+            # /testbed is hardcoded in skeleton / retrieval / sandbox
+            # internal probes; Pro images keep the repo at /app, so we
+            # bridge the two with a symlink. Costs ~10 ms.
+            self._exec.run("ln -sfn /app /testbed", timeout_s=10)
 
     def cleanup(self) -> None:
         self._exec.cleanup()

@@ -79,6 +79,7 @@ class DockerShellExecutor:
         max_observation_chars: int = 32_768,
         no_network: bool = True,
         ensure_pytest: bool = False,
+        entrypoint_override: str | None = None,
     ):
         self.instance_id = instance_id
         self.image = image or _swebench_hub_image(instance_id)
@@ -88,6 +89,11 @@ class DockerShellExecutor:
         self.max_observation_chars = max_observation_chars
         self.no_network = no_network
         self.ensure_pytest = ensure_pytest
+        # Some image families (notably SWE-bench Pro at jefzda/sweap-images)
+        # ship a non-empty ENTRYPOINT (e.g. ``[/bin/bash]``) which would
+        # consume our ``sleep infinity`` cmd as a script name and exit.
+        # Setting an explicit entrypoint here clears that.
+        self.entrypoint_override = entrypoint_override
         self.container_id: str | None = None
         # Tally for cost / budget guards.
         self.total_exec_calls = 0
@@ -104,9 +110,20 @@ class DockerShellExecutor:
             "--cpus", str(self.cpus),
             "--workdir", self.workdir,
         ]
+        if self.entrypoint_override is not None:
+            cmd.extend(["--entrypoint", self.entrypoint_override])
         if self.no_network:
             cmd.extend(["--network", "none"])
-        cmd.extend([self.image, "sleep", "infinity"])
+        cmd.append(self.image)
+        if self.entrypoint_override is None:
+            # Default: entrypoint is empty → cmd ``sleep infinity`` runs sleep.
+            cmd.extend(["sleep", "infinity"])
+        else:
+            # Entrypoint explicitly set (e.g. to ``sleep`` for Pro images);
+            # cmd args are appended to it. ``sleep infinity`` would become
+            # ``sleep sleep infinity`` and exit immediately, so we pass
+            # only the duration here.
+            cmd.append("infinity")
         try:
             out = subprocess.run(
                 cmd, check=True, capture_output=True, text=True, timeout=120,
