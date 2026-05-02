@@ -92,8 +92,24 @@ when Phase 3 lands):
 
 ## Final test_500 — Run 2 (mixed-model Claude, leaderboard headline)
 
-Leaderboard headline. Reuses the retrieval cache from Run 1; only
-the LLM-call sites swap. Per-instance checkpoint signatures include
+> **Update (2026-05-03):** the **leaderboard run targets SWE-bench
+> Pro, not Verified.** The Pro public test set is the externally-
+> recognized leaderboard surface (731 instances, more recent and
+> stricter than Verified). Verified Run 1 (DeepSeek end-to-end on
+> `splits/test_500.json`) remains the reproducibility-headline cheap
+> baseline; Run 2 swaps to `splits/test_pro.json` *and* to the mixed-
+> model Claude config below. The role/env table is unchanged. The
+> per-instance pipeline (retrieval → repro → patchgen → selection)
+> runs identically; the dataset adapter (`harness.dataset` +
+> `Sandbox` Pro detection, see `V10_DESIGN.md` §13.2.1) is the only
+> machinery that needed Pro support, and it has shipped (see commit
+> log around 2026-05-03 and `tests/test_dataset_pro.py` for the
+> firewall + projection coverage).
+
+Leaderboard headline. Reuses the retrieval cache from Run 1's
+**Verified** instances where possible (the cache is keyed by
+instance_id — Pro instance_ids do not overlap, so this is a clean
+fresh cache for Pro). Per-instance checkpoint signatures include
 the role's model name so Run 2's checkpoints don't collide with
 Run 1's.
 
@@ -111,14 +127,15 @@ Run 1's.
 **Invocation** (env-var-driven; YAML untouched):
 
 ```bash
+V10_SPLIT=pro \
 V10_PATCH_GENERATOR_PIPELINE_MODEL=claude-opus-4-7 \
 V10_PATCH_GENERATOR_AGENT_MODEL=claude-opus-4-7 \
 V10_SELECTION_REVIEWER_MODEL=claude-sonnet-4-5 \
 PYTHONPATH=. .venv/bin/python3 scripts/run_pipeline_test500.py \
-    --split splits/test_500.json \
+    --split splits/test_pro.json \
     --workers 1 \
-    --signature-suffix _leaderboard_mixed \
-    > /tmp/test500_mixed_leaderboard.log 2>&1
+    --signature-suffix _leaderboard_pro_mixed \
+    > /tmp/test_pro_mixed_leaderboard.log 2>&1
 ```
 
 **Cost projection** (rough):

@@ -733,6 +733,28 @@ V10 inherits substantial pre-existing infrastructure from V7/V8 work. This secti
 - `harness/dataset.py` reads from this file as the **single source of truth.** It does NOT call `datasets.load_dataset(...)` at runtime; HF cache, arrow shards, and any other path are explicitly ruled out.
 - An asserted boundary in the loader fails fast if the file is missing or has unexpected size — surfaces a stale checkout instead of silently re-downloading.
 
+#### 13.2.1 Pro split (leaderboard run)
+
+V10 also targets the **SWE-bench Pro public test set** (731 instances, 11 repos) as the leaderboard run. The Pro adapter mirrors the Verified path with three structural differences:
+
+| Item | Verified | Pro |
+|---|---|---|
+| Dataset jsonl | `swebench_verified.jsonl` (500 rows, 6 MB) | `swebench_pro.jsonl` (731 rows, 25 MB) |
+| HuggingFace source | `SWE-bench/SWE-bench_Verified` | `ScaleAI/SWE-bench_Pro` |
+| Docker image | `swebench/sweb.eval.x86_64.{instance_id_munged}:latest` | `jefzda/sweap-images:{dockerhub_tag}` |
+| Container WORKDIR | `/testbed` | `/app` (`Sandbox` symlinks `/testbed → /app` post-start) |
+| Container ENTRYPOINT | empty (cmd=`/bin/bash`) | `[/bin/bash]` (Sandbox overrides to `sleep` so `sleep infinity` keeps it alive) |
+| Schema deltas | `FAIL_TO_PASS` / `PASS_TO_PASS` (UPPERCASE), `hints_text`, `version`, `environment_setup_commit` | `fail_to_pass` / `pass_to_pass` (lowercase), `requirements`, `interface`, `repo_language`, `issue_specificity`, `issue_categories`, `before_repo_set_cmd`, `selected_test_files_to_run`, `dockerhub_tag`. **No** `hints_text`. |
+| Split file | `splits/test_500.json` (built by `scripts/build_test_500.py`) | `splits/test_pro.json` (built by `scripts/build_pro_split.py`; carries `dockerhub_tag` per instance for image lookup) |
+
+**Loader API.** `harness.dataset.load_verified_views()` accepts a `split_name=` kwarg (defaults to the `V10_SPLIT` env var, then `"verified"`). `load_pro_views()` / `load_pro_view()` are explicit aliases for `split_name="pro"`. Same `_project_to_view` for both — the firewall whitelist (`_PROJECTED_KEYS`) is unchanged in spirit; it now reads `dockerhub_tag` (Pro-only infrastructure) in addition to the four common keys, with `.get()` fallback so Verified rows leave it empty.
+
+**Firewall semantics on Pro.** The forbidden-token list in `harness.views.FORBIDDEN_TOKENS` (substring + casefold matching) catches both `FAIL_TO_PASS` and `fail_to_pass` (and equivalents) by construction. Pro adds `selected_test_files_to_run` and `before_repo_set_cmd` to the dataset schema; neither is on the projection whitelist, so neither reaches an `InstanceView`. The `tests/test_dataset_pro.py` smoke confirms this end-to-end.
+
+**Image inventory & pull.** See `docs/audits/pro_image_inventory.md`. The bulk pull (~2 TB raw, 8–15 hours wall-clock) is gated on free disk ≥ 2.5 TB; the Step 5 smoke pulls only 5 images (~14 GB) to validate the adapter.
+
+**Adapter changes.** `meta_harness_plus/agent_docker.py` gained `entrypoint_override` (Pro images need `--entrypoint sleep` so the container stays alive); `harness/sandbox.py` gained Pro detection (sets workdir + entrypoint, post-start `ln -sfn /app /testbed`). Phase 1 retrieval, BM25, embedding, skeleton, and traceback code are unchanged — they read `/testbed` exactly like Verified, and the symlink makes that work on Pro.
+
 ### 13.3 V7 trajectories and eval reports — DATA, not ground truth
 
 Two artifact paths from prior work:
