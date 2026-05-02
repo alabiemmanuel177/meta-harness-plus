@@ -1,12 +1,24 @@
-"""SWE-bench Verified loader — projects raw rows to ``InstanceView``.
+"""SWE-bench loader — projects raw rows to ``InstanceView``.
 
 This module contains the SINGLE asserted boundary at which oracle-
 derived dataset fields are dropped. ``_project_to_view`` is whitelist-
-based: it reads only the four fields it needs (``_PROJECTED_KEYS``) and
+based: it reads only the keys it needs (``_PROJECTED_KEYS``) and
 stores them in ``InstanceView``. No oracle-derived field name is read
 by subscript or by ``getattr`` — the firewall test enforces this at
 AST level (see V10_DESIGN.md §12.4 for the full list of fields kept
 out of view).
+
+Two splits are supported:
+
+  - ``verified`` (default): meta_harness_plus/tasks/data/swebench_verified.jsonl
+    (500 rows, the SWE-bench Verified set).
+  - ``pro``: meta_harness_plus/tasks/data/swebench_pro.jsonl (731 rows,
+    the SWE-bench Pro public set).
+
+The active split is selected by the ``V10_SPLIT`` env var, or by the
+``split_name=`` parameter on the public loaders. Same projection
+function for both splits — Pro carries an additional ``dockerhub_tag``
+field that maps to ``jefzda/sweap-images:{tag}`` for the sandbox.
 
 Boundary contract (asserted at runtime in ``_assert_projection_boundary``):
 
@@ -23,6 +35,7 @@ Boundary contract (asserted at runtime in ``_assert_projection_boundary``):
 from __future__ import annotations
 
 import json
+import os
 import pathlib
 from typing import Iterable, Iterator
 
@@ -36,6 +49,8 @@ from harness.repo_conventions import resolve_test_directives_static
 
 # ---------------------------------------------------------------------------
 # The whitelist — exactly what we read from each row. Keep this list short.
+# ``dockerhub_tag`` is Pro-only infrastructure (image lookup), not
+# oracle data — see V10_DESIGN.md §13.2 (Pro delta).
 # ---------------------------------------------------------------------------
 
 _PROJECTED_KEYS: frozenset[str] = frozenset({
@@ -43,48 +58,81 @@ _PROJECTED_KEYS: frozenset[str] = frozenset({
     "repo",
     "base_commit",
     "problem_statement",
+    "dockerhub_tag",  # Pro-only; absent on Verified rows (handled with .get())
 })
 
 
-def _default_dataset_path() -> pathlib.Path:
-    """Single source of truth for the Verified dataset.
+# ---------------------------------------------------------------------------
+# Split registry — extend this dict to wire a new dataset split.
+# ---------------------------------------------------------------------------
 
-    Per V10_DESIGN.md §13.2: this file is canonical. We do NOT call
+_DATA_DIR = (
+    pathlib.Path(__file__).resolve().parent.parent
+    / "meta_harness_plus" / "tasks" / "data"
+)
+
+_SPLITS: dict[str, dict] = {
+    "verified": {
+        "path": _DATA_DIR / "swebench_verified.jsonl",
+        "expected_rows": 500,
+        "min_size_bytes": 1_000_000,
+    },
+    "pro": {
+        "path": _DATA_DIR / "swebench_pro.jsonl",
+        "expected_rows": 731,
+        "min_size_bytes": 5_000_000,
+    },
+}
+
+_DEFAULT_SPLIT_ENV = "V10_SPLIT"
+
+
+def _resolve_split_name(split_name: str | None) -> str:
+    """Pick the active split. Explicit arg wins; else env var; else default."""
+    if split_name is None:
+        split_name = os.environ.get(_DEFAULT_SPLIT_ENV, "verified")
+    if split_name not in _SPLITS:
+        raise ValueError(
+            f"unknown split {split_name!r}; must be one of {sorted(_SPLITS)}"
+        )
+    return split_name
+
+
+def _split_config(split_name: str | None = None) -> dict:
+    return _SPLITS[_resolve_split_name(split_name)]
+
+
+def _default_dataset_path(split_name: str | None = None) -> pathlib.Path:
+    """Single source of truth for the active split.
+
+    Per V10_DESIGN.md §13.2: these files are canonical. We do NOT call
     ``datasets.load_dataset(...)`` at runtime; HF cache, arrow shards,
     and any other network-derived path are explicitly ruled out. The
-    file was committed once during early V7 work and has been frozen
-    since; treat it as a build artifact, not a refreshable input.
+    files are committed once and frozen; treat them as build artifacts,
+    not refreshable inputs.
     """
-    return (
-        pathlib.Path(__file__).resolve().parent.parent
-        / "meta_harness_plus" / "tasks" / "data" / "swebench_verified.jsonl"
-    )
+    return _split_config(split_name)["path"]
 
 
-# Asserted boundary: the loader's only legal source is the local jsonl.
-# Keep this short and auditable. If a future change wants to load from
-# elsewhere, that's a deliberate decision that needs to be reviewed.
-_EXPECTED_ROW_COUNT = 500
-
-
-def _assert_dataset_source_of_truth(path: pathlib.Path) -> None:
+def _assert_dataset_source_of_truth(path: pathlib.Path, split_name: str | None = None) -> None:
+    cfg = _split_config(split_name)
     if not path.exists():
         raise FileNotFoundError(
-            f"Verified dataset not found at {path}. V10 reads only this "
-            f"local jsonl; no HuggingFace fallback. See V10_DESIGN.md §13.2."
+            f"Dataset not found at {path}. V10 reads only the local jsonl; "
+            f"no HuggingFace fallback. See V10_DESIGN.md §13.2."
         )
-    # Sanity-check size: the expected file is ~6 MB / 500 rows. A 0-byte
-    # or wildly-shrunken file means the cache is corrupted.
-    if path.stat().st_size < 1_000_000:
+    # Sanity-check size: a 0-byte or wildly-shrunken file means the cache
+    # is corrupted.
+    if path.stat().st_size < cfg["min_size_bytes"]:
         raise ValueError(
-            f"Verified dataset at {path} is suspiciously small "
-            f"({path.stat().st_size} bytes). Expected ~6 MB / "
-            f"{_EXPECTED_ROW_COUNT} rows."
+            f"Dataset at {path} is suspiciously small "
+            f"({path.stat().st_size} bytes). Expected ~{cfg['min_size_bytes']} bytes / "
+            f"{cfg['expected_rows']} rows."
         )
 
 
-def _iter_raw_rows(path: pathlib.Path) -> Iterator[dict]:
-    _assert_dataset_source_of_truth(path)
+def _iter_raw_rows(path: pathlib.Path, split_name: str | None = None) -> Iterator[dict]:
+    _assert_dataset_source_of_truth(path, split_name=split_name)
     with path.open() as fh:
         for line in fh:
             line = line.strip()
@@ -128,11 +176,16 @@ def _project_to_view(row: dict) -> InstanceView:
     projection is whitelist-based: each field below is read by name from
     the row dict. Oracle-derived fields are not in the whitelist and
     therefore never reach an InstanceView.
+
+    ``dockerhub_tag`` is read with ``.get()`` because it is present
+    only on Pro rows. Verified rows leave it empty; Sandbox falls back
+    to the legacy ``swebench/sweb.eval.*`` image-name derivation.
     """
     instance_id = row["instance_id"]
     repo = row["repo"]
     base_commit = row["base_commit"]
     problem_statement = row["problem_statement"]
+    dockerhub_tag = row.get("dockerhub_tag", "") or ""
 
     override = resolve_test_directives_static(repo)
     if override is None:
@@ -153,6 +206,7 @@ def _project_to_view(row: dict) -> InstanceView:
         problem_statement=problem_statement,
         repo_skeleton=_build_skeleton_for_view(repo, base_commit),
         test_directives=TestDirectives(dirs=dirs, source=source),
+        dockerhub_tag=dockerhub_tag,
     )
 
 
@@ -188,14 +242,22 @@ def load_verified_views(
     n: int | None = None,
     instance_ids: Iterable[str] | None = None,
     cached_path: str | pathlib.Path | None = None,
+    split_name: str | None = None,
 ) -> list[InstanceView]:
-    """Load SWE-bench Verified rows from the local cache and project to
-    InstanceView. Whitelisted-field-only; never reads forbidden fields."""
-    path = pathlib.Path(cached_path) if cached_path else _default_dataset_path()
+    """Load SWE-bench rows from the local cache and project to
+    InstanceView. Whitelisted-field-only; never reads forbidden fields.
+
+    ``split_name`` selects between the registered splits (default reads
+    the ``V10_SPLIT`` env var, then falls back to ``"verified"``).
+    The function name preserves the legacy public API; use
+    ``load_pro_views`` for explicit Pro loading.
+    """
+    resolved_split = _resolve_split_name(split_name)
+    path = pathlib.Path(cached_path) if cached_path else _default_dataset_path(resolved_split)
 
     wanted: set[str] | None = set(instance_ids) if instance_ids is not None else None
     out: list[InstanceView] = []
-    for row in _iter_raw_rows(path):
+    for row in _iter_raw_rows(path, split_name=resolved_split):
         if wanted is not None and row["instance_id"] not in wanted:
             continue
         view = _project_to_view(row)
@@ -206,12 +268,35 @@ def load_verified_views(
     return out
 
 
-def load_verified_view(instance_id: str) -> InstanceView:
-    """Convenience: project exactly one instance."""
-    views = load_verified_views(instance_ids=[instance_id])
+def load_verified_view(instance_id: str, *, split_name: str | None = None) -> InstanceView:
+    """Convenience: project exactly one instance from the active split."""
+    views = load_verified_views(instance_ids=[instance_id], split_name=split_name)
     if not views:
-        raise KeyError(f"instance_id not in Verified dataset: {instance_id!r}")
+        raise KeyError(f"instance_id not in dataset: {instance_id!r}")
     return views[0]
 
 
-__all__ = ["load_verified_views", "load_verified_view"]
+def load_pro_views(
+    *,
+    n: int | None = None,
+    instance_ids: Iterable[str] | None = None,
+) -> list[InstanceView]:
+    """Explicit Pro loader — equivalent to ``load_verified_views(split_name='pro')``.
+
+    Use this when callers want to be unambiguous about which split they
+    want, regardless of the ``V10_SPLIT`` env var.
+    """
+    return load_verified_views(n=n, instance_ids=instance_ids, split_name="pro")
+
+
+def load_pro_view(instance_id: str) -> InstanceView:
+    """Project exactly one instance from the SWE-bench Pro split."""
+    return load_verified_view(instance_id, split_name="pro")
+
+
+__all__ = [
+    "load_verified_views",
+    "load_verified_view",
+    "load_pro_views",
+    "load_pro_view",
+]

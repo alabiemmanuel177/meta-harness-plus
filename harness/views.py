@@ -133,6 +133,12 @@ class InstanceView:
     gold_patch, resolved verdict, etc.) are dropped at the dataset
     boundary in ``harness.dataset._project_to_view``; they cannot reach
     this object by construction.
+
+    ``dockerhub_tag`` is the SWE-bench Pro image tag (lookup field for
+    ``jefzda/sweap-images:{tag}``); empty string for Verified instances,
+    where the image name is derived from instance_id. It is harness
+    infrastructure, not oracle data — see V10_DESIGN.md §13.2 (Pro
+    delta).
     """
 
     instance_id: str
@@ -141,6 +147,7 @@ class InstanceView:
     problem_statement: str
     repo_skeleton: RepoSkeleton
     test_directives: TestDirectives
+    dockerhub_tag: str = ""
 
     def __post_init__(self) -> None:
         _assert_no_forbidden_field_names(type(self))

@@ -116,8 +116,16 @@ class Sandbox:
         max_observation_chars: int = 32_768,
     ):
         self._view = view
+        # Pro instances ship a ``dockerhub_tag`` on the view; the image
+        # lives at ``jefzda/sweap-images:{tag}``. Verified instances
+        # leave the tag empty, in which case DockerShellExecutor derives
+        # the legacy ``swebench/sweb.eval.x86_64.*`` name from instance_id.
+        image_override: str | None = None
+        if view.dockerhub_tag:
+            image_override = f"jefzda/sweap-images:{view.dockerhub_tag}"
         self._exec = DockerShellExecutor(
             instance_id=view.instance_id,
+            image=image_override,
             memory_gb=memory_gb,
             cpus=cpus,
             no_network=no_network,

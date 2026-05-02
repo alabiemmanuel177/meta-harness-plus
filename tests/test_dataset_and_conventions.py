@@ -43,11 +43,31 @@ def test_load_verified_smoke() -> None:
 
 
 def test_projected_keys_are_minimal() -> None:
-    """We only read four fields from each raw row. Anything else (and
-    especially any oracle-derived field) cannot reach the view."""
+    """We only read a handful of fields from each raw row. Anything else
+    (and especially any oracle-derived field) cannot reach the view.
+
+    ``dockerhub_tag`` is read for Pro rows (image lookup); it is harness
+    infrastructure, not oracle data, and the firewall token list never
+    matches the literal ``"dockerhub_tag"``.
+    """
     assert _PROJECTED_KEYS == frozenset({
         "instance_id", "repo", "base_commit", "problem_statement",
+        "dockerhub_tag",
     })
+
+
+def test_projected_keys_contain_no_forbidden_tokens() -> None:
+    """Defense in depth: walk the projection whitelist and confirm none
+    of the keys we read match a forbidden token. If a future change adds
+    an oracle-named field to the whitelist, this test fires."""
+    from harness.views import FORBIDDEN_TOKENS
+    bad: list[str] = []
+    for key in _PROJECTED_KEYS:
+        folded = key.casefold()
+        for tok in FORBIDDEN_TOKENS:
+            if tok in folded:
+                bad.append(f"{key} matches {tok!r}")
+    assert not bad, "projected keys with forbidden tokens: " + ", ".join(bad)
 
 
 def test_project_to_view_only_uses_whitelisted_keys() -> None:
