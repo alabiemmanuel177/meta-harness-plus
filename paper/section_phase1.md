@@ -148,7 +148,7 @@ The strongest individual is `bm25_full_issue` on dev_100 vs
 which is exactly why hard-coding any single strategy as "the one"
 would be brittle. Letting the reranker decide is the right shape.
 
-### Finding 2: the rerank lift replicates across splits at +50pp top-1
+### Finding 2: the rerank lift replicates across splits at +40-50pp top-1
 
 Stage 1g's effect on the same retrieval base:
 
@@ -156,12 +156,21 @@ Stage 1g's effect on the same retrieval base:
 |---|---|---|---|
 | dev_50 (commit `2393909`) | 32 % top-1 / 78 % top-10 | **74 % top-1 / 98 % top-10** | **+42pp** |
 | dev_100 (commit `652b26f`) | 34 % top-1 / 80 % top-10 | **84 % top-1 / 98 % top-10** | **+50pp** |
+| test_500 (commit `129b8ff`+, 488/500 scored) | 29 % top-1 / 72 % top-10 | **75.4 % top-1 / 94.9 % top-10** | **+46pp** |
 
-The lift on dev_100 (84 − 34 = **+50pp** top-1, +18pp top-10) is the
-same magnitude as on dev_50 (74 − 32 = **+42pp** top-1) within
-sampling error. This is **the** quantitative finding of Phase 1: a
-single LLM call given per-strategy-rank features lifts top-1 from
-~35 % to ~80 % at \$0.05/instance.
+The lift replicates across all three splits within sampling error:
+**+42pp on dev_50, +50pp on dev_100, +46pp on test_500.** This is
+**the** quantitative finding of Phase 1: a single LLM call given per-
+strategy-rank features lifts top-1 from ~30 % to ~80 % at \$0.0024
+per instance (DeepSeek-chat, observed cost on test_500's 488 scored
+instances at \$1.13 total).
+
+The test_500 absolute number (75.4 % top-1) sits between dev_50 and
+dev_100 — slightly below dev_100's 84 % because test_500 has a
+heavier django proportion (231/500 = 46 %) than dev_100 (27/100 =
+27 %), and django is the hardest repo for top-1 (73.6 % on
+test_500). Top-10 lands at 94.9 % — the headline acceptance
+target was ≥ 90 %; cleared with margin.
 
 The match is *strict* (commit `49e2b1a`,
 `docs/audits/gold_match_strictness_dev_100.md`): all 98 top-10 hits

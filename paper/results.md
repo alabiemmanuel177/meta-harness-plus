@@ -7,12 +7,15 @@ results section.
 
 ## Phase 1 — Hierarchical localization (oracle-free retrieval)
 
-### Stage 1b + 1c + 1g — frozen on dev_100
+### Stage 1b + 1c + 1g — frozen on dev_100, validated on test_500
 
 | Split | Instances | Top-1 | Top-5 | Top-10 | Wall-clock |
 |---|---|---|---|---|---|
 | dev_50 (commit 5c) | 50 | 74.0% | 96.0% | 98.0% | 2197s |
-| dev_100 (commit 6b) | 100 | **84.0%** | **97.0%** | **98.0%** | 13267s |
+| dev_100 (commit 6b) | 100 | 84.0% | 97.0% | 98.0% | 13267s |
+| **test_500** (commit 17) | **488 of 500** | **75.4%** | **92.6%** | **94.9%** | ~32 hr (incl. one power-outage resume) |
+
+The test_500 headline is reported on **488/500** scored instances. The remaining 12 (all sympy) hit two distinct infrastructure bugs surfaced in the eval — 3 with empty-skeleton `ZeroDivisionError` (cached skeletons missing AST symbols) and 9 with the sandbox's 32 MB observation cap truncating mid-JSON. Both are diagnosed in `docs/audits/test_500_retrieval_eval.md` and tracked for a follow-up infra fix; not data-quality issues. Hard-stop on >5% errors NOT tripped (12/500 = 2.4%).
 
 Acceptance gates (per V10_DESIGN.md §3.2 Phase 1 spec):
 - Top-10 ≥ 90% → **PASS** (98.0%)
