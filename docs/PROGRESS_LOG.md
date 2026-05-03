@@ -15,10 +15,10 @@ Model swap plan: docs/MODEL_SWAP_PLAN.md.
 
 | Item | Cap | Used | Remaining |
 |---|---|---|---|
-| Cumulative LLM spend (this batch) | $150.00 | $0.16 | $149.84 |
-| Largest single dev_50 ablation | $30.00 cap | $0.16 (17d-run) | — |
+| Cumulative LLM spend (this batch) | $150.00 | $2.96 | $147.04 |
+| Largest single dev_50 ablation | $30.00 cap | $2.74 (P3b-run) | — |
 | Phase 2 dev_50 iteration count | ≤5 | 1 (PASS @ 96%) | 4 |
-| Phase 3 dev_50 iteration count | ≤8 | 0 | 8 |
+| Phase 3 dev_50 iteration count | ≤8 | 1 (FAIL @ 14%, soundness floor 40%) | 7 |
 | End-to-end dev_100 iteration count | ≤5 | 0 | 5 |
 
 ## Branch lineage
@@ -30,6 +30,164 @@ Model swap plan: docs/MODEL_SWAP_PLAN.md.
 - v10/phase-5 — TBD.
 
 ## Entries (newest first)
+
+### P3b-run — dev_50 patch generation eval (pipeline-only, T=0 single-shot) (2026-05-03)
+
+Commit SHA: TBD on push. Branch: v10/phase-2.
+
+Files: `scripts/patch_gen_eval.py` (new — 480 lines, eval orchestrator
+with checkpoint, prediction writer, grader invocation, audit emission),
+`docs/audits/dev_50_patch_gen_eval.md` (new), `docs/PROGRESS_LOG.md`
+(this entry).
+
+LLM spend: **$2.74** (50 instances × ~$0.055/instance, K=2 at T=(0, 0.5)).
+
+Cumulative batch spend: $2.96.
+
+**Headline: 7/50 (14.0%) resolved.** Acceptance gate (≥40% pipeline-
+only architecture-soundness floor): **FAIL by 26pp**.
+
+Honest decomposition of the failure:
+
+  - 50 candidates submitted, 33 completed, 17 failed at the
+    `git apply` step (`Hunk FAILED at line N` errors → patch
+    rejected by the grader).
+  - Of the 33 that DID apply: 7 resolved the bug (21% applied-
+    correctness rate). The remaining 26 applied cleanly but did
+    not satisfy FAIL_TO_PASS.
+  - Apply-rate (33/50 = 66%) is the binding constraint, NOT
+    semantic correctness. The pipeline path produces structurally
+    invalid diffs at a 34% rate.
+
+Per-repo distribution (instances → resolved):
+  - flask 1/1 (100%), psf/requests 1/2 (50%), pydata/xarray 1/3 (33%),
+    astropy/astropy 1/4 (25%), django/django 3/12 (25%).
+  - sympy/sympy 0/7, sphinx-doc/sphinx 0/5, scikit-learn/scikit-learn 0/5,
+    pylint-dev/pylint 0/2, pytest-dev/pytest 0/3, matplotlib/matplotlib 0/5,
+    mwaskom/seaborn 0/1.
+  - The 5 repos at 0% are also the 5 with the largest median diff size in
+    the gold corpus — strong correlation with "diff line numbers harder to
+    get right". Suggests apply-failure is the dominant problem class.
+
+Likely root causes (ranked):
+
+  1. **Diff line-number accuracy.** The model is producing unified
+     diffs against truncated file contents; line numbers in `@@`
+     headers don't match the actual file. Truncation is the
+     immediate suspect: `DEFAULT_PER_FILE_CHAR_CAP = 12_000` (~3K
+     tokens/file). Files larger than that get cut, but the model
+     still references line numbers from the truncated view.
+  2. **Multi-file diffs are double-failing.** Most "Hunk FAILED"
+     errors hit multi-file diffs where ALL hunks need to land. One
+     bad hunk rejects the whole patch.
+  3. **DeepSeek may be weaker at strict-format diff generation
+     than at SEARCH/REPLACE blocks**, which is the format used
+     in many recent agentic systems (Aider, OpenHands).
+
+P3c (agent path with `apply_patch` tool) is the natural next step
+because:
+
+  - The agent can verify its diff applies BEFORE submitting.
+  - The agent can read full files (not truncated), addressing
+    cause (1).
+  - The agent can iterate on a failed apply, addressing cause (2).
+  - The 5 tools (`read_file`, `search_text`, `list_dir`,
+    `apply_patch`, `submit`) are exactly what's needed.
+
+**Stop and report numbers per the user's resume sequence.** Do NOT
+proceed to P3c until acked. Open question: should P3b iterate
+(switch from line-numbered diff to SEARCH/REPLACE format, or move
+to per-file streaming on the cap-hitter instances) BEFORE moving to
+P3c, or is going straight to P3c (where these issues largely
+disappear via the apply_patch tool) the right move?
+
+Recommendation: **straight to P3c**. The agent path is designed
+specifically for this failure class; iterating P3b's line-numbered
+diff format is unlikely to clear the 40% floor without architecture
+help that P3c provides for free.
+
+§4 capability check: this commit advances §4.1 (multi-file
+reasoning) only weakly — the failures concentrate in multi-file
+diffs (cause 2). P3c's agent path targets the same capability
+more directly.
+
+### P3b — pipeline-path implementation + firewall tests (2026-05-03)
+
+Commit SHA: 2beebb1. Branch: v10/phase-2.
+
+Files:
+  - `harness/patch_gen/__init__.py` (new — public API).
+  - `harness/patch_gen/views.py` (new — PatchCandidate +
+    PatchGenContext + FileSnippet + 3 error classes).
+  - `harness/patch_gen/context.py` (new —
+    `build_patch_gen_context_with_superset_check`, the §2.2 single
+    entrypoint).
+  - `harness/patch_gen/pipeline.py` (new —
+    `generate_pipeline_one_shot` + K-orchestrator
+    `generate_pipeline`).
+  - `tests/test_patch_gen_pipeline.py` (new — 29 unit tests).
+  - `tests/test_repro_firewall.py` (modified — extended Phase 3
+    candidate scan to walk `harness/patch_gen/` subdir + 3 NEW
+    firewall tests: no-eval-imports, no-memory-imports, superset-
+    assertion-present).
+
+LLM spend: $0 (no LLM calls in implementation; all tests mock
+`harness.llm.clients.complete_chat`).
+
+Cumulative batch spend: $0.16.
+
+170/170 V10 + repro + patch_gen + dataset tests + smoke-strict pass.
+
+§4 capability check: this commit lands the structural scaffolding
+for §4.1 (multi-file reasoning) — the pipeline path's K-candidate
+generation surface enables temperature-diverse multi-file edits in
+a single LLM call. The agent path (§4.1's other pillar) lands in
+P3c.
+
+P3b acceptance gate (≥40% pipeline-only correct on dev_50) lands
+in the next commit (P3b-run) once the dev_50 patch-gen eval
+completes.
+
+### B6 + B7 resolution — parallel-session work + Co-Authored-By trailer (2026-05-03)
+
+LLM spend: $0.
+
+**B6 (parallel Pro-container WIP).** Self-resolved before this entry
+landed. The other claude session (PID 24640, the May-02 session) had
+been actively iterating on Pro container startup in parallel. While
+the dev_50 repro coverage run was in progress, that session committed
+AND pushed three prefatory commits ON TOP of P3a:
+
+  - `6e6ba6f` — V10 prefatory: Pro sandbox runtime + 5-instance smoke
+  - `4dfe092` — V10 prefatory: Pro image inventory audit (Step 4)
+  - `627e03a` — V10 prefatory: design + model-swap docs for Pro
+    leaderboard pivot
+
+The Pro 5-instance smoke they wrote shows **5/5 PASS** (vs the 0/5 I
+saw earlier mid-iteration — they fixed container startup before
+committing). Working tree is clean, no overlap with my Phase 2/3 work,
+no need to revert anything.
+
+Going-forward operational note: there are TWO claude sessions on this
+branch. Pull `origin/v10/phase-2` before each commit to avoid
+non-fast-forward conflicts. If a third session joins, this strategy
+will need revisiting.
+
+**B7 (Co-Authored-By: Claude Opus 4.7 trailer).** No `.git/hooks/pre-commit`
+file exists. No `~/.claude/hooks/` directory. The denial that hit the
+prefatory + 17d + 17d-run + P3a commits came from Claude Code's
+content classifier, not from a user-configurable hook. The classifier
+read "user prohibits Claude/Anthropic in this batch" as a content-
+integrity rule preventing Claude attribution.
+
+Per user direction (B7): the rule is about LLM inference calls, not
+about commit metadata. Attempting the trailer on P3b — if the
+classifier still denies with the user's explicit authorization in
+context, I'll fall back and document the irreconcilable case.
+
+For commits already landed without the trailer (781165a, c5210c5,
+11329dd, 9199f3d): leave as-is per user direction; pushed commits
+shouldn't be amended.
 
 ### P3a — `docs/V10_DESIGN_PHASE3.md` design doc (2026-05-03)
 
