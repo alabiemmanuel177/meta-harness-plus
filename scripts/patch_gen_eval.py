@@ -166,10 +166,14 @@ def _generate_for_instance(
     temperatures: tuple[float, ...],
     cost_cap_usd: float,
     top_k: int,
+    use_agent: bool = False,
+    agent_t_max: int = 20,
+    agent_cost_cap_usd: float = 0.50,
 ) -> _InstanceGenRecord:
     from harness.dataset import load_verified_view
     from harness.patch_gen import (
         ContextOversizeError,
+        generate_agent,
         generate_pipeline,
     )
     from harness.sandbox import Sandbox
@@ -199,10 +203,43 @@ def _generate_for_instance(
     try:
         with Sandbox(view, max_observation_chars=32_000_000) as sb:
             try:
-                result = generate_pipeline(
-                    view=view, ranked_files=rfs, sandbox=sb,
-                    temperatures=temperatures, cost_cap_usd=cost_cap_usd,
-                )
+                if use_agent:
+                    agent_result = generate_agent(
+                        view=view, ranked_files=rfs, sandbox=sb,
+                        t_max=agent_t_max,
+                        cost_cap_usd=agent_cost_cap_usd,
+                    )
+                    cands = []
+                    if agent_result.candidate is not None:
+                        c = agent_result.candidate
+                        cands.append({
+                            "candidate_id": c.candidate_id,
+                            "diff": c.diff,
+                            "model": c.generator_model,
+                            "cost_usd": c.generation_cost_usd,
+                            "temperature": c.source_temperature,
+                            "tokens_in": c.generator_input_tokens,
+                            "tokens_out": c.generator_output_tokens,
+                            "duration_s": c.duration_s,
+                            "agent_turns": agent_result.turns_used,
+                            "agent_apply_attempts": agent_result.apply_attempts,
+                            "agent_apply_successes": agent_result.apply_successes,
+                            "agent_final_status": agent_result.final_status,
+                        })
+                    return _InstanceGenRecord(
+                        instance_id=iid, repo=view.repo,
+                        status="ok" if cands else "agent-no-submit",
+                        candidates=cands,
+                        total_cost_usd=agent_result.total_cost_usd,
+                        duration_s=time.perf_counter() - t_start,
+                        error_class=None if cands else agent_result.final_status,
+                        error_msg=None if cands else f"agent ended without submit: {agent_result.final_status} (turns={agent_result.turns_used}, apply_attempts={agent_result.apply_attempts})",
+                    )
+                else:
+                    result = generate_pipeline(
+                        view=view, ranked_files=rfs, sandbox=sb,
+                        temperatures=temperatures, cost_cap_usd=cost_cap_usd,
+                    )
             except ContextOversizeError as exc:
                 return _InstanceGenRecord(
                     instance_id=iid, repo=view.repo, status="skip-oversize",
@@ -220,6 +257,7 @@ def _generate_for_instance(
             error_msg=("".join(traceback.format_exception_only(type(exc), exc))).strip()[:300],
         )
 
+    # Pipeline path candidates → record dict.
     cands = [
         {
             "candidate_id": c.candidate_id,
@@ -510,6 +548,10 @@ def main() -> int:
                    help="P3b pipeline-only acceptance floor; default 40%")
     p.add_argument("--run-id-suffix", default="patch_gen_eval")
     p.add_argument("--audit-out", default=None)
+    p.add_argument("--use-agent", action="store_true",
+                   help="use the agent path (P3c) instead of the pipeline path")
+    p.add_argument("--agent-t-max", type=int, default=20)
+    p.add_argument("--agent-cost-cap-usd", type=float, default=0.50)
     args = p.parse_args()
 
     logging.basicConfig(level=logging.WARNING, format="%(levelname)s %(name)s: %(message)s")
@@ -550,6 +592,9 @@ def main() -> int:
                     temperatures=temperatures,
                     cost_cap_usd=args.cost_cap_usd,
                     top_k=args.top_k,
+                    use_agent=args.use_agent,
+                    agent_t_max=args.agent_t_max,
+                    agent_cost_cap_usd=args.agent_cost_cap_usd,
                 )
             except KeyboardInterrupt:
                 print("[interrupt] writing partial audit and exiting", flush=True)

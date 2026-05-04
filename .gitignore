@@ -193,6 +193,11 @@ logs/run_evaluation/v10_*/
 eval_outputs/
 repo_cache/
 
+# SWE-bench harness writes its top-level summary report to the CWD with
+# the filename pattern <model_name>.<run_id>.json — V10 run_ids start
+# with v10_ so this glob covers them.
+v10_*.v10_*.json
+
 # Phase 7 corpus (large; regenerable)
 data/phase7_corpus/
 

@@ -37,10 +37,19 @@ from harness.patch_gen.pipeline import (
     generate_pipeline,
     generate_pipeline_one_shot,
 )
+from harness.patch_gen.agent import (
+    AgentGenerationResult,
+    DEFAULT_AGENT_COST_CAP_USD,
+    DEFAULT_AGENT_T_MAX,
+    generate_agent,
+)
 
 
 __all__ = [
+    "AgentGenerationResult",
     "ContextOversizeError",
+    "DEFAULT_AGENT_COST_CAP_USD",
+    "DEFAULT_AGENT_T_MAX",
     "DEFAULT_PER_FILE_CHAR_CAP",
     "DEFAULT_PIPELINE_TEMPERATURES",
     "DEFAULT_PROJECTED_TOKEN_LIMIT",
@@ -51,6 +60,7 @@ __all__ = [
     "PatchGenError",
     "PipelineGenerationResult",
     "build_patch_gen_context_with_superset_check",
+    "generate_agent",
     "generate_pipeline",
     "generate_pipeline_one_shot",
 ]
