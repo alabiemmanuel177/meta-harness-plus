@@ -15,10 +15,10 @@ Model swap plan: docs/MODEL_SWAP_PLAN.md.
 
 | Item | Cap | Used | Remaining |
 |---|---|---|---|
-| Cumulative LLM spend (this batch) | $150.00 | $2.96 | $147.04 |
-| Largest single dev_50 ablation | $30.00 cap | $2.74 (P3b-run) | — |
+| Cumulative LLM spend (this batch) | $150.00 | $8.16 | $141.84 |
+| Largest single dev_50 ablation | $30.00 cap | $5.03 (P3c-run) | — |
 | Phase 2 dev_50 iteration count | ≤5 | 1 (PASS @ 96%) | 4 |
-| Phase 3 dev_50 iteration count | ≤8 | 1 (FAIL @ 14%, soundness floor 40%) | 7 |
+| Phase 3 dev_50 iteration count | ≤8 | 2 (P3b 14% FAIL; P3c 16% < 20% STOP) | 6 |
 | End-to-end dev_100 iteration count | ≤5 | 0 | 5 |
 
 ## Branch lineage
@@ -30,6 +30,85 @@ Model swap plan: docs/MODEL_SWAP_PLAN.md.
 - v10/phase-5 — TBD.
 
 ## Entries (newest first)
+
+### P3c-run — dev_50 agent eval — 8/50 (16.0%) STOP (<20% hard-stop) (2026-05-03)
+
+Commit SHA: TBD on push. Branch: v10/phase-2.
+
+Files: `docs/audits/dev_50_patch_gen_eval_agent.md` (new),
+`runs/v10_dev_50_patch_gen_eval_agent/` (50 instance checkpoints).
+
+LLM spend: **$5.03** (cap was $0.50/instance × 50 = $25 worst-case;
+actual median $0.087, p90 $0.20, max $0.28).
+
+Cumulative batch spend: $8.16.
+
+**Headline: 8/50 (16.0%) resolved.** Per the user's resume sequence,
+<20% on P3c triggers hard-stop ("agent design needs work, NOT just
+iteration").
+
+Comparison vs P3b pipeline:
+
+  | Metric | P3b pipeline | P3c agent |
+  |---|---|---|
+  | Submitted | 50/50 (100%) | 21/50 (42%) |
+  | Resolved | 7/50 (14.0%) | 8/50 (16.0%) |
+  | Applied correctness (resolved/submitted) | 7/33 (21%) | 8/21 (38%) |
+  | Cost | $2.74 | $5.03 |
+  | Wall-clock | 12.8m gen | 33.1m gen |
+
+**The diagnostic finding that says "design needs work":** of the 29
+agent-no-submit failures, 28 ended at `tmax_no_apply` (T_max reached
+without a successful apply_patch). **Median apply_attempts among
+those 28 instances: 0.** Most of the agent's failures never even
+attempted a patch — it spent all 20 turns in exploration mode
+(read_file / search_text / list_dir).
+
+When the agent DOES submit, it's materially better than the pipeline
+(38% applied-correctness vs 21%). The candidate quality is real;
+the failure mode is unique to the agent: getting stuck in
+exploration loops instead of committing to a diff.
+
+Possible design fixes (none are "iteration"; all are architecture
+changes that should be acked before P3c-v2):
+
+  1. **Force-finalize prompt at T_max - 5.** Inject a system
+     message: "5 turns remaining. Stop exploring. Submit your best
+     guess as a patch." Currently the agent has no notion of how
+     close it is to T_max.
+  2. **Split T_max into explore + patch phases.** First 10 turns
+     allow read_file/search_text/list_dir; last 10 turns ONLY allow
+     apply_patch and submit. Hard architectural pressure toward
+     committing.
+  3. **Pipeline-bootstrapped agent.** Run the pipeline path first
+     (cheap, 100% submit). If the pipeline diff fails to apply, hand
+     it to the agent as a starting point. The agent's job becomes
+     "fix the apply errors in this diff", which is much narrower
+     than "explore and write a diff from scratch".
+  4. **Stronger model for agent path.** Spec §11 said the
+     leaderboard run swaps in claude-opus-4-7 for the agent role.
+     DeepSeek may be too weak at agentic flows where commitment
+     matters.
+
+Per-repo distribution (resolved/total):
+  flask 1/1, requests 1/2, sklearn 2/5 (NEW), xarray 1/3, django 3/12.
+  Six repos at 0/N: astropy, matplotlib, mwaskom, pylint, pytest,
+  sphinx, sympy. The pattern is similar to P3b but sklearn moved
+  from 0/5 → 2/5 — agent's strength on procedural fix tasks shows.
+
+Per spec hard-stop tracking: **iteration 2 of 8 used.** Both
+iterations failed their gates (14%, 16%). Net change Δ=+2pp;
+clearly the architecture needs help, not more iteration.
+
+Per the user's hard-stop: STOP and surface for human design
+guidance before continuing.
+
+§4 capability check: this commit weakly advances §4.1 multi-file
+reasoning (the agent's per-candidate quality is up) but reveals
+that DeepSeek+single-agent isn't enough on its own to clear the
+gate. The data points to either pipeline-bootstrapped agent
+(option 3) or the spec's intended Opus swap (option 4) as the
+load-bearing fix.
 
 ### P3b-run — dev_50 patch generation eval (pipeline-only, T=0 single-shot) (2026-05-03)
 
