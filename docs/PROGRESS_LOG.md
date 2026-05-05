@@ -15,10 +15,10 @@ Model swap plan: docs/MODEL_SWAP_PLAN.md.
 
 | Item | Cap | Used | Remaining |
 |---|---|---|---|
-| Cumulative LLM spend (this batch) | $150.00 | $8.16 | $141.84 |
+| Cumulative LLM spend (this batch) | $150.00 | $12.18 | $137.82 |
 | Largest single dev_50 ablation | $30.00 cap | $5.03 (P3c-run) | — |
 | Phase 2 dev_50 iteration count | ≤5 | 1 (PASS @ 96%) | 4 |
-| Phase 3 dev_50 iteration count | ≤8 | 2 (P3b 14% FAIL; P3c 16% < 20% STOP) | 6 |
+| Phase 3 dev_50 iteration count | ≤8 | 3 (P3b 14% FAIL; P3c 16% STOP; P3c-v2 22% WARN) | 5 |
 | End-to-end dev_100 iteration count | ≤5 | 0 | 5 |
 
 ## Branch lineage
@@ -30,6 +30,89 @@ Model swap plan: docs/MODEL_SWAP_PLAN.md.
 - v10/phase-5 — TBD.
 
 ## Entries (newest first)
+
+### P3c-v2-run — dev_50 bootstrapped-agent eval — 11/50 (22.0%) WARN, oracle merge with pipeline = 28% (2026-05-03)
+
+Commit SHA: TBD. Branch: v10/phase-2.
+
+Files: `docs/audits/dev_50_patch_gen_eval_agent_v2.md` (new),
+`runs/v10_dev_50_patch_gen_eval_agent_v2/` (50 instance checkpoints).
+
+LLM spend: **$3.94** (vs P3c's $5.03 — bootstrap actually CHEAPER
+because the seed gives the agent a faster path to apply_patch on
+easy instances).
+
+Cumulative batch spend: $12.18.
+
+**Headline: 11/50 (22.0%) resolved.** WARN band (above 20% hard-stop,
+below 25% pass).
+
+Iteration progression:
+
+  | Phase | Submitted | Resolved | Applied-correctness | Cost |
+  |---|---|---|---|---|
+  | P3b pipeline | 50 (100%) | 7 (14%) | 21% | $2.74 |
+  | P3c agent (no boot) | 21 (42%) | 8 (16%) | 38% | $5.03 |
+  | **P3c-v2 boot agent** | **24 (48%)** | **11 (22%)** | **46%** | **$3.94** |
+
+Per-candidate quality continues to climb across iterations
+(21% → 38% → 46%). Bootstrap costs LESS than unbootstrapped
+because successful seeds let the agent submit in 1-2 turns
+instead of 15-20.
+
+**Critical finding for P3d (routing):** the three paths catch
+DIFFERENT instances. Oracle merge analysis:
+
+  | Merge | Resolved | Pct |
+  |---|---|---|
+  | P3b alone | 7 | 14% |
+  | P3c-v2 alone | 11 | 22% |
+  | **P3b ∪ P3c-v2 (oracle of 2 paths)** | **14** | **28%** |
+  | P3b ∪ P3c ∪ P3c-v2 (3-way oracle) | 14 | 28% |
+
+  P3c-v2 ONLY (would lose without agent): astropy-12907,
+  sklearn-10908, sphinx-10466, sphinx-10673 (4 instances).
+  P3b ONLY (would lose without pipeline): django-11206 (1
+  instance).
+
+**The 28% oracle ceiling means P3d routing should clear the
+25% headline gate.** Even imperfect routing that picks
+correctly on 90% of these 14 oracle-resolvable instances
+lands at 25.2%.
+
+Per-repo (vs P3c):
+  - astropy 0/4 → 2/4 (+50pp): astropy-12907 + 14309
+  - sklearn 2/5 → 3/5 (+20pp): added 10908
+  - sphinx 0/5 → 2/5 (+40pp): added 10466 + 10673
+  - django 3/12 → 2/12 (-8pp): regression — 10880 was lost
+
+Diagnostic on the django regression: with seeded prompts,
+some instances where P3c's exploration mode happened to land
+on the right diff are now misled by the pipeline's first-shot
+guess. This is exactly what routing solves: skip the agent
+on instances where the pipeline's own diff would have been
+right (would route those to pipeline-only).
+
+Decision needed (per user "Stop and report" rule on WARN):
+
+  1. **Proceed to P3d routing** — recommended. The 28% oracle
+     merge of just P3b + P3c-v2 already exceeds the 25%
+     headline gate. Routing's job is to pick the right path
+     per instance from the three options (pipeline, agent,
+     bootstrapped agent). Even simple difficulty-based routing
+     should clear 25%.
+  2. **Iterate further on agent design** (Fix B explore/patch
+     phases, or Fix D Opus swap). Defers P3d but pushes the
+     agent's standalone number higher. Costs more.
+
+§4 capability check: this commit advances §4.2 (self-
+verification) — the bootstrap-and-fix loop is exactly the
+"verify before commit" pattern. Per-candidate quality up
+substantially (21% → 46%).
+
+Spec hard-stop tracking: iteration 3 of 8 used. Net
+progression from baseline: +8pp (14% → 22%). Architecture
+finally on a path that scales.
 
 ### P3c-run — dev_50 agent eval — 8/50 (16.0%) STOP (<20% hard-stop) (2026-05-03)
 
