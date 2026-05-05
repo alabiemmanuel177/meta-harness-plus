@@ -169,13 +169,19 @@ def _generate_for_instance(
     use_agent: bool = False,
     agent_t_max: int = 20,
     agent_cost_cap_usd: float = 0.50,
+    bootstrap_from_pipeline: bool = False,
 ) -> _InstanceGenRecord:
     from harness.dataset import load_verified_view
     from harness.patch_gen import (
         ContextOversizeError,
         generate_agent,
         generate_pipeline,
+        generate_pipeline_one_shot,
     )
+    from harness.patch_gen.context import (
+        build_patch_gen_context_with_superset_check,
+    )
+    from harness.patch_gen.views import PatchGenError
     from harness.sandbox import Sandbox
 
     t_start = time.perf_counter()
@@ -204,10 +210,36 @@ def _generate_for_instance(
         with Sandbox(view, max_observation_chars=32_000_000) as sb:
             try:
                 if use_agent:
+                    seed_diff = None
+                    seed_cost_usd = 0.0
+                    seed_status = "no_seed"
+                    if bootstrap_from_pipeline:
+                        # P3c-v2 Fix C: pipeline writes a single-shot seed
+                        # at T=0; agent uses it as a starting point. Don't
+                        # let pipeline failures abort the agent run; fall
+                        # back to no-seed.
+                        try:
+                            ctx = build_patch_gen_context_with_superset_check(
+                                view=view, ranked_files=rfs, sandbox=sb,
+                            )
+                            seed_cand = generate_pipeline_one_shot(
+                                ctx=ctx, temperature=0.0, attempt_index=0,
+                            )
+                            seed_diff = seed_cand.diff
+                            seed_cost_usd = seed_cand.generation_cost_usd
+                            seed_status = "seeded"
+                        except ContextOversizeError:
+                            seed_status = "oversize_no_seed"
+                        except PatchGenError as exc:
+                            seed_status = f"seed_parse_error:{type(exc).__name__}"
+                        except Exception as exc:  # noqa: BLE001
+                            seed_status = f"seed_runtime_error:{type(exc).__name__}"
+
                     agent_result = generate_agent(
                         view=view, ranked_files=rfs, sandbox=sb,
                         t_max=agent_t_max,
                         cost_cap_usd=agent_cost_cap_usd,
+                        seed_diff=seed_diff,
                     )
                     cands = []
                     if agent_result.candidate is not None:
@@ -225,15 +257,21 @@ def _generate_for_instance(
                             "agent_apply_attempts": agent_result.apply_attempts,
                             "agent_apply_successes": agent_result.apply_successes,
                             "agent_final_status": agent_result.final_status,
+                            "seed_status": seed_status,
+                            "seed_cost_usd": seed_cost_usd,
                         })
+                    total_cost = agent_result.total_cost_usd + seed_cost_usd
                     return _InstanceGenRecord(
                         instance_id=iid, repo=view.repo,
                         status="ok" if cands else "agent-no-submit",
                         candidates=cands,
-                        total_cost_usd=agent_result.total_cost_usd,
+                        total_cost_usd=total_cost,
                         duration_s=time.perf_counter() - t_start,
                         error_class=None if cands else agent_result.final_status,
-                        error_msg=None if cands else f"agent ended without submit: {agent_result.final_status} (turns={agent_result.turns_used}, apply_attempts={agent_result.apply_attempts})",
+                        error_msg=None if cands else (
+                            f"agent ended without submit: {agent_result.final_status} "
+                            f"(turns={agent_result.turns_used}, apply_attempts={agent_result.apply_attempts}, seed_status={seed_status})"
+                        ),
                     )
                 else:
                     result = generate_pipeline(
@@ -552,6 +590,11 @@ def main() -> int:
                    help="use the agent path (P3c) instead of the pipeline path")
     p.add_argument("--agent-t-max", type=int, default=20)
     p.add_argument("--agent-cost-cap-usd", type=float, default=0.50)
+    p.add_argument("--bootstrap-from-pipeline", action="store_true",
+                   default=None,
+                   help="P3c-v2 Fix C — run pipeline T=0 first; pass diff "
+                        "as seed_diff to the agent. Default: True when "
+                        "--use-agent is set, False otherwise.")
     args = p.parse_args()
 
     logging.basicConfig(level=logging.WARNING, format="%(levelname)s %(name)s: %(message)s")
@@ -587,6 +630,11 @@ def main() -> int:
                       f"(K={len(cached.candidates)}, cost=${cached.total_cost_usd:.4f})", flush=True)
                 continue
             try:
+                # P3c-v2 default: bootstrap_from_pipeline=True when --use-agent
+                # unless explicitly set otherwise.
+                bootstrap = args.bootstrap_from_pipeline
+                if bootstrap is None:
+                    bootstrap = bool(args.use_agent)
                 rec = _generate_for_instance(
                     iid=iid, cache_dir=cache_dir,
                     temperatures=temperatures,
@@ -595,6 +643,7 @@ def main() -> int:
                     use_agent=args.use_agent,
                     agent_t_max=args.agent_t_max,
                     agent_cost_cap_usd=args.agent_cost_cap_usd,
+                    bootstrap_from_pipeline=bootstrap,
                 )
             except KeyboardInterrupt:
                 print("[interrupt] writing partial audit and exiting", flush=True)

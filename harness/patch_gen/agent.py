@@ -328,21 +328,87 @@ def _dispatch_tool(sandbox, call: dict, state: _AgentState) -> str:
 # ---------------------------------------------------------------------------
 
 
-def _build_user_prompt(view: InstanceView, ranked_files: list[RankedFile]) -> str:
+def _build_user_prompt(
+    view: InstanceView,
+    ranked_files: list[RankedFile],
+    seed_diff: str | None = None,
+) -> str:
     """The agent gets the issue + localizer's top candidates as paths.
     File CONTENTS are read by the agent itself (read_file tool); this
-    avoids the truncation problem that hit the pipeline path."""
+    avoids the truncation problem that hit the pipeline path.
+
+    When ``seed_diff`` is supplied (P3c-v2 Fix C — pipeline-bootstrapped
+    agent), the prompt explicitly tells the agent to apply that diff
+    via apply_patch as the FIRST action, and to fix any apply errors
+    before exploring. This narrows the agent's task from "explore +
+    write a diff from scratch" (which P3c data showed it loses on,
+    median apply_attempts=0 in 28/29 failures) to "fix the apply
+    errors in this diff or replace it" — playing to the agent's
+    38% applied-correctness strength.
+    """
     parts: list[str] = []
     parts.append("# Issue\n\n")
     parts.append(view.problem_statement.strip())
     parts.append("\n\n# Test directories (DO NOT modify test files)\n\n")
     for d in view.test_directives.dirs:
         parts.append(f"  - {d}\n")
-    parts.append("\n# Localizer top-K candidate files (read these FIRST)\n\n")
+    parts.append("\n# Localizer top-K candidate files\n\n")
     for rf in ranked_files[:10]:
         parts.append(f"  - `{rf.file_path}` (score={rf.final_score:.2f}): {rf.rationale}\n")
-    parts.append("\n# Begin\n\nEmit your first tool call now.\n")
+
+    if seed_diff and seed_diff.strip():
+        parts.append("\n# Seed diff (from a single-shot pre-pass)\n\n")
+        parts.append(
+            "A pipeline-stage call produced the following candidate diff. "
+            "**Your FIRST action MUST be to call apply_patch on this diff.** "
+            "If apply_patch succeeds, refine OR submit. If apply_patch "
+            "fails, read the relevant files (per the localizer) to "
+            "understand the actual line numbers and context, then call "
+            "apply_patch again with a corrected diff. The seed is a "
+            "starting point — feel free to replace it entirely if it's "
+            "wrong, but do not waste turns exploring before trying it.\n\n"
+        )
+        parts.append("```diff\n")
+        parts.append(seed_diff)
+        if not seed_diff.endswith("\n"):
+            parts.append("\n")
+        parts.append("```\n")
+        parts.append("\n# Begin\n\nEmit your first tool call now (apply_patch on the seed).\n")
+    else:
+        parts.append("\n# Begin\n\nEmit your first tool call now.\n")
     return "".join(parts)
+
+
+# ---------------------------------------------------------------------------
+# T_max - 5 force-finalize nudge (P3c-v2 Fix A)
+# ---------------------------------------------------------------------------
+
+
+def _build_force_finalize_nudge(turns_remaining: int, has_candidate: bool) -> str:
+    """Inject as a user message when turn count reaches T_max - 5.
+
+    Per P3c-v2 Fix A: the diagnostic showed 28/29 agent-no-submit
+    failures had median apply_attempts=0 — the agent burned all 20
+    turns exploring without ever committing. The nudge breaks that
+    loop by hard-pressuring the agent toward apply_patch + submit.
+    """
+    if has_candidate:
+        return (
+            f"[harness] {turns_remaining} turns remaining. You have a "
+            f"validated candidate diff. Call submit on the next turn — "
+            f"do not keep exploring or revising unless the candidate is "
+            f"clearly wrong. The empty submission is worse than this "
+            f"candidate."
+        )
+    return (
+        f"[harness] {turns_remaining} turns remaining. STOP exploring. "
+        f"Based on what you have already read, write your best-guess "
+        f"unified diff and call apply_patch. If apply_patch fails, fix "
+        f"the line numbers and context lines and try again. If it "
+        f"succeeds, call submit. The empty submission (no apply_patch "
+        f"success in N=20 turns) is the worst possible outcome — a "
+        f"wrong patch is strictly better than no patch."
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -390,6 +456,8 @@ def generate_agent(
     max_output_tokens: int = DEFAULT_AGENT_MAX_OUTPUT_TOKENS,
     repro_context_files: tuple[str, ...] | None = None,
     parse_failure_budget: int = 3,
+    seed_diff: str | None = None,
+    force_finalize_at_turns_remaining: int = 5,
 ) -> AgentGenerationResult:
     """Run the agent path on one instance.
 
@@ -436,7 +504,7 @@ def generate_agent(
     state = _AgentState()
     tracker = CostTracker(instance_id=view.instance_id, cap_usd=cost_cap_usd)
 
-    user_msg_initial = _build_user_prompt(view, ranked_files)
+    user_msg_initial = _build_user_prompt(view, ranked_files, seed_diff=seed_diff)
     messages: list[dict] = [
         {"role": "system", "content": _SYSTEM_PROMPT},
         {"role": "user", "content": user_msg_initial},
@@ -446,6 +514,7 @@ def generate_agent(
     turns_used = 0
     cost_cap_hit = False
     final_status = "tmax"
+    force_finalize_injected = False
 
     t_start_global = time.perf_counter()
 
@@ -454,6 +523,26 @@ def generate_agent(
             cost_cap_hit = True
             final_status = "cost_cap"
             break
+
+        # Fix A — T_max-5 force-finalize nudge. Inject ONCE when the
+        # agent crosses into the last `force_finalize_at_turns_remaining`
+        # turns. Past that point every observation already implicitly
+        # carries the time pressure (the conversation is long), so we
+        # don't inject repeatedly.
+        turns_remaining = t_max - turns_used
+        if (
+            not force_finalize_injected
+            and turns_remaining <= force_finalize_at_turns_remaining
+            and not state.submit_called
+        ):
+            messages.append({
+                "role": "user",
+                "content": _build_force_finalize_nudge(
+                    turns_remaining=turns_remaining,
+                    has_candidate=state.candidate_diff is not None,
+                ),
+            })
+            force_finalize_injected = True
 
         turns_used += 1
         try:

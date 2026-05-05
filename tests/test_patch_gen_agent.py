@@ -482,6 +482,202 @@ def test_dispatch_unknown_tool_via_dispatch_returns_error():
 # ---------------------------------------------------------------------------
 
 
+# ---------------------------------------------------------------------------
+# 10. P3c-v2 Fix C — pipeline-bootstrapped agent (seed_diff)
+# ---------------------------------------------------------------------------
+
+
+def test_seed_diff_appears_in_initial_user_prompt():
+    """When seed_diff is provided, the initial user prompt must include
+    the seed and a directive to apply_patch it as the first action."""
+    from harness.patch_gen.agent import _build_user_prompt
+
+    view = _make_view()
+    rfs = _make_ranked_files(["src/foo.py"])
+    seed = "diff --git a/x b/x\n--- a/x\n+++ b/x\n@@ -1 +1 @@\n-a\n+b\n"
+    prompt = _build_user_prompt(view, rfs, seed_diff=seed)
+    assert "Seed diff" in prompt or "seed diff" in prompt.lower()
+    assert seed in prompt
+    assert "apply_patch" in prompt
+    assert "FIRST action" in prompt or "first action" in prompt.lower()
+
+
+def test_seed_diff_none_produces_unbootstrapped_prompt():
+    """No seed → original prompt with 'Begin' but no seed-diff section."""
+    from harness.patch_gen.agent import _build_user_prompt
+
+    view = _make_view()
+    rfs = _make_ranked_files(["src/foo.py"])
+    prompt = _build_user_prompt(view, rfs, seed_diff=None)
+    assert "Seed diff" not in prompt
+    assert "# Begin" in prompt
+
+
+def test_seed_diff_empty_string_treated_as_no_seed():
+    from harness.patch_gen.agent import _build_user_prompt
+
+    view = _make_view()
+    rfs = _make_ranked_files(["src/foo.py"])
+    prompt = _build_user_prompt(view, rfs, seed_diff="   ")
+    assert "Seed diff" not in prompt
+
+
+def test_agent_loop_with_seed_passes_seed_into_initial_message():
+    """End-to-end: when generate_agent is called with seed_diff, the
+    initial user message contains the seed."""
+    view = _make_view()
+    rfs = _make_ranked_files(["src/foo.py"])
+    sb = _FakeSandbox(
+        files={"src/foo.py": "x"},
+        shell_outputs=[_FakeExecResult(exit_code=0)],
+    )
+    seed = "diff --git a/x b/x\n--- a/x\n+++ b/x\n@@ -1 +1 @@\n-a\n+b\n"
+    captured: list[list] = []
+
+    def _capture_chat(messages, **kwargs):
+        # First call: capture the initial message stack.
+        if not captured:
+            captured.append(list(messages))
+        return _FakeChat(text='{"tool": "apply_patch", "args": {"diff": "d"}}')
+
+    scripts = [
+        '{"tool": "apply_patch", "args": {"diff": "d"}}',
+        '{"tool": "submit", "args": {"rationale": "r"}}',
+    ]
+    with patch("harness.llm.clients.complete_chat", side_effect=_scripted_chat(scripts)) as mock_cc:
+        result = generate_agent(view=view, ranked_files=rfs, sandbox=sb, seed_diff=seed)
+    assert result.submitted is True
+    # Inspect what was passed in messages on the first call.
+    first_call_messages = mock_cc.call_args_list[0].kwargs.get("messages") or mock_cc.call_args_list[0].args[0]
+    user_msg = next(m for m in first_call_messages if m["role"] == "user")
+    assert seed in user_msg["content"]
+
+
+# ---------------------------------------------------------------------------
+# 11. P3c-v2 Fix A — T_max-5 force-finalize nudge
+# ---------------------------------------------------------------------------
+
+
+def test_force_finalize_nudge_with_candidate_says_submit():
+    from harness.patch_gen.agent import _build_force_finalize_nudge
+
+    msg = _build_force_finalize_nudge(turns_remaining=5, has_candidate=True)
+    assert "5 turns remaining" in msg
+    assert "submit" in msg.lower()
+    assert "validated candidate" in msg.lower()
+
+
+def test_force_finalize_nudge_without_candidate_says_apply_patch():
+    from harness.patch_gen.agent import _build_force_finalize_nudge
+
+    msg = _build_force_finalize_nudge(turns_remaining=5, has_candidate=False)
+    assert "5 turns remaining" in msg
+    assert "STOP exploring" in msg or "stop exploring" in msg.lower()
+    assert "apply_patch" in msg
+    assert "wrong patch" in msg.lower() or "best-guess" in msg.lower()
+
+
+def test_agent_loop_injects_nudge_at_t_max_minus_5():
+    """With t_max=20 and force_finalize_at_turns_remaining=5, the
+    nudge fires when turns_used reaches 15 (turns_remaining=5)."""
+    view = _make_view()
+    rfs = _make_ranked_files(["src/foo.py"])
+    sb = _FakeSandbox(
+        files={"src/foo.py": "x"},
+        shell_outputs=[_FakeExecResult(exit_code=0, stdout="ok")] * 30,
+    )
+    # Script: 14 list_dir calls (no apply attempts), then a 15th turn
+    # (the harness injects the nudge BEFORE this turn), then another
+    # list_dir call. We don't care about the result; we want to inspect
+    # the messages for the nudge.
+    scripts = ['{"tool": "list_dir", "args": {"path": "."}}'] * 20
+    captured_messages: list = []
+
+    def _capture(*args, **kwargs):
+        msgs = kwargs.get("messages") or args[0]
+        captured_messages.append([dict(m) for m in msgs])
+        return _FakeChat(text=next(it_scripts))
+    it_scripts = iter(scripts)
+    with patch("harness.llm.clients.complete_chat", side_effect=_capture):
+        generate_agent(view=view, ranked_files=rfs, sandbox=sb, t_max=20)
+
+    # Find the nudge — should appear as a user message starting with [harness].
+    found_nudge_at = None
+    for turn_n, msgs in enumerate(captured_messages, start=1):
+        for m in msgs:
+            if m["role"] == "user" and m["content"].startswith("[harness]"):
+                found_nudge_at = turn_n
+                break
+        if found_nudge_at:
+            break
+    # Nudge fires at t_max - 5 = 15; the next LLM call (turn 16) is the
+    # first to see it in its message stack. Our injection happens
+    # BEFORE the chat call when turns_remaining <= 5.
+    assert found_nudge_at is not None
+    assert 14 <= found_nudge_at <= 16, f"nudge appeared at turn {found_nudge_at}, expected ~15-16"
+
+
+def test_agent_loop_injects_nudge_only_once():
+    """Even when the nudge condition stays true (agent keeps not
+    submitting), the nudge is injected only once."""
+    view = _make_view()
+    rfs = _make_ranked_files(["src/foo.py"])
+    sb = _FakeSandbox(
+        files={"src/foo.py": "x"},
+        shell_outputs=[_FakeExecResult(exit_code=0, stdout="ok")] * 30,
+    )
+    scripts = ['{"tool": "list_dir", "args": {"path": "."}}'] * 25
+    captured_messages: list = []
+
+    def _capture(*args, **kwargs):
+        msgs = kwargs.get("messages") or args[0]
+        captured_messages.append([dict(m) for m in msgs])
+        return _FakeChat(text=next(it_scripts))
+    it_scripts = iter(scripts)
+    with patch("harness.llm.clients.complete_chat", side_effect=_capture):
+        generate_agent(view=view, ranked_files=rfs, sandbox=sb, t_max=20)
+
+    # Inspect the LAST message stack — count how many nudges are present.
+    if captured_messages:
+        last = captured_messages[-1]
+        n_nudges = sum(1 for m in last if m["role"] == "user" and m["content"].startswith("[harness]"))
+        assert n_nudges <= 1, f"nudge injected {n_nudges} times; should be 1"
+
+
+def test_agent_loop_skips_nudge_after_submit():
+    """If the agent submits BEFORE T_max - 5, no nudge is needed."""
+    view = _make_view()
+    rfs = _make_ranked_files(["src/foo.py"])
+    sb = _FakeSandbox(
+        files={"src/foo.py": "x"},
+        shell_outputs=[_FakeExecResult(exit_code=0)],
+    )
+    scripts = [
+        '{"tool": "apply_patch", "args": {"diff": "d"}}',
+        '{"tool": "submit", "args": {"rationale": "fast"}}',
+    ]
+    captured_messages: list = []
+
+    def _capture(*args, **kwargs):
+        msgs = kwargs.get("messages") or args[0]
+        captured_messages.append([dict(m) for m in msgs])
+        return _FakeChat(text=next(it_scripts))
+    it_scripts = iter(scripts)
+    with patch("harness.llm.clients.complete_chat", side_effect=_capture):
+        result = generate_agent(view=view, ranked_files=rfs, sandbox=sb, t_max=20)
+    assert result.submitted is True
+    # No nudge should have been injected (submit happened on turn 2 of 20).
+    if captured_messages:
+        last = captured_messages[-1]
+        n_nudges = sum(1 for m in last if m["role"] == "user" and m["content"].startswith("[harness]"))
+        assert n_nudges == 0
+
+
+# ---------------------------------------------------------------------------
+# 12. Field firewall on the new agent path
+# ---------------------------------------------------------------------------
+
+
 def test_agent_candidate_passes_field_firewall():
     """Make sure the agent's PatchCandidate passes the same firewall
     check the pipeline candidates do."""
