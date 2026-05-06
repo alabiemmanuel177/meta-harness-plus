@@ -15,10 +15,10 @@ Model swap plan: docs/MODEL_SWAP_PLAN.md.
 
 | Item | Cap | Used | Remaining |
 |---|---|---|---|
-| Cumulative LLM spend (this batch) | $150.00 | $12.18 | $137.82 |
+| Cumulative LLM spend (this batch) | $150.00 | $16.30 | $133.70 |
 | Largest single dev_50 ablation | $30.00 cap | $5.03 (P3c-run) | — |
 | Phase 2 dev_50 iteration count | ≤5 | 1 (PASS @ 96%) | 4 |
-| Phase 3 dev_50 iteration count | ≤8 | 3 (P3b 14% FAIL; P3c 16% STOP; P3c-v2 22% WARN) | 5 |
+| Phase 3 dev_50 iteration count | ≤8 | 4 (P3b 14% FAIL; P3c 16% STOP; P3c-v2 22% WARN; P3d 18% HARD-STOP) | 4 |
 | End-to-end dev_100 iteration count | ≤5 | 0 | 5 |
 
 ## Branch lineage
@@ -30,6 +30,97 @@ Model swap plan: docs/MODEL_SWAP_PLAN.md.
 - v10/phase-5 — TBD.
 
 ## Entries (newest first)
+
+### P3d-run — dev_50 routed eval — 9/50 (18.0%) HARD STOP (<22%) (2026-05-06)
+
+Commit SHA: TBD on push. Branch: v10/phase-2.
+
+Files: `harness/patch_gen/router.py` (new — 190 lines, pure-Python
+dispatcher), `tests/test_router.py` (new — 17 tests),
+`scripts/patch_gen_eval.py` (extended with `--routed` flag),
+`docs/audits/dev_50_routed.md` (new), `runs/v10_dev_50_routed/`
+(50 instance checkpoints).
+
+LLM spend: **$4.02** (within $8 cap; ~$0.08/instance avg).
+
+Cumulative batch spend: $16.30.
+
+**Headline: 9/50 (18.0%) resolved.** Below the 22% hard-stop
+threshold. **STOP per spec — do not iterate generators.**
+
+Per-strategy distribution:
+
+  | Strategy             | Routed | Submitted | Resolved | Hit-rate |
+  |---|---|---|---|---|
+  | `pipeline_one_shot`  | **0**  | —         | —        | **router never chose it** |
+  | `agent`              | 2      | 0         | 0        | 0% |
+  | `bootstrapped_agent` | 48     | 21        | 9        | 18.8% |
+
+**Diagnostic 1 — router bug: Rule 1 is dead code.** The PIPELINE_ONE_SHOT
+rule requires `candidate_file_count <= 3`, but Phase 1 always returns
+top-K=10 candidates. With `candidate_file_count == 10` for every
+instance, the condition is never satisfiable. PIPELINE_ONE_SHOT was
+NEVER chosen on dev_50. The router intended to catch django-11206-style
+tight fixes via pipeline routing — instead they fell through to
+BOOTSTRAPPED_AGENT (where some still resolved by happenstance, but
+the architectural intent was lost).
+
+**Diagnostic 2 — LLM API non-determinism dominates the 4pp delta.**
+The lost 5 instances vs P3c-v2 (django-11095, sklearn-10297, sklearn-10908,
+sphinx-10466, sphinx-10673) were ALL routed to BOOTSTRAPPED_AGENT —
+the same path as P3c-v2 used for them. The gained 3 (django-10880,
+django-11206, xarray-2905) were also BOOTSTRAPPED_AGENT routed. So
+the bootstrapped_agent path produced different outputs in this fresh
+run vs P3c-v2's run. Net Δ = -2 instances; consistent with the
+project's documented ±4-5pp DeepSeek-chat T=0 non-determinism
+(see V10_DESIGN.md §9 — "rerank API variance" caveat documented
+during dev_100 reverification).
+
+**The router did not anti-correlate with quality.** It made 48/50
+identical-to-P3c-v2 decisions and 2/50 alternate-route decisions
+(astropy-13398, pytest-10356 → AGENT instead of BOOTSTRAPPED_AGENT).
+Both alternate routes resulted in agent-no-submit, but they failed
+in P3c-v2 too — no quality regression there. The 4pp delta is
+sampling noise on the dominant path.
+
+Per-repo (resolved/total):
+  - astropy 2/4 (50%) — same as P3c-v2
+  - django 4/12 (33%) — UP from P3c-v2's 2/12 (gained 10880 + 11206)
+  - flask 1/1, sklearn 1/5, xarray 2/3, others 0
+  - sphinx 0/5 — DOWN from P3c-v2's 2/5 (lost 10466 + 10673)
+  - sklearn 1/5 — DOWN from P3c-v2's 3/5 (lost 10297 + 10908)
+
+Per spec hard-stop tracking: **iteration 4 of 8 used.** Net Δ from
+baseline pipeline (14%): +4pp. Net Δ from best agent run (P3c-v2 22%):
+-4pp.
+
+**Stop and report. Two issues need user decision:**
+
+  1. **Router rule 1 dead code** (PIPELINE_ONE_SHOT never chosen).
+     Quick fix: relax candidate_file_count threshold from <=3 to
+     <=10 (i.e., remove the condition since all instances have
+     candidate_file_count == 10), OR introduce a different signal
+     (e.g., a "single-file-likely" signal from the rerank score
+     spread). Without a fix, routing is effectively binary
+     (agent vs bootstrapped_agent).
+  2. **Repeatability problem.** ±4pp single-run variance on
+     dev_50 means we can't reliably distinguish P3c-v2 (22%) from
+     P3d (18%). Need either (a) multi-seed evaluation
+     (~$8-12 to triple cost on dev_50), (b) move to dev_100 where
+     N=100 reduces variance, or (c) accept the noise band and pick
+     P3c-v2's architecture as the headline since it has the best
+     point estimate.
+
+Recommendation: **fix Rule 1 OR drop the pipeline strategy
+entirely** (since with K=10 the pipeline isn't a natural choice
+anyway), then proceed to **dev_100 with the bootstrapped_agent path
+alone** (effectively P3c-v2). The user's hard-stop fired but the
+diagnostic shows the issue is architectural (Rule 1 unreachable) +
+sampling, not an actual quality regression.
+
+§4 capability check: this commit advances §4.5 (cost-aware routing)
+infrastructure but reveals the threshold tuning needs more signal
+than cheap per-instance features alone provide.
 
 ### P3c-v2-run — dev_50 bootstrapped-agent eval — 11/50 (22.0%) WARN, oracle merge with pipeline = 28% (2026-05-03)
 
