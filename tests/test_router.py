@@ -1,4 +1,4 @@
-"""Phase 3 P3d — router unit tests + firewall.
+"""Phase 3 P3d-fix — two-way router tests + firewall.
 
 Covers:
 
@@ -8,6 +8,9 @@ Covers:
   - Determinism: same RouterFeatures always returns same strategy.
   - Defense in depth: importing router.py does NOT pull in
     harness.repro / harness.eval / harness.memory.
+  - PIPELINE_ONE_SHOT was dropped in P3d-fix; this is asserted
+    explicitly so a future revival is a deliberate choice not a
+    silent re-add.
 
 No LLM calls; no Docker.
 """
@@ -21,10 +24,8 @@ import pytest
 
 from harness.localization_signals import RankedFile
 from harness.patch_gen.router import (
+    AGENT_LARGE_TOP1_LOC_MIN,
     AGENT_LONG_ISSUE_WORDS_MIN,
-    PIPELINE_TIGHT_CANDIDATE_FILES_MAX,
-    PIPELINE_TIGHT_ISSUE_WORDS_MAX,
-    PIPELINE_TIGHT_TOP1_LOC_MAX,
     PatchGenStrategy,
     RouterFeatures,
     _has_traceback,
@@ -79,7 +80,7 @@ def _features(
     *,
     words: int = 200,
     traceback: bool = False,
-    candidate_files: int = 3,
+    candidate_files: int = 10,
     top1_loc: int = 800,
     repo: str = "example/example",
     skel_size: int = 0,
@@ -95,7 +96,7 @@ def _features(
 
 
 # ---------------------------------------------------------------------------
-# 1. Feature extraction
+# 1. Feature extraction (unchanged from P3d)
 # ---------------------------------------------------------------------------
 
 
@@ -158,95 +159,105 @@ def test_router_features_post_init_validation():
 
 
 # ---------------------------------------------------------------------------
-# 2. Routing branches
+# 2. Routing branches (P3d-fix two-way)
 # ---------------------------------------------------------------------------
 
 
-def test_route_pipeline_when_traceback_and_small_scope():
-    """Rule 1 fires: traceback + small candidate set + small top-1 file
-    + short issue → PIPELINE_ONE_SHOT."""
-    feats = _features(
-        words=200, traceback=True, candidate_files=2, top1_loc=600,
-    )
-    assert route(feats) == PatchGenStrategy.PIPELINE_ONE_SHOT
-
-
-def test_route_pipeline_at_exact_thresholds():
-    """Boundary check: each Rule-1 condition exactly at its max →
-    still fires (≤ comparisons)."""
-    feats = _features(
-        words=PIPELINE_TIGHT_ISSUE_WORDS_MAX,
-        traceback=True,
-        candidate_files=PIPELINE_TIGHT_CANDIDATE_FILES_MAX,
-        top1_loc=PIPELINE_TIGHT_TOP1_LOC_MAX,
-    )
-    assert route(feats) == PatchGenStrategy.PIPELINE_ONE_SHOT
-
-
-def test_route_falls_through_when_no_traceback():
-    """Rule 1 requires traceback; without it falls through to rule 2/3."""
-    feats = _features(
-        words=200, traceback=False, candidate_files=2, top1_loc=600,
-    )
-    # Issue words below AGENT threshold → defaults to BOOTSTRAPPED_AGENT
-    assert route(feats) == PatchGenStrategy.BOOTSTRAPPED_AGENT
-
-
-def test_route_falls_through_when_too_many_candidates():
-    """Traceback present but candidate_file_count > 3 → not pipeline."""
-    feats = _features(
-        words=200, traceback=True, candidate_files=4, top1_loc=600,
-    )
-    # No long-issue + traceback present → defaults to BOOTSTRAPPED_AGENT
-    assert route(feats) == PatchGenStrategy.BOOTSTRAPPED_AGENT
-
-
-def test_route_falls_through_when_top1_too_large():
-    feats = _features(
-        words=200, traceback=True, candidate_files=2,
-        top1_loc=PIPELINE_TIGHT_TOP1_LOC_MAX + 1,
-    )
-    assert route(feats) == PatchGenStrategy.BOOTSTRAPPED_AGENT
-
-
-def test_route_long_issue_no_traceback_to_agent():
-    """Rule 2 fires: long issue without traceback → AGENT (no seed)."""
+def test_route_agent_when_long_issue_no_traceback_large_file():
+    """Rule 1 fires: long issue (>=300 words) + no traceback + large
+    top-1 file (>=800 LOC) → AGENT."""
     feats = _features(
         words=AGENT_LONG_ISSUE_WORDS_MIN + 50,
-        traceback=False, candidate_files=10, top1_loc=2_000,
+        traceback=False,
+        top1_loc=AGENT_LARGE_TOP1_LOC_MIN + 100,
     )
     assert route(feats) == PatchGenStrategy.AGENT
 
 
-def test_route_long_issue_with_traceback_to_bootstrapped_agent():
-    """Long issue WITH traceback should NOT route to AGENT — Rule 2's
-    'no traceback' condition prevents it; falls through to default."""
+def test_route_agent_at_exact_thresholds():
+    """Boundary check: each AGENT condition exactly at its min →
+    still fires (>= comparisons)."""
+    feats = _features(
+        words=AGENT_LONG_ISSUE_WORDS_MIN,
+        traceback=False,
+        top1_loc=AGENT_LARGE_TOP1_LOC_MIN,
+    )
+    assert route(feats) == PatchGenStrategy.AGENT
+
+
+def test_route_falls_through_when_traceback_present():
+    """Tracebacks anchor the localizer; even a long issue with a
+    large file won't go to bare AGENT — fall through to default."""
     feats = _features(
         words=AGENT_LONG_ISSUE_WORDS_MIN + 100,
-        traceback=True, candidate_files=10, top1_loc=2_000,
+        traceback=True,
+        top1_loc=AGENT_LARGE_TOP1_LOC_MIN + 500,
     )
-    # Traceback BUT candidates>3 / loc>1500 / words>400 → not pipeline.
-    # Issue has traceback → not AGENT (Rule 2). Falls to default.
     assert route(feats) == PatchGenStrategy.BOOTSTRAPPED_AGENT
 
 
-def test_route_default_is_bootstrapped_agent():
-    """Medium-shape instance — falls through both rules."""
+def test_route_falls_through_when_short_issue():
+    """Below word threshold → default."""
     feats = _features(
-        words=300, traceback=False, candidate_files=5, top1_loc=2_000,
+        words=AGENT_LONG_ISSUE_WORDS_MIN - 1,
+        traceback=False,
+        top1_loc=AGENT_LARGE_TOP1_LOC_MIN + 1_000,
+    )
+    assert route(feats) == PatchGenStrategy.BOOTSTRAPPED_AGENT
+
+
+def test_route_falls_through_when_small_top1_file():
+    """Top-1 file below the LOC threshold → default. Small files
+    are well-suited to the seeded agent."""
+    feats = _features(
+        words=AGENT_LONG_ISSUE_WORDS_MIN + 100,
+        traceback=False,
+        top1_loc=AGENT_LARGE_TOP1_LOC_MIN - 1,
+    )
+    assert route(feats) == PatchGenStrategy.BOOTSTRAPPED_AGENT
+
+
+def test_route_typical_dev50_instance_to_bootstrapped_agent():
+    """The dev_50 median instance — short issue, no traceback,
+    medium file — should land on BOOTSTRAPPED_AGENT."""
+    feats = _features(
+        words=200, traceback=False, top1_loc=600,
+    )
+    assert route(feats) == PatchGenStrategy.BOOTSTRAPPED_AGENT
+
+
+def test_route_default_with_traceback_and_short_issue():
+    """Tight pipeline-shape from old Rule 1 — now goes to default
+    (BOOTSTRAPPED_AGENT) since PIPELINE_ONE_SHOT is dropped."""
+    feats = _features(
+        words=150, traceback=True, top1_loc=400,
     )
     assert route(feats) == PatchGenStrategy.BOOTSTRAPPED_AGENT
 
 
 # ---------------------------------------------------------------------------
-# 3. Determinism
+# 3. PIPELINE_ONE_SHOT explicitly removed (regression guard)
+# ---------------------------------------------------------------------------
+
+
+def test_pipeline_one_shot_strategy_does_not_exist():
+    """P3d-fix removed PIPELINE_ONE_SHOT from the strategy enum.
+    A future revival should be a deliberate choice, not a silent
+    re-add. This test fails if anyone accidentally adds it back."""
+    members = {s.name for s in PatchGenStrategy}
+    assert "PIPELINE_ONE_SHOT" not in members
+    assert members == {"AGENT", "BOOTSTRAPPED_AGENT"}
+
+
+# ---------------------------------------------------------------------------
+# 4. Determinism
 # ---------------------------------------------------------------------------
 
 
 def test_route_is_deterministic():
-    """route(features) called twice with the same features returns the
-    same strategy."""
-    feats = _features(words=100, traceback=True, candidate_files=2, top1_loc=500)
+    """route(features) called twice with the same features returns
+    the same strategy."""
+    feats = _features(words=400, traceback=False, top1_loc=1_500)
     a = route(feats)
     b = route(feats)
     assert a is b
@@ -255,10 +266,10 @@ def test_route_is_deterministic():
 def test_route_strategy_enum_membership():
     """Every routing call returns a PatchGenStrategy member."""
     test_cases = [
-        _features(words=100, traceback=True, candidate_files=2, top1_loc=500),
-        _features(words=800, traceback=False, candidate_files=8, top1_loc=4_000),
-        _features(words=300, traceback=False, candidate_files=5, top1_loc=2_000),
-        _features(words=50, traceback=True, candidate_files=1, top1_loc=100),
+        _features(words=100, traceback=True, top1_loc=500),
+        _features(words=800, traceback=False, top1_loc=4_000),
+        _features(words=300, traceback=False, top1_loc=2_000),
+        _features(words=50, traceback=True, top1_loc=100),
     ]
     for feats in test_cases:
         result = route(feats)
@@ -266,7 +277,7 @@ def test_route_strategy_enum_membership():
 
 
 # ---------------------------------------------------------------------------
-# 4. Firewall — router.py must not import repro / eval / memory modules
+# 5. Firewall — router.py must not import repro / eval / memory modules
 # ---------------------------------------------------------------------------
 
 

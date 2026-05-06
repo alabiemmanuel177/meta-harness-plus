@@ -236,20 +236,14 @@ def _generate_for_instance(
                     total_cost_local = 0.0
 
                     # Build context once (also runs the §2.2 superset assertion).
+                    # The BOOTSTRAPPED_AGENT branch reuses ``ctx`` for its
+                    # internal pipeline seed call. AGENT doesn't need it
+                    # at all but the assertion is the firewall contract.
                     ctx = build_patch_gen_context_with_superset_check(
                         view=view, ranked_files=rfs, sandbox=sb,
                     )
 
-                    if chosen == PatchGenStrategy.PIPELINE_ONE_SHOT:
-                        try:
-                            cand = generate_pipeline_one_shot(
-                                ctx=ctx, temperature=0.0, attempt_index=0,
-                            )
-                            candidate_obj = cand
-                            total_cost_local += cand.generation_cost_usd
-                        except PatchGenError as exc:
-                            extra_meta["dispatch_error"] = f"pipeline_parse:{exc}"
-                    elif chosen == PatchGenStrategy.AGENT:
+                    if chosen == PatchGenStrategy.AGENT:
                         agent_result = generate_agent(
                             view=view, ranked_files=rfs, sandbox=sb,
                             t_max=agent_t_max, cost_cap_usd=agent_cost_cap_usd,

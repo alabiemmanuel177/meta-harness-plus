@@ -1,42 +1,45 @@
-"""Phase 3 P3d — patch-gen strategy router.
+"""Phase 3 P3d-fix — patch-gen strategy router (two-way).
 
-Dispatches each instance to one of three patch-gen strategies based on
+Dispatches each instance to one of two patch-gen strategies based on
 CHEAP, deterministic features extracted from ``InstanceView`` +
 ``RankedFile[]``. No LLM calls. No network. No imports of repro,
 eval, or memory.
 
-The strategies and their dev_50 rationale (from
-``docs/audits/dev_50_patch_gen_eval{,_agent,_agent_v2}.md``):
+History — why two-way and not three:
 
-  - ``PIPELINE_ONE_SHOT``: K=1 single-shot pipeline call at T=0. Wins
-    on tight, deterministic, single-file fixes — typically when the
-    issue text contains a Python traceback and the localizer's
-    candidate set is small. Pipeline alone resolved 7/50; the only
-    instance ONLY pipeline catches is ``django__django-11206``
-    (traceback + 2 candidate files + 600-LOC top-1 file).
+  P3d (commit 0762e75) shipped a three-way router with
+  ``PIPELINE_ONE_SHOT`` as the third strategy. Rule 1 required
+  ``candidate_file_count <= 3``, but Phase 1 always returns top-K=10
+  reranked files. With ``candidate_file_count == 10`` for every
+  instance, Rule 1 was unreachable — the router NEVER chose
+  PIPELINE_ONE_SHOT on dev_50. The intent was to catch
+  django-11206-style tight fixes via single-shot pipeline; that
+  intent was lost.
+
+  Per user decision after P3d hit 9/50 (18%) HARD STOP: drop
+  PIPELINE_ONE_SHOT from the strategy enum entirely. The pipeline
+  generator (``generate_pipeline_one_shot``) STAYS in the codebase
+  — it's used internally by BOOTSTRAPPED_AGENT as the seed. Only
+  the standalone dispatch role is removed.
+
+The two strategies and their dev_50 rationale:
+
   - ``AGENT``: agent path WITHOUT a pipeline seed. Wins on long
     issues without tracebacks where the pipeline's first-shot
     guess can mislead the agent's apply_patch retries. Resolved 8
-    instances (P3c). The 2 instances ONLY non-bootstrapped agent
+    instances in P3c. The 2 instances ONLY non-bootstrapped agent
     catches (``django__django-10880``, ``psf__requests-1142``) had
     long, multi-paragraph issues without explicit traceback frames.
   - ``BOOTSTRAPPED_AGENT``: pipeline-bootstrapped agent (the P3c-v2
-    architecture). Default — best path on average (11/50 = 22%
-    standalone). Wins on instances with mid-large surface area
-    where the agent benefits from a starting diff but needs to
-    iterate. The 4 instances ONLY bootstrapped agent catches
-    (``astropy-12907``, ``sklearn-10908``, ``sphinx-10466``,
-    ``sphinx-10673``) had medium issue length + 5+ candidate files.
+    architecture). Default — best path on average (11/50 = 22% on
+    dev_50). Wins on instances with mid-large surface area where
+    the agent benefits from a starting diff but needs to iterate.
 
 Routing thresholds are tunable constants at the top of this file.
-The §6 acceptance gate for P3d on dev_50 is ≥25% (oracle merge of
-the three strategies hits 28%; routing's job is to land within
-3pp of that ceiling).
 
-Spec: docs/V10_DESIGN_PHASE3.md §3.1 (three routes), §3.4
-(difficulty estimation; linear formula on cheap signals;
-escalation to learned classifier deferred unless dev_50 routing
-accuracy <70%).
+Spec: docs/V10_DESIGN_PHASE3.md §3.1 (routes), §3.4 (difficulty
+estimation; linear formula on cheap signals; escalation to
+learned classifier deferred unless dev_50 routing accuracy <70%).
 """
 
 from __future__ import annotations
@@ -60,29 +63,33 @@ from harness.views import InstanceView
 #   top1_file_loc:         p50 ≈ 1,200, p90 ≈ 4,500, max 13,000
 #   has_traceback:         ~30% of instances
 #
-# The thresholds below carve out the "tight pipeline-friendly" slice:
-# small issue, traceback present, modest top-1 file. This was 7/50
-# instances on dev_50 — a high-precision rule for picking pipeline.
+# AGENT (no seed) is chosen when ALL three conditions hold:
+#   - long issue (issue_word_count >= 300)
+#   - no traceback in issue
+#   - large top-1 file (top1_file_loc >= 800)
+#
+# Rationale: long, traceback-less issues with large affected files are
+# the regime where a pipeline seed is most likely to mislead the agent.
+# Better to let the agent explore from scratch with no anchor. This
+# fires on roughly the upper-third of dev_50 instances.
 
-PIPELINE_TIGHT_ISSUE_WORDS_MAX: int = 400
-PIPELINE_TIGHT_TOP1_LOC_MAX: int = 1_500
-PIPELINE_TIGHT_CANDIDATE_FILES_MAX: int = 3
-
-# "Long issue without traceback" → AGENT (no seed). Threshold chosen so
-# the rule fires on the upper-half of issue length but only when no
-# traceback anchors the localizer.
-AGENT_LONG_ISSUE_WORDS_MIN: int = 600
+AGENT_LONG_ISSUE_WORDS_MIN: int = 300
+AGENT_LARGE_TOP1_LOC_MIN: int = 800
 
 
 # ---------------------------------------------------------------------------
-# Strategy enum
+# Strategy enum (two-way after P3d-fix)
 # ---------------------------------------------------------------------------
 
 
 class PatchGenStrategy(Enum):
-    """The three patch-gen paths the router can dispatch to."""
+    """The two patch-gen paths the router can dispatch to.
 
-    PIPELINE_ONE_SHOT = "pipeline_one_shot"
+    PIPELINE_ONE_SHOT was removed in P3d-fix — see the module
+    docstring history note. The pipeline generator itself remains
+    available; only its standalone dispatch role is gone.
+    """
+
     AGENT = "agent"
     BOOTSTRAPPED_AGENT = "bootstrapped_agent"
 
@@ -110,9 +117,11 @@ def _has_traceback(text: str) -> bool:
 class RouterFeatures:
     """Cheap features extracted from InstanceView + RankedFile[].
 
-    Field names are stable; the router consumes this dataclass instead
-    of inspecting raw view/files so the routing logic and the feature
-    extractor can evolve independently.
+    Field set is unchanged from P3d (commit 0762e75) even though the
+    new two-way router only consults ``issue_word_count``,
+    ``has_traceback_in_issue``, and ``top1_file_loc``. The remaining
+    fields stay so a future routing iteration can use them without a
+    schema refactor.
     """
 
     issue_word_count: int
@@ -167,52 +176,34 @@ def extract_features(
 
 
 def route(features: RouterFeatures) -> PatchGenStrategy:
-    """Linear-formula router. Pure deterministic function — same input
-    always returns the same strategy.
+    """Two-way router. Pure deterministic function — same input always
+    returns the same strategy.
 
     Rules (in priority order):
 
-      1. **Tight pipeline shape.** Traceback + small candidate set +
-         small top-1 file + short issue → PIPELINE_ONE_SHOT. The
-         pipeline does well on these (django-11206-style cases). High
-         precision rule; if any condition fails, fall through.
+      1. **Exploration-heavy regime → AGENT (no seed).** Long issues
+         (≥300 words), without tracebacks, with large top-1 files
+         (≥800 LOC). The pipeline seed is most likely to mislead the
+         agent in this regime; better to let the agent explore from
+         scratch.
 
-      2. **Long issue without traceback.** Long, multi-paragraph
-         issues where the pipeline's single-shot guess is most likely
-         to mislead the agent. Send to AGENT (no seed) so the agent
-         explores from scratch rather than fix-from-wrong-start.
-
-      3. **Default — BOOTSTRAPPED_AGENT.** Best path on average
-         (22% on dev_50 standalone vs 14% pipeline / 16% non-boot
-         agent). The agent + seed combination handles mid-to-hard
-         instances where exploration is needed but a pipeline-quality
-         starting diff still helps.
+      2. **Default → BOOTSTRAPPED_AGENT.** Best path on average on
+         dev_50 (22% standalone). The pipeline-quality starting diff
+         + apply_patch verification + agent revision loop handles
+         the bulk of instances.
     """
-    # Rule 1: tight pipeline shape
     if (
-        features.has_traceback_in_issue
-        and features.candidate_file_count <= PIPELINE_TIGHT_CANDIDATE_FILES_MAX
-        and features.top1_file_loc <= PIPELINE_TIGHT_TOP1_LOC_MAX
-        and features.issue_word_count <= PIPELINE_TIGHT_ISSUE_WORDS_MAX
-    ):
-        return PatchGenStrategy.PIPELINE_ONE_SHOT
-
-    # Rule 2: long issue without traceback → unbootstrapped agent
-    if (
-        features.issue_word_count > AGENT_LONG_ISSUE_WORDS_MIN
+        features.issue_word_count >= AGENT_LONG_ISSUE_WORDS_MIN
         and not features.has_traceback_in_issue
+        and features.top1_file_loc >= AGENT_LARGE_TOP1_LOC_MIN
     ):
         return PatchGenStrategy.AGENT
-
-    # Rule 3: default
     return PatchGenStrategy.BOOTSTRAPPED_AGENT
 
 
 __all__ = [
+    "AGENT_LARGE_TOP1_LOC_MIN",
     "AGENT_LONG_ISSUE_WORDS_MIN",
-    "PIPELINE_TIGHT_CANDIDATE_FILES_MAX",
-    "PIPELINE_TIGHT_ISSUE_WORDS_MAX",
-    "PIPELINE_TIGHT_TOP1_LOC_MAX",
     "PatchGenStrategy",
     "RouterFeatures",
     "extract_features",
