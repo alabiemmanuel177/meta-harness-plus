@@ -43,6 +43,12 @@ from harness.patch_gen.agent import (
     DEFAULT_AGENT_T_MAX,
     generate_agent,
 )
+from harness.patch_gen.router import (
+    PatchGenStrategy,
+    RouterFeatures,
+    extract_features,
+    route,
+)
 
 
 __all__ = [
@@ -58,9 +64,13 @@ __all__ = [
     "PatchCandidate",
     "PatchGenContext",
     "PatchGenError",
+    "PatchGenStrategy",
     "PipelineGenerationResult",
+    "RouterFeatures",
     "build_patch_gen_context_with_superset_check",
+    "extract_features",
     "generate_agent",
     "generate_pipeline",
     "generate_pipeline_one_shot",
+    "route",
 ]

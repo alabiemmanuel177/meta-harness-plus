@@ -170,13 +170,17 @@ def _generate_for_instance(
     agent_t_max: int = 20,
     agent_cost_cap_usd: float = 0.50,
     bootstrap_from_pipeline: bool = False,
+    routed: bool = False,
 ) -> _InstanceGenRecord:
     from harness.dataset import load_verified_view
     from harness.patch_gen import (
         ContextOversizeError,
+        PatchGenStrategy,
+        extract_features,
         generate_agent,
         generate_pipeline,
         generate_pipeline_one_shot,
+        route,
     )
     from harness.patch_gen.context import (
         build_patch_gen_context_with_superset_check,
@@ -209,6 +213,121 @@ def _generate_for_instance(
     try:
         with Sandbox(view, max_observation_chars=32_000_000) as sb:
             try:
+                if routed:
+                    # P3d — feature-based dispatch to one of three strategies.
+                    # Compute top1_file_loc cheaply by reading the first ranked
+                    # file's line count (one sandbox read per instance).
+                    top1_file_loc = 0
+                    if rfs:
+                        try:
+                            r0 = sb.read_file(rfs[0].file_path, max_chars=400_000)
+                            if r0.exit_code == 0 and r0.stdout:
+                                top1_file_loc = r0.stdout.count("\n") + 1
+                        except Exception:
+                            top1_file_loc = 0
+                    feats = extract_features(view, rfs, top1_file_loc=top1_file_loc)
+                    chosen = route(feats)
+
+                    pipeline_seed_diff: str | None = None
+                    pipeline_seed_cost: float = 0.0
+                    pipeline_seed_status: str = "no_seed"
+                    candidate_obj = None
+                    extra_meta: dict = {}
+                    total_cost_local = 0.0
+
+                    # Build context once (also runs the §2.2 superset assertion).
+                    ctx = build_patch_gen_context_with_superset_check(
+                        view=view, ranked_files=rfs, sandbox=sb,
+                    )
+
+                    if chosen == PatchGenStrategy.PIPELINE_ONE_SHOT:
+                        try:
+                            cand = generate_pipeline_one_shot(
+                                ctx=ctx, temperature=0.0, attempt_index=0,
+                            )
+                            candidate_obj = cand
+                            total_cost_local += cand.generation_cost_usd
+                        except PatchGenError as exc:
+                            extra_meta["dispatch_error"] = f"pipeline_parse:{exc}"
+                    elif chosen == PatchGenStrategy.AGENT:
+                        agent_result = generate_agent(
+                            view=view, ranked_files=rfs, sandbox=sb,
+                            t_max=agent_t_max, cost_cap_usd=agent_cost_cap_usd,
+                            seed_diff=None,
+                        )
+                        if agent_result.candidate is not None:
+                            candidate_obj = agent_result.candidate
+                            extra_meta["agent_turns"] = agent_result.turns_used
+                            extra_meta["agent_apply_attempts"] = agent_result.apply_attempts
+                            extra_meta["agent_apply_successes"] = agent_result.apply_successes
+                            extra_meta["agent_final_status"] = agent_result.final_status
+                        total_cost_local += agent_result.total_cost_usd
+                    elif chosen == PatchGenStrategy.BOOTSTRAPPED_AGENT:
+                        try:
+                            seed_cand = generate_pipeline_one_shot(
+                                ctx=ctx, temperature=0.0, attempt_index=0,
+                            )
+                            pipeline_seed_diff = seed_cand.diff
+                            pipeline_seed_cost = seed_cand.generation_cost_usd
+                            pipeline_seed_status = "seeded"
+                        except ContextOversizeError:
+                            pipeline_seed_status = "oversize_no_seed"
+                        except PatchGenError as exc:
+                            pipeline_seed_status = f"seed_parse_error:{type(exc).__name__}"
+                        except Exception as exc:  # noqa: BLE001
+                            pipeline_seed_status = f"seed_runtime_error:{type(exc).__name__}"
+                        total_cost_local += pipeline_seed_cost
+                        agent_result = generate_agent(
+                            view=view, ranked_files=rfs, sandbox=sb,
+                            t_max=agent_t_max, cost_cap_usd=agent_cost_cap_usd,
+                            seed_diff=pipeline_seed_diff,
+                        )
+                        if agent_result.candidate is not None:
+                            candidate_obj = agent_result.candidate
+                            extra_meta["agent_turns"] = agent_result.turns_used
+                            extra_meta["agent_apply_attempts"] = agent_result.apply_attempts
+                            extra_meta["agent_apply_successes"] = agent_result.apply_successes
+                            extra_meta["agent_final_status"] = agent_result.final_status
+                        total_cost_local += agent_result.total_cost_usd
+                        extra_meta["seed_status"] = pipeline_seed_status
+                        extra_meta["seed_cost_usd"] = pipeline_seed_cost
+                    else:
+                        raise AssertionError(f"unknown strategy {chosen!r}")
+
+                    cands = []
+                    if candidate_obj is not None:
+                        c = candidate_obj
+                        cands.append({
+                            "candidate_id": c.candidate_id,
+                            "diff": c.diff,
+                            "model": c.generator_model,
+                            "cost_usd": c.generation_cost_usd,
+                            "temperature": c.source_temperature,
+                            "tokens_in": c.generator_input_tokens,
+                            "tokens_out": c.generator_output_tokens,
+                            "duration_s": c.duration_s,
+                            "chosen_strategy": chosen.value,
+                            "router_features": {
+                                "issue_word_count": feats.issue_word_count,
+                                "has_traceback_in_issue": feats.has_traceback_in_issue,
+                                "candidate_file_count": feats.candidate_file_count,
+                                "top1_file_loc": feats.top1_file_loc,
+                                "repo_id": feats.repo_id,
+                            },
+                            **extra_meta,
+                        })
+                    return _InstanceGenRecord(
+                        instance_id=iid, repo=view.repo,
+                        status="ok" if cands else f"routed-no-candidate:{chosen.value}",
+                        candidates=cands,
+                        total_cost_usd=total_cost_local,
+                        duration_s=time.perf_counter() - t_start,
+                        error_class=None if cands else f"no_candidate_after_{chosen.value}",
+                        error_msg=None if cands else (
+                            f"router chose {chosen.value} but the dispatched "
+                            f"generator returned no candidate. extra_meta={extra_meta}"
+                        ),
+                    )
                 if use_agent:
                     seed_diff = None
                     seed_cost_usd = 0.0
@@ -595,6 +714,10 @@ def main() -> int:
                    help="P3c-v2 Fix C — run pipeline T=0 first; pass diff "
                         "as seed_diff to the agent. Default: True when "
                         "--use-agent is set, False otherwise.")
+    p.add_argument("--routed", action="store_true",
+                   help="P3d — dispatch through harness.patch_gen.router "
+                        "to one of {pipeline_one_shot, agent, bootstrapped_agent}. "
+                        "Mutually exclusive with --use-agent / --bootstrap-from-pipeline.")
     args = p.parse_args()
 
     logging.basicConfig(level=logging.WARNING, format="%(levelname)s %(name)s: %(message)s")
@@ -635,6 +758,11 @@ def main() -> int:
                 bootstrap = args.bootstrap_from_pipeline
                 if bootstrap is None:
                     bootstrap = bool(args.use_agent)
+                if args.routed and (args.use_agent or args.bootstrap_from_pipeline):
+                    raise SystemExit(
+                        "--routed is mutually exclusive with --use-agent and "
+                        "--bootstrap-from-pipeline; the router decides per-instance."
+                    )
                 rec = _generate_for_instance(
                     iid=iid, cache_dir=cache_dir,
                     temperatures=temperatures,
@@ -644,6 +772,7 @@ def main() -> int:
                     agent_t_max=args.agent_t_max,
                     agent_cost_cap_usd=args.agent_cost_cap_usd,
                     bootstrap_from_pipeline=bootstrap,
+                    routed=args.routed,
                 )
             except KeyboardInterrupt:
                 print("[interrupt] writing partial audit and exiting", flush=True)
