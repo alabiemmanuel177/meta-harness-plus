@@ -215,6 +215,43 @@ def test_env_var_override_path(monkeypatch):
     assert model_for_role("reranker") == "deepseek-chat"
 
 
+def test_v10_use_opus_patch_gen_meta_flag(monkeypatch):
+    """P3f Opus K=1 ablation hook. When V10_USE_OPUS_PATCH_GEN=1 is set,
+    the two patch-gen roles resolve to claude-opus-4-7 — but ONLY those
+    two; every other role stays on deepseek-chat."""
+    import harness.llm.clients as clients
+    from harness.llm.clients import model_for_role
+
+    # Clear caches + per-role overrides.
+    clients._CACHED_CONFIG = None
+    for role in (
+        "reranker", "repro_generator", "repro_verifier",
+        "patch_generator_pipeline", "patch_generator_agent",
+        "patch_minimizer", "selection_reviewer",
+        "selection_escalation_reviewer",
+    ):
+        monkeypatch.delenv(f"V10_{role.upper()}_MODEL", raising=False)
+    monkeypatch.delenv("V10_USE_OPUS_PATCH_GEN", raising=False)
+
+    # OFF: defaults to deepseek-chat.
+    assert model_for_role("patch_generator_pipeline") == "deepseek-chat"
+    assert model_for_role("patch_generator_agent") == "deepseek-chat"
+    assert model_for_role("reranker") == "deepseek-chat"
+
+    # ON: patch-gen flips, others stay.
+    monkeypatch.setenv("V10_USE_OPUS_PATCH_GEN", "1")
+    assert model_for_role("patch_generator_pipeline") == "claude-opus-4-7"
+    assert model_for_role("patch_generator_agent") == "claude-opus-4-7"
+    assert model_for_role("reranker") == "deepseek-chat"
+    assert model_for_role("repro_generator") == "deepseek-chat"
+    assert model_for_role("selection_reviewer") == "deepseek-chat"
+
+    # Per-role override beats the meta-flag (per-role is explicit).
+    monkeypatch.setenv("V10_PATCH_GENERATOR_PIPELINE_MODEL", "deepseek-chat")
+    assert model_for_role("patch_generator_pipeline") == "deepseek-chat"
+    assert model_for_role("patch_generator_agent") == "claude-opus-4-7"
+
+
 # ---------------------------------------------------------------------------
 # 6. complete_chat call sites use role= (not a hardcoded model=) in
 #    business logic. Detected via AST.

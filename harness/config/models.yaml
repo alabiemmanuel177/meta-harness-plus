@@ -6,6 +6,14 @@
 # Env-driven overrides: each role honors a $V10_<ROLE>_MODEL env var.
 # Example: V10_RERANKER_MODEL=claude-sonnet-4-5 ./scripts/run_eval.py
 #
+# Meta-flag for the P3f Opus K=1 ablation (V10_DESIGN.md §11):
+#   V10_USE_OPUS_PATCH_GEN=1
+# When set, patch_generator_pipeline + patch_generator_agent resolve
+# to claude-opus-4-7 — UNLESS the per-role env vars above are already
+# set (those win). All other roles stay on deepseek-chat. Used to
+# isolate the model lift on patch generation alone before committing
+# to mixed-model leaderboard runs.
+#
 # Role-naming convention (commit 16a audit): one role per logical
 # function. Legacy short names (repro_gen, patch_gen_pipeline, etc.)
 # were renamed to the longer form to make their purpose unambiguous

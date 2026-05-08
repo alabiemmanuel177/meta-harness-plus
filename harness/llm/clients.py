@@ -62,18 +62,33 @@ def get_config() -> dict:
     return _CACHED_CONFIG
 
 
+_OPUS_PATCH_GEN_ROLES: tuple[str, ...] = (
+    "patch_generator_pipeline",
+    "patch_generator_agent",
+)
+_OPUS_PATCH_GEN_MODEL: str = "claude-opus-4-7"
+
+
 def model_for_role(role: str) -> str:
     """Map a role label to a model name.
 
     Lookup order:
       1. Env var ``V10_<ROLE_UPPER>_MODEL`` (e.g. ``V10_RERANKER_MODEL``)
-      2. ``roles.<role>`` in models.yaml
-      3. KeyError if neither is set.
+      2. Meta-flag ``V10_USE_OPUS_PATCH_GEN=1`` — when set, the two
+         patch-gen roles (patch_generator_pipeline,
+         patch_generator_agent) resolve to ``claude-opus-4-7`` unless
+         their explicit per-role env override is already set. All
+         other roles are unaffected. Used by the P3f Opus ablation
+         (V10_DESIGN.md §11 stepped rollout).
+      3. ``roles.<role>`` in models.yaml
+      4. KeyError if neither is set.
     """
     env_key = f"V10_{role.upper()}_MODEL"
     env_val = os.environ.get(env_key)
     if env_val:
         return env_val
+    if role in _OPUS_PATCH_GEN_ROLES and os.environ.get("V10_USE_OPUS_PATCH_GEN"):
+        return _OPUS_PATCH_GEN_MODEL
     cfg = get_config()
     if role in cfg.get("roles", {}):
         return cfg["roles"][role]
