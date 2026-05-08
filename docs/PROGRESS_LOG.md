@@ -31,6 +31,81 @@ Model swap plan: docs/MODEL_SWAP_PLAN.md.
 
 ## Entries (newest first)
 
+### P4c-light — validator dry-run on dev_100 K=1 — 100% apply, 96% recall, 48% precision (2026-05-09)
+
+Commit SHA: TBD on push. Branch: v10/phase-2.
+
+Files: `docs/audits/dev_100_validated.md` (new),
+`runs/v10_dev_100_validated/` (55 ValidationResult checkpoints).
+
+LLM spend: $0 (validator runs zero LLM calls; only sandbox CPU).
+
+Cumulative batch spend: $23.02 (unchanged).
+
+Wall-clock: 82.6 min (55 candidates validated; 45 instances skipped
+because Phase 3 produced no candidate for them).
+
+Per-signal distribution (validated, n=55):
+
+  | Signal | True | False | N/A |
+  |---|---|---|---|
+  | apply_clean | 55 | 0 | 0 |
+  | suite_ran_at_base | 55 | 0 | 0 |
+  | no_regression | 50 | 5 | 0 |
+  | static_ruff_clean | 0 | 0 | 55 |
+  | static_mypy_clean | 0 | 0 | 55 |
+
+**Confusion matrix vs grader (validator-says-"good" iff
+apply_clean ∧ suite_ran ∧ no_regression):**
+
+  |                    | Grader resolved | Grader unresolved |
+  |---|---|---|
+  | Validator: good    | TP=24           | FP=26             |
+  | Validator: broken  | FN=1            | TN=4              |
+
+  Accuracy: 50.9% (28/55)
+  Precision: 48.0% (24/50)
+  **Recall: 96.0% (24/25)**
+
+**Findings:**
+
+  1. **Phase 4 validator is high-recall, low-precision.** It catches
+     24/25 resolved patches (96% recall) — only 1 false negative
+     (validator said broken, grader said resolved). But it produces
+     26 false positives (patches that apply, suite runs, no
+     regressions, yet don't actually resolve the bug per the hidden
+     FAIL_TO_PASS).
+  2. **Public-suite signal alone is insufficient for selection.**
+     This was always the design intent: at K=1 the validator is
+     metadata; at K>1 the **repro_signal** + adversarial tests
+     (Bet B) would tighten precision toward the spec's ≥95% gate.
+     dev_100 didn't run Phase 2 (repros only on dev_50) so this
+     measurement misses the strongest signal.
+  3. **Static signals unused on this corpus.** Ruff + mypy are not
+     configured in the SWE-bench Verified base_commits we sampled
+     (n=55, 100% N/A). Static was a low-information signal anyway;
+     the lift, if any, would have been on framework repos not
+     SWE-bench's library bias.
+  4. **Apply rate is 100% on the 55 submitted patches.** Strong
+     evidence the agent's apply_patch verification (P3c-v2's
+     bootstrap-and-fix loop) reliably produces structurally valid
+     diffs. Compare to P3b pipeline alone where apply rate was 66%.
+
+**Implication for K>1:** the validator's signals as-implemented
+support selection well enough at the recall floor (would catch the
+correct candidate when it exists), but precision matters for
+narrowing K candidates to the best one. P5c's dev_50 K>1
+measurement (when run) needs the repro signal threaded in. The
+adversarial test generation Bet B (V10_DESIGN.md §4.2) is the
+designed precision lift.
+
+§4 capability check: this commit advances §4.2 (self-verification
+beyond the base test) — the validator IS the post-generation
+verification layer. The 96% recall says the architecture catches
+the right candidates; the 48% precision says without repro +
+adversarial signals, K>1 selection won't beat random-pick on
+broken candidates.
+
 ### P3e — dev_100 routed eval — 25/100 (25.0%) PASS — Phase 3 HEADLINE (2026-05-06)
 
 Commit SHA: TBD. Branch: v10/phase-2.
