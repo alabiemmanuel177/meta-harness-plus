@@ -712,6 +712,11 @@ def main() -> int:
                    help="P3d — dispatch through harness.patch_gen.router "
                         "to one of {pipeline_one_shot, agent, bootstrapped_agent}. "
                         "Mutually exclusive with --use-agent / --bootstrap-from-pipeline.")
+    p.add_argument("--total-cost-cap-usd", type=float, default=None,
+                   help="P3f — abort the run if cumulative LLM spend "
+                        "exceeds this cap. Checked between instances. "
+                        "Useful for the Opus K=1 dev_50 ablation where "
+                        "single-instance Opus calls can be $0.50-3.")
     args = p.parse_args()
 
     logging.basicConfig(level=logging.WARNING, format="%(levelname)s %(name)s: %(message)s")
@@ -738,13 +743,29 @@ def main() -> int:
     records: list[_InstanceGenRecord] = []
     t_wall = time.perf_counter()
 
+    cumulative_spend = 0.0
+    cap_aborted = False
     if not args.grade_only:
         for i, iid in enumerate(instance_ids, start=1):
+            # Global cost cap check — fires BEFORE the next instance's
+            # LLM calls, so an in-flight instance always completes.
+            if args.total_cost_cap_usd is not None and cumulative_spend >= args.total_cost_cap_usd:
+                print(
+                    f"[cap] cumulative spend ${cumulative_spend:.2f} "
+                    f">= ${args.total_cost_cap_usd:.2f}; aborting before "
+                    f"instance {i}/{len(instance_ids)}",
+                    flush=True,
+                )
+                cap_aborted = True
+                break
+
             cached = None if args.reset else _load_checkpoint(out_dir, iid)
             if cached is not None:
                 records.append(cached)
+                cumulative_spend += cached.total_cost_usd
                 print(f"[{i}/{len(instance_ids)}] {iid:60s} cached: {cached.status} "
-                      f"(K={len(cached.candidates)}, cost=${cached.total_cost_usd:.4f})", flush=True)
+                      f"(K={len(cached.candidates)}, cost=${cached.total_cost_usd:.4f}, "
+                      f"cum=${cumulative_spend:.2f})", flush=True)
                 continue
             try:
                 # P3c-v2 default: bootstrap_from_pipeline=True when --use-agent
@@ -780,9 +801,11 @@ def main() -> int:
                 )
             _save_checkpoint(out_dir, rec)
             records.append(rec)
+            cumulative_spend += rec.total_cost_usd
             print(
                 f"[{i}/{len(instance_ids)}] {iid:60s} status={rec.status:14s} "
-                f"K={len(rec.candidates)} cost=${rec.total_cost_usd:.4f} dur={rec.duration_s:.1f}s",
+                f"K={len(rec.candidates)} cost=${rec.total_cost_usd:.4f} "
+                f"cum=${cumulative_spend:.2f} dur={rec.duration_s:.1f}s",
                 flush=True,
             )
     else:

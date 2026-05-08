@@ -68,6 +68,17 @@ _OPUS_PATCH_GEN_ROLES: tuple[str, ...] = (
 )
 _OPUS_PATCH_GEN_MODEL: str = "claude-opus-4-7"
 
+# Models for which the Anthropic API rejects the `temperature` kwarg
+# (extended-thinking-capable Opus 4.x). Match by prefix so future
+# 4.x variants are auto-covered.
+_ANTHROPIC_NO_TEMPERATURE_PREFIXES: tuple[str, ...] = (
+    "claude-opus-4-",
+)
+
+
+def _temperature_deprecated_for(model: str) -> bool:
+    return any(model.startswith(p) for p in _ANTHROPIC_NO_TEMPERATURE_PREFIXES)
+
 
 def model_for_role(role: str) -> str:
     """Map a role label to a model name.
@@ -224,9 +235,14 @@ def _call_anthropic(
     kwargs: dict = dict(
         model=model,
         max_tokens=max_tokens,
-        temperature=temperature,
         messages=chat_msgs,
     )
+    # Anthropic deprecated the `temperature` parameter on the Opus 4.x
+    # extended-thinking-capable models. The API returns 400
+    # "temperature is deprecated for this model" if we pass it. Detect
+    # via prefix and omit. All older Claude models still accept it.
+    if not _temperature_deprecated_for(model):
+        kwargs["temperature"] = temperature
     if system_msg:
         kwargs["system"] = system_msg
     res = client.messages.create(**kwargs)
