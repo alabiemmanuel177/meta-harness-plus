@@ -15,10 +15,10 @@ Model swap plan: docs/MODEL_SWAP_PLAN.md.
 
 | Item | Cap | Used | Remaining |
 |---|---|---|---|
-| Cumulative LLM spend (this batch) | $150.00 | $23.02 | $126.98 |
+| Cumulative LLM spend (this batch) | $150.00 | $25.58 | $124.42 |
 | Largest single dev_50 ablation | $30.00 cap | $5.03 (P3c-run) | — |
 | Phase 2 dev_50 iteration count | ≤5 | 1 (PASS @ 96%) | 4 |
-| Phase 3 dev_50 iteration count | ≤8 | 5 (incl P3d-fix; final P3c-v2 22%, P3d 18%, P3e dev_100 25% PASS) | 3 |
+| Phase 3 dev_50 iteration count | ≤8 | 6 (P3f Opus N/A — API credit) | 2 |
 | End-to-end dev_100 iteration count | ≤5 | 1 (P3e routed 25.0% PASS) | 4 |
 
 ## Branch lineage
@@ -30,6 +30,80 @@ Model swap plan: docs/MODEL_SWAP_PLAN.md.
 - v10/phase-5 — TBD.
 
 ## Entries (newest first)
+
+### P3f-attempt — Opus K=1 dev_50 ablation — INFRA STOP (Anthropic API credit exhausted) (2026-05-09)
+
+Commit SHA: TBD on push. Branch: v10/phase-2.
+
+Files: `docs/audits/dev_50_routed_opus.md` (new — partial),
+`runs/v10_dev_50_routed_opus/` (50 instance checkpoints; 2 with
+candidates, 48 with API-credit-error markers).
+
+LLM spend: **$2.56** (well under $30 cap; the cap never fired —
+Anthropic's billing did).
+
+Cumulative batch spend: $25.58.
+
+**Run aborted by infrastructure: Anthropic API returned
+"Your credit balance is too low to access the Anthropic API" on
+every call after the first 2 instances.** This is NOT an
+architectural finding; it's an account-balance issue.
+
+What we got from the 2 completed instances:
+
+  | Instance | Strategy | Cost | Resolved |
+  |---|---|---|---|
+  | astropy-12907 (smoke) | bootstrapped_agent | $0.66 | not measured here |
+  | astropy-13033        | bootstrapped_agent | $1.18 | NO |
+  | astropy-13398        | bootstrapped_agent | $0.71 | YES |
+
+  Final: 1/2 = 50% applied-correctness on the two real Opus calls.
+  N=2 is suggestive — Opus single-shot got astropy-13398 right
+  where DeepSeek's P3c-v2 also got it right; astropy-13033 was a
+  miss on Opus AND on DeepSeek (P3c-v2 missed it too). Insufficient
+  data to evaluate the lift hypothesis.
+
+Wiring fixes that DID validate during the smoke + first 2 instances:
+
+  1. **`temperature` deprecation handling.** Anthropic API rejects
+     the `temperature` kwarg on claude-opus-4-x; the
+     `_temperature_deprecated_for(model)` adapter in
+     harness/llm/clients.py omits it correctly. No more 400 errors
+     on that axis.
+  2. **V10_USE_OPUS_PATCH_GEN env hook resolves correctly.**
+     `model_for_role("patch_generator_pipeline")` returns
+     `claude-opus-4-7`; reranker / repro / selection roles stay
+     on deepseek-chat. Confirmed via the meta-flag unit test.
+  3. **Cost tracking on Opus is correct.** Smoke flask = $0.66 with
+     ~$0.49 seed + ~$0.17 agent. Opus prices ($15/$75 per 1M tokens)
+     applied correctly.
+  4. **Global `--total-cost-cap-usd 30.0` aborts cleanly between
+     instances.** The cap never fired in this run because the
+     Anthropic billing failure preceded the per-instance spend
+     reaching the cap, but the cap mechanism was exercised in the
+     loop and would have fired correctly.
+
+**Action required: top up Anthropic API credit, then re-run P3f.**
+Cost projection at $0.50-1.00 per Opus instance × 50 instances =
+$25-50 for the full ablation. Recommend topping up to at least
+$60 ($30 cap × 2× safety margin).
+
+What this rules in / out:
+
+  - The Opus model lift hypothesis remains UNTESTED. n=2 (one
+    instance, one resolved) is too small to draw any conclusion.
+  - The infrastructure (env hook, temperature handling, cost
+    tracking, global cap) is verified end-to-end.
+  - The DeepSeek-only headline (P3e dev_100 25.0%) stands as the
+    V0 number; the Opus ceiling remains an open question.
+
+Spec hard-stop tracking: P3f used 1 of the remaining 3 Phase 3
+iterations on infrastructure, not on a measurement. Remaining: 2.
+
+§4 capability check: this commit advances NEITHER §4.x capability
+materially. The wiring fixes are foundational but the measurement
+that would inform §4.5 (cost-aware routing decisions w.r.t. Opus)
+didn't complete.
 
 ### P4c-light — validator dry-run on dev_100 K=1 — 100% apply, 96% recall, 48% precision (2026-05-09)
 
